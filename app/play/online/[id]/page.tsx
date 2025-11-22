@@ -65,6 +65,7 @@ export default function OnlineGamePage() {
 
       // B. Determinar qui sóc i si m'he d'unir
       let currentBlackId = initialGame.black_player_id;
+      let finalGameData = initialGame;
       
       // Si sóc el creador -> Sóc Blanques
       if (user.id === initialGame.white_player_id) {
@@ -81,8 +82,41 @@ export default function OnlineGamePage() {
           .eq('id', id);
         
         if (!joinError) {
+          // IMPORTANT: Recarregar la partida completa després d'unir-se
+          const { data: updatedGame } = await supabase
+            .from('games')
+            .select('*')
+            .eq('id', id)
+            .single();
+          
+          if (updatedGame) {
+            // Recarregar perfils amb el nou jugador negre
+            const whiteProfile = updatedGame.white_player_id ? await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', updatedGame.white_player_id)
+              .single() : null;
+            
+            const blackProfile = updatedGame.black_player_id ? await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', updatedGame.black_player_id)
+              .single() : null;
+            
+            updatedGame.white = whiteProfile?.data || null;
+            updatedGame.black = blackProfile?.data || null;
+            
+            // Actualitzar estat local amb les dades completes
+            finalGameData = updatedGame;
+            currentBlackId = user.id;
+          }
+          
           setOrientation('black');
-          currentBlackId = user.id; // Actualitzem localment
+        } else {
+          console.error('Error unint-se a la partida:', joinError);
+          alert('Error al unir-se a la partida');
+          router.push('/lobby');
+          return;
         }
       } 
       // Si ja hi ha rival i sóc jo -> Sóc Negres
@@ -91,42 +125,52 @@ export default function OnlineGamePage() {
       } 
       // Si ja està plena i no sóc ningú -> Espectador
       else {
-        setOrientation('white'); // Espectador veu com blanques per defecte
+        setOrientation('white');
         alert("Mode espectador");
       }
 
-      // C. Actualitzar estat local
-      setGameData(initialGame);
+      // C. Actualitzar estat local (ara amb dades completes)
+      setGameData(finalGameData);
       setPlayers({
-        white: initialGame.white?.username || 'Jugador 1',
-        black: initialGame.black?.username || (currentBlackId ? 'Jugador 2' : 'Esperant rival...')
+        white: finalGameData.white?.username || user.user_metadata?.full_name || 'Jugador 1',
+        black: finalGameData.black?.username || (currentBlackId ? 'Jugador 2' : 'Esperant rival...')
       });
       
       // Sincronitzar tauler
-      const initialFen = initialGame.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      const initialFen = finalGameData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
       const newGame = new Chess(initialFen);
       setGame(newGame);
       setFen(initialFen);
-      updateStatus(newGame, initialGame);
+      updateStatus(newGame, finalGameData);
 
       // D. Subscriure's a canvis (REALTIME)
       const channel = supabase
         .channel(`game_${id}`)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${id}` }, (payload) => {
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${id}` }, async (payload) => {
           const newData = payload.new;
           
-          // Quan rebem un canvi des de la DB (l'altre ha mogut):
-          const incomeGame = new Chess(newData.fen);
-          setGame(incomeGame);
-          setFen(newData.fen);
-          setGameData(newData);
-          
-          // Si s'ha unit el jugador negre, actualitzem noms
-          if (newData.black_player_id && !currentBlackId) {
-             // Petita trampa: recarreguem pàgina per pillar el nom d'usuari fàcil, 
-             // o fem un fetch extra. Per simplificar, actualitzem text:
-             setPlayers(p => ({ ...p, black: 'Rival connectat!' }));
+          // Si s'ha unit un jugador, recarregar perfils
+          if (newData.black_player_id && !gameData?.black_player_id) {
+            const blackProfile = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', newData.black_player_id)
+              .single();
+            
+            newData.black = blackProfile?.data || null;
+            
+            // Actualitzar noms dels jugadors
+            setPlayers(prev => ({
+              ...prev,
+              black: newData.black?.username || 'Jugador 2'
+            }));
           }
+          
+          // Quan rebem un canvi des de la DB (l'altre ha mogut):
+          const incomeGame = new Chess(newData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+          setGame(incomeGame);
+          setFen(newData.fen || incomeGame.fen());
+          setGameData(newData);
           
           updateStatus(incomeGame, newData);
         })
