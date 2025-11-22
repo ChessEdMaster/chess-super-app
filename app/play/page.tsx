@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { Trophy, RefreshCw, ArrowLeft, User as UserIcon, Cpu, AlertTriangle, Loader2, Flag, XCircle, Save, LogOut } from 'lucide-react';
+import { Trophy, RefreshCw, User, Cpu, AlertTriangle, Loader2, Flag, XCircle, Save } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 
@@ -12,7 +13,8 @@ import { supabase } from '@/lib/supabase';
 const ENGINE_DEPTH = 10;
 
 export default function PlayPage() {
-  const { user, signOut } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [game, setGame] = useState(() => new Chess()); 
   const [fen, setFen] = useState(game.fen());
   const [moveStatus, setMoveStatus] = useState("El teu torn (Blanques)");
@@ -28,6 +30,13 @@ export default function PlayPage() {
 
   const engine = useRef<Worker | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // --- PROTECCIÓ DE RUTA ---
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   // Auto-scroll historial
   useEffect(() => {
@@ -219,48 +228,22 @@ export default function PlayPage() {
     }
   }
 
-  if (!isClient) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500"><Loader2 className="animate-spin mr-2"/> Carregant...</div>;
+  // Mentres comprovem l'usuari, mostrem càrrega i no deixem veure res
+  if (loading || !user || !isClient) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
+        <Loader2 className="animate-spin mr-2" /> Verificant accés...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 font-sans text-slate-200">
       
-      {/* Capçalera */}
-      <div className="w-full max-w-6xl mb-6 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition group">
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> 
-          <span>Sortir</span>
-        </Link>
+      {/* Capçalera Simplificada - El SiteHeader ja gestiona la navegació */}
+      <div className="w-full max-w-6xl mb-6 flex justify-center">
         <div className="text-xl font-bold flex items-center gap-2 text-white">
           <Trophy className="text-amber-500" /> ChessHub vs IA
-        </div>
-        
-        {/* Info Usuari */}
-        <div>
-          {user ? (
-             <div className="flex items-center gap-3">
-               <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-                 <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
-                   {user.email?.[0].toUpperCase()}
-                 </div>
-                 <span className="text-xs font-medium text-slate-300 hidden sm:inline">
-                   {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                 </span>
-               </div>
-               
-               {/* Botó de Logout */}
-               <button 
-                 onClick={signOut}
-                 className="p-2 bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 rounded-full border border-slate-700 transition-colors"
-                 title="Tancar sessió"
-               >
-                 <LogOut size={16} />
-               </button>
-             </div>
-          ) : (
-            <Link href="/login" className="text-sm text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1">
-               <UserIcon size={16}/> Iniciar Sessió
-            </Link>
-          )}
         </div>
       </div>
 
@@ -367,7 +350,7 @@ export default function PlayPage() {
                   {user?.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="U" className="w-full h-full rounded" />
                   ) : (
-                    user?.email?.[0].toUpperCase() || <UserIcon size={20}/>
+                    user?.email?.[0].toUpperCase() || <User size={20}/>
                   )}
                 </div>
                 <div>

@@ -2,14 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Trophy, Calendar, User, Swords, Loader2, LogOut } from 'lucide-react';
+import { Trophy, Calendar, User, Swords, Loader2 } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [games, setGames] = useState<any[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
+
+  // --- PROTECCIÓ DE RUTA ---
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     async function fetchGames() {
@@ -33,19 +42,11 @@ export default function ProfilePage() {
     if (user) fetchGames();
   }, [user]);
 
-  if (authLoading || (user && loadingGames)) {
+  // Mentres comprovem l'usuari, mostrem càrrega
+  if (authLoading || !user || loadingGames) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-        <Loader2 className="animate-spin mr-2" /> Carregant perfil...
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white gap-4">
-        <p>Has d'iniciar sessió per veure el perfil.</p>
-        <Link href="/login" className="text-indigo-400 hover:underline">Anar al Login</Link>
+        <Loader2 className="animate-spin mr-2" /> Verificant accés...
       </div>
     );
   }
@@ -67,26 +68,10 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto">
         
         {/* Capçalera */}
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition group">
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span>Inici</span>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <User className="text-indigo-500" /> El teu Perfil
-            </h1>
-            
-            {/* Botó de Logout */}
-            <button 
-              onClick={signOut}
-              className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-red-500/20"
-            >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Tancar Sessió</span>
-            </button>
-          </div>
+        <div className="flex items-center justify-center mb-8">
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <User className="text-indigo-500" /> El teu Perfil
+          </h1>
         </div>
 
         {/* Targeta d'Usuari */}

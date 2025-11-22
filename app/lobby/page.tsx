@@ -5,13 +5,20 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, User, Clock, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
+import { Plus, User, Clock, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function LobbyPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [pendingGames, setPendingGames] = useState<any[]>([]);
   const [creating, setCreating] = useState(false);
+
+  // --- PROTECCIÓ DE RUTA ---
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   // 1. Carregar partides pendents i subscriure's a canvis
   useEffect(() => {
@@ -83,14 +90,20 @@ export default function LobbyPage() {
     }
   };
 
+  // Mentres comprovem l'usuari, mostrem càrrega
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
+        <Loader2 className="animate-spin mr-2" /> Verificant accés...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 p-4 text-slate-200 font-sans">
       <div className="max-w-4xl mx-auto">
         
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition">
-            <ArrowLeft size={20} /> Inici
-          </Link>
+        <div className="flex items-center justify-center mb-8">
           <h1 className="text-3xl font-bold text-white">Sala d'Espera (Lobby)</h1>
         </div>
 

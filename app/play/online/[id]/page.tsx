@@ -6,12 +6,11 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import Link from 'next/link';
-import { ArrowLeft, Copy, Loader2, User } from 'lucide-react';
+import { Copy, Loader2 } from 'lucide-react';
 
 export default function OnlineGamePage() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   
   const [isClient, setIsClient] = useState(false);
@@ -26,6 +25,13 @@ export default function OnlineGamePage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // --- PROTECCIÓ DE RUTA ---
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   // 1. Inicialització de la partida
   useEffect(() => {
@@ -248,10 +254,11 @@ export default function OnlineGamePage() {
     return true;
   }
 
-  if (!user || !isClient) {
+  // Mentres comprovem l'usuari, mostrem càrrega
+  if (loading || !user || !isClient) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-        <Loader2 className="animate-spin mr-2" /> Carregant...
+        <Loader2 className="animate-spin mr-2" /> Verificant accés...
       </div>
     );
   }
@@ -268,13 +275,10 @@ export default function OnlineGamePage() {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center p-4">
       
-      {/* Header */}
-      <div className="w-full max-w-4xl flex justify-between items-center mb-8">
-        <Link href="/lobby" className="text-slate-400 hover:text-white flex items-center gap-2">
-          <ArrowLeft size={20} /> Sortir al Lobby
-        </Link>
+      {/* Header Simplificat - El SiteHeader ja gestiona la navegació */}
+      <div className="w-full max-w-4xl flex justify-center items-center mb-8">
         <div className="bg-slate-900 px-4 py-2 rounded-full border border-slate-800 flex items-center gap-2 text-slate-300 text-sm">
-          <span>ID: {id?.toString().slice(0,8)}...</span>
+          <span>ID Partida: {id?.toString().slice(0,8)}...</span>
           <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="hover:text-white"><Copy size={14}/></button>
         </div>
       </div>

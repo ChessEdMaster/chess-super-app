@@ -34,24 +34,8 @@ const MenuCard = ({ title, desc, icon: Icon, color, href }: MenuCardProps) => (
 export default function Home() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8 font-sans">
-      {/* Header */}
-      <header className="max-w-6xl mx-auto flex justify-between items-center mb-12">
-        <div className="flex items-center gap-2">
-          <Trophy className="text-indigo-500" size={32} />
-          <h1 className="text-2xl font-bold text-white tracking-tight">ChessHub</h1>
-        </div>
-        <div className="flex gap-4">
-          <button className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">
-            Iniciar Sessió
-          </button>
-          <button className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
-            Registrar-se
-          </button>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <main className="max-w-6xl mx-auto">
+      {/* Hero Section - Sense Header duplicat (el SiteHeader ja ve del layout) */}
+      <main className="max-w-6xl mx-auto pt-12">
         <div className="text-center mb-16">
           <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
             Més que només <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Escacs</span>
