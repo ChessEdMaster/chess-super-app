@@ -151,7 +151,7 @@ export default function OnlineGamePage() {
   }
 
   // 2. Gestionar Moviment
-  async function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) {
+  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) {
     // Validacions bàsiques
     if (!targetSquare) return false;
     if (gameData?.status === 'pending') return false;
@@ -174,7 +174,7 @@ export default function OnlineGamePage() {
     setGame(gameCopy);
     setFen(gameCopy.fen());
 
-    // Enviar a Supabase
+    // Enviar a Supabase (en segon pla, sense bloquejar el retorn)
     let result = null;
     let status = 'active';
     
@@ -184,15 +184,22 @@ export default function OnlineGamePage() {
       else result = '1/2-1/2';
     }
 
-    await supabase
-      .from('games')
-      .update({
-        fen: gameCopy.fen(),
-        pgn: gameCopy.pgn(),
-        status: status,
-        result: result
-      })
-      .eq('id', id);
+    // Executar de forma asíncrona sense await
+    (async () => {
+      try {
+        await supabase
+          .from('games')
+          .update({
+            fen: gameCopy.fen(),
+            pgn: gameCopy.pgn(),
+            status: status,
+            result: result
+          })
+          .eq('id', id);
+      } catch (error) {
+        console.error('Error actualitzant partida:', error);
+      }
+    })();
 
     return true;
   }
