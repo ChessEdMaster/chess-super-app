@@ -233,16 +233,13 @@ export default function AnalysisPage() {
 
           <div className="w-full max-w-[650px] aspect-square">
             <Chessboard 
-              options={{
-                position: fen,
-                onPieceDrop: onDrop,
-                boardOrientation: "white",
-                animationDurationInMs: 200,
-                darkSquareStyle: { backgroundColor: '#779556' },
-                lightSquareStyle: { backgroundColor: '#ebecd0' },
-                allowDragging: true,
-                customArrows: customArrows,
-              }}
+              position={fen}
+              onPieceDrop={onDrop}
+              boardOrientation="white"
+              animationDurationInMs={200}
+              customDarkSquareStyle={{ backgroundColor: '#779556' }}
+              customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+              customArrows={bestMove ? [[bestMove.substring(0,2), bestMove.substring(2,4), 'rgb(0, 128, 0)']] : []}
             />
           </div>
           
