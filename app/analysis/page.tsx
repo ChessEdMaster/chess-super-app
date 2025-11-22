@@ -10,24 +10,31 @@ import {
   ChevronsRight, 
   RotateCcw, 
   Save,
-  Share2
+  Share2,
+  Cpu,
+  Settings,
+  Loader2
 } from 'lucide-react';
-import { useAuth } from '@/components/auth-provider';
-import { useRouter } from 'next/navigation';
+
+// Configuració del Motor
+const ENGINE_DEPTH = 15; // Profunditat d'anàlisi (15 és ràpid i fort)
 
 export default function AnalysisPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  // Estat del Joc
+  // --- ESTAT DEL JOC ---
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-  const [history, setHistory] = useState<string[]>([]); // Historial de FENs per navegació ràpida
-  const [moveHistory, setMoveHistory] = useState<string[]>([]); // Historial de notació (e4, e5...)
-  const [currentMoveIndex, setCurrentMoveIndex] = useState(-1); // -1 = inici, 0 = primer moviment...
+  const [history, setHistory] = useState<string[]>(['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1']);
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
+  const [isClient, setIsClient] = useState(false);
 
-  // Ref per controlar l'scroll de la llista de moviments
+  // --- ESTAT DE L'ANÀLISI (NOU) ---
+  const engine = useRef<Worker | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [evaluation, setEvaluation] = useState<{ type: 'cp' | 'mate', value: number } | null>(null);
+  const [bestMove, setBestMove] = useState<string | null>(null);
+  const [bestLine, setBestLine] = useState<string>("");
+
   const moveListRef = useRef<HTMLDivElement>(null);
 
   // Assegurar que estem al client
@@ -35,79 +42,173 @@ export default function AnalysisPage() {
     setIsClient(true);
   }, []);
 
-  // --- PROTECCIÓ DE RUTA (Opcional - pots eliminar si vols que sigui pública) ---
-  // useEffect(() => {
-  //   if (!loading && !user) {
-  //     router.push('/login');
-  //   }
-  // }, [user, loading, router]);
+  // 1. INICIALITZAR STOCKFISH (AL MUNTAR)
+  useEffect(() => {
+    const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
+    const workerCode = `importScripts('${stockfishUrl}');`;
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const localWorkerUrl = URL.createObjectURL(blob);
+    
+    const stockfishWorker = new Worker(localWorkerUrl);
+    engine.current = stockfishWorker;
 
-  // --- LÒGICA DEL TAULER ---
+    // Configurar Web Worker
+    stockfishWorker.postMessage('uci');
+    
+    // Esperar una mica abans de configurar MultiPV
+    setTimeout(() => {
+      stockfishWorker.postMessage('setoption name MultiPV value 1');
+    }, 100);
+
+    return () => {
+      stockfishWorker.terminate();
+      URL.revokeObjectURL(localWorkerUrl);
+    };
+  }, []);
+
+  // 2. PARSER DE STOCKFISH (El traductor)
+  const parseEngineMessage = (msg: string) => {
+    // Exemple: info depth 10 seldepth 15 multipv 1 score cp 45 pv e2e4 e7e5
+    
+    // A. Extreure Avaluació (cp = centipeons, mate = escac i mat)
+    const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+    if (scoreMatch) {
+      const type = scoreMatch[1] as 'cp' | 'mate';
+      let value = parseInt(scoreMatch[2]);
+      
+      // Ajustar el valor segons qui mou (Stockfish sempre dona valor absolut per al color actiu)
+      const currentGame = new Chess(fen);
+      if (currentGame.turn() === 'b') {
+        value = -value;
+      }
+      
+      setEvaluation({ type, value });
+    }
+
+    // B. Extreure Millor Línia (PV)
+    const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
+    if (pvMatch) {
+      const moves = pvMatch[1].trim().split(/\s+/);
+      if (moves.length > 0) {
+        setBestMove(moves[0]); // El primer moviment és la fletxa
+        setBestLine(moves.slice(0, 5).join(' ')); // Mostrem els primers 5 moviments
+      }
+    }
+  };
+
+  // 3. GESTIONAR MISSATGES DEL MOTOR
+  useEffect(() => {
+    if (!engine.current) return;
+
+    engine.current.onmessage = (event) => {
+      const msg = event.data;
+      
+      // Filtrar només les línies d'informació rellevants (profunditat mínima 10 per evitar soroll)
+      if (msg.startsWith('info') && (msg.includes('depth 10') || msg.includes('depth 15'))) {
+        parseEngineMessage(msg);
+        setIsAnalyzing(false); // Ja tenim dades
+      }
+      
+      // Detectem quan comença l'anàlisi
+      if (msg.includes('depth 1')) {
+        setIsAnalyzing(true);
+      }
+    };
+  }, [fen]);
+
+  // 4. DISPARAR ANÀLISI QUAN CANVIA LA POSICIÓ
+  useEffect(() => {
+    if (!engine.current || !isClient) return;
+
+    setIsAnalyzing(true);
+    setBestMove(null); // Netejar fletxa anterior
+    setEvaluation(null);
+    
+    // Aturar càlcul anterior i començar nou
+    engine.current.postMessage('stop');
+    engine.current.postMessage(`position fen ${fen}`);
+    engine.current.postMessage(`go depth ${ENGINE_DEPTH}`); // Anàlisi profunditat fixa
+    
+  }, [fen, isClient]); // S'executa cada cop que 'fen' canvia
+
+  // --- LÒGICA DEL JOC ---
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) {
     if (!targetSquare) return false;
 
-    // Clonem el joc actual per intentar el moviment
     const gameCopy = new Chess(game.fen());
-    
     try {
       const move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q', // Sempre reina per defecte en anàlisi ràpid
+        promotion: 'q',
       });
       if (!move) return false;
 
-      // Si fem un moviment i estàvem mirant el passat, hem de "tallar" la història futura
-      // (Comportament estàndard: si mous al passat, crees una nova línia principal)
+      // Tallar història futura si estem al passat
       const newHistory = history.slice(0, currentMoveIndex + 1);
-      const newMoveHistory = moveHistory.slice(0, currentMoveIndex + 1);
+      const newMoveHistory = moveHistory.slice(0, currentMoveIndex);
 
-      // Actualitzem estats
       setGame(gameCopy);
       setFen(gameCopy.fen());
-      
-      // Afegim el nou estat a la història
       setHistory([...newHistory, gameCopy.fen()]);
       setMoveHistory([...newMoveHistory, move.san]);
       setCurrentMoveIndex(prev => prev + 1);
+      
       return true;
-    } catch (error) {
+    } catch (error) { 
       return false;
     }
   }
 
-  // --- NAVEGACIÓ ---
   const jumpToMove = (index: number) => {
-    if (index < -1 || index >= history.length) return;
-    const targetFen = index === -1 
-      ? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' 
-      : history[index];
-    const newGame = new Chess(targetFen);
-    setGame(newGame);
+    // index 0 = posició inicial, index 1 = després de 1r moviment
+    if (index < 0 || index >= history.length) return;
+    
+    const targetFen = history[index];
+    setGame(new Chess(targetFen));
     setFen(targetFen);
     setCurrentMoveIndex(index);
   };
 
   const resetBoard = () => {
     const newGame = new Chess();
+    const initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     setGame(newGame);
-    setFen(newGame.fen());
-    setHistory([]);
+    setFen(initialFen);
+    setHistory([initialFen]);
     setMoveHistory([]);
-    setCurrentMoveIndex(-1);
+    setCurrentMoveIndex(0);
+    setEvaluation(null);
+    setBestMove(null);
+    setBestLine("");
   };
 
-  // Auto-scroll quan es fan moviments
+  // Auto-scroll
   useEffect(() => {
     if (moveListRef.current) {
       moveListRef.current.scrollTop = moveListRef.current.scrollHeight;
     }
   }, [moveHistory]);
 
+  // Helper per mostrar l'avaluació
+  const getEvalText = () => {
+    if (!evaluation) return '...';
+    if (evaluation.type === 'mate') {
+      return evaluation.value > 0 ? `M${Math.abs(evaluation.value)}` : `-M${Math.abs(evaluation.value)}`;
+    }
+    const val = evaluation.value / 100;
+    return val > 0 ? `+${val.toFixed(1)}` : val.toFixed(1);
+  };
+
+  // Preparar fletxes per al tauler
+  const customArrows: Array<[string, string, string]> = bestMove
+    ? [[bestMove.substring(0, 2), bestMove.substring(2, 4), 'rgb(34, 197, 94)']] // Verde
+    : [];
+
   if (!isClient) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-        Carregant...
+        <Loader2 className="animate-spin mr-2" /> Carregant...
       </div>
     );
   }
@@ -118,26 +219,38 @@ export default function AnalysisPage() {
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6 mt-4 h-[85vh]">
         
         {/* 1. TAULER CENTRAL */}
-        <div className="flex-1 flex flex-col items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800 p-4 shadow-2xl">
+        <div className="flex-1 flex flex-col items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800 p-4 shadow-2xl relative">
+          
+          {/* Barra d'Avaluació Flotant */}
+          <div className={`absolute top-6 left-6 z-10 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border flex items-center gap-2 ${
+            (evaluation?.value || 0) > 0 
+              ? 'bg-slate-100 text-slate-900 border-slate-300' 
+              : 'bg-slate-800 text-white border-slate-600'
+          }`}>
+            <Cpu size={14} className={isAnalyzing ? 'animate-spin' : ''}/>
+            <span>{getEvalText()}</span>
+          </div>
+
           <div className="w-full max-w-[650px] aspect-square">
             <Chessboard 
               options={{
                 position: fen,
                 onPieceDrop: onDrop,
-                boardOrientation: "white", // Futur: permetre flip
+                boardOrientation: "white",
                 animationDurationInMs: 200,
                 darkSquareStyle: { backgroundColor: '#779556' },
                 lightSquareStyle: { backgroundColor: '#ebecd0' },
                 allowDragging: true,
+                customArrows: customArrows,
               }}
             />
           </div>
           
-          {/* Controls de Navegació sota el tauler */}
+          {/* Controls de Navegació */}
           <div className="flex items-center justify-center gap-2 mt-6 w-full max-w-[650px]">
             <button 
-              onClick={() => jumpToMove(-1)} 
-              disabled={currentMoveIndex === -1}
+              onClick={() => jumpToMove(0)} 
+              disabled={currentMoveIndex === 0} 
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Anar al principi"
             >
@@ -145,7 +258,7 @@ export default function AnalysisPage() {
             </button>
             <button 
               onClick={() => jumpToMove(currentMoveIndex - 1)} 
-              disabled={currentMoveIndex === -1}
+              disabled={currentMoveIndex === 0} 
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Moviment anterior"
             >
@@ -153,7 +266,7 @@ export default function AnalysisPage() {
             </button>
             <button 
               onClick={() => jumpToMove(currentMoveIndex + 1)} 
-              disabled={currentMoveIndex === history.length - 1}
+              disabled={currentMoveIndex === history.length - 1} 
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Moviment següent"
             >
@@ -161,7 +274,7 @@ export default function AnalysisPage() {
             </button>
             <button 
               onClick={() => jumpToMove(history.length - 1)} 
-              disabled={currentMoveIndex === history.length - 1}
+              disabled={currentMoveIndex === history.length - 1} 
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Anar al final"
             >
@@ -170,10 +283,10 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        {/* 2. PANELL LATERAL (EINES) */}
+        {/* 2. PANELL LATERAL */}
         <div className="w-full lg:w-96 flex flex-col gap-4">
           
-          {/* Barra d'Eines Superior */}
+          {/* Barra Eines */}
           <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex gap-2">
             <button 
               onClick={resetBoard} 
@@ -199,7 +312,29 @@ export default function AnalysisPage() {
             </button>
           </div>
 
-          {/* PGN / Llista de Moviments */}
+          {/* Info Stockfish */}
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                <Cpu size={14} /> Stockfish 10
+              </h3>
+              <Settings size={14} className="text-slate-500 cursor-pointer hover:text-white transition"/>
+            </div>
+            <div className="text-sm font-mono text-emerald-400 bg-slate-950/50 p-2 rounded border border-slate-800/50 h-16 overflow-hidden flex items-center">
+              {bestLine ? (
+                <>
+                  <span className="font-bold mr-2 text-white">{getEvalText()}</span>
+                  <span className="text-slate-400">{bestLine}...</span>
+                </>
+              ) : (
+                <span className="text-slate-600 flex items-center gap-2">
+                  <Loader2 size={12} className="animate-spin"/> Calculant...
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Llista de Moviments */}
           <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[200px]">
             <div className="p-3 bg-slate-800 border-b border-slate-700 font-bold text-slate-300 text-sm uppercase tracking-wider">
               Partida
@@ -208,18 +343,16 @@ export default function AnalysisPage() {
             <div ref={moveListRef} className="flex-1 overflow-y-auto p-2 font-mono text-sm content-start">
               <div className="flex flex-wrap gap-1 content-start">
                 {moveHistory.map((move, i) => {
-                  // Calculem el número de moviment (1., 2., etc.)
-                  const moveNumber = Math.floor(i / 2) + 1;
-                  const isWhite = i % 2 === 0;
-                  const isActive = i === currentMoveIndex;
+                  const moveNum = Math.floor(i / 2) + 1;
+                  const isActive = (i + 1) === currentMoveIndex;
 
                   return (
                     <React.Fragment key={i}>
-                      {isWhite && (
-                        <span className="text-slate-500 ml-2 select-none">{moveNumber}.</span>
+                      {i % 2 === 0 && (
+                        <span className="text-slate-500 ml-2 select-none">{moveNum}.</span>
                       )}
                       <button 
-                        onClick={() => jumpToMove(i)}
+                        onClick={() => jumpToMove(i + 1)}
                         className={`px-1.5 rounded hover:bg-indigo-900/50 transition ${
                           isActive 
                             ? 'bg-indigo-600 text-white font-bold' 
@@ -238,13 +371,8 @@ export default function AnalysisPage() {
             </div>
           </div>
 
-          {/* Espai reservat per Mòduls Futurs (Engine / Database) */}
-          <div className="h-1/3 bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-center text-slate-600 border-dashed min-h-[150px]">
-            <p className="text-center text-sm">Mòdul d'Anàlisi (Stockfish) properament...</p>
-          </div>
         </div>
       </div>
     </div>
   );
 }
-
