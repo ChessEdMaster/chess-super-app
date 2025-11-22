@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Trophy, BookOpen, ShoppingBag, Users, ArrowRight, PlayCircle } from 'lucide-react';
+import { Trophy, BookOpen, ShoppingBag, Users, ArrowRight, PlayCircle, Search } from 'lucide-react';
 
 // Tipus per a les props del component MenuCard
 interface MenuCardProps {
@@ -66,6 +66,13 @@ export default function Home() {
             icon={Trophy} 
             color="bg-amber-500"
             href="/play" 
+          />
+          <MenuCard 
+            title="Anàlisi" 
+            desc="Tauler d'anàlisi lliure amb historial de moviments i navegació completa." 
+            icon={Search} 
+            color="bg-indigo-500"
+            href="/analysis" 
           />
           <MenuCard 
             title="Acadèmia" 
