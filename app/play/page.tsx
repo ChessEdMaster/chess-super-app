@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { Trophy, RefreshCw, ArrowLeft, User as UserIcon, Cpu, AlertTriangle, Loader2, Flag, XCircle, Save } from 'lucide-react';
+import { Trophy, RefreshCw, ArrowLeft, User as UserIcon, Cpu, AlertTriangle, Loader2, Flag, XCircle, Save, LogOut } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 
@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabase';
 const ENGINE_DEPTH = 10;
 
 export default function PlayPage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [game, setGame] = useState(() => new Chess()); 
   const [fen, setFen] = useState(game.fen());
   const [moveStatus, setMoveStatus] = useState("El teu torn (Blanques)");
@@ -237,13 +237,24 @@ export default function PlayPage() {
         {/* Info Usuari */}
         <div>
           {user ? (
-             <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-               <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
-                  {user.email?.[0].toUpperCase()}
+             <div className="flex items-center gap-3">
+               <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+                 <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                   {user.email?.[0].toUpperCase()}
+                 </div>
+                 <span className="text-xs font-medium text-slate-300 hidden sm:inline">
+                   {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                 </span>
                </div>
-               <span className="text-xs font-medium text-slate-300 hidden sm:inline">
-                 {user.user_metadata.full_name || user.email?.split('@')[0]}
-               </span>
+               
+               {/* Botó de Logout */}
+               <button 
+                 onClick={signOut}
+                 className="p-2 bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 rounded-full border border-slate-700 transition-colors"
+                 title="Tancar sessió"
+               >
+                 <LogOut size={16} />
+               </button>
              </div>
           ) : (
             <Link href="/login" className="text-sm text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1">

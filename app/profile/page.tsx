@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Trophy, Calendar, User, Swords, Loader2 } from 'lucide-react';
+import { ArrowLeft, Trophy, Calendar, User, Swords, Loader2, LogOut } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [games, setGames] = useState<any[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
 
@@ -72,9 +72,21 @@ export default function ProfilePage() {
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             <span>Inici</span>
           </Link>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <User className="text-indigo-500" /> El teu Perfil
-          </h1>
+          
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <User className="text-indigo-500" /> El teu Perfil
+            </h1>
+            
+            {/* Botó de Logout */}
+            <button 
+              onClick={signOut}
+              className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-red-500/20"
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Tancar Sessió</span>
+            </button>
+          </div>
         </div>
 
         {/* Targeta d'Usuari */}
