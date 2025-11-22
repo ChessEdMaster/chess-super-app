@@ -1,0 +1,173 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/components/auth-provider';
+import { supabase } from '@/lib/supabase';
+import { ArrowLeft, Trophy, Calendar, User, Swords, Loader2 } from 'lucide-react';
+
+export default function ProfilePage() {
+  const { user, loading: authLoading } = useAuth();
+  const [games, setGames] = useState<any[]>([]);
+  const [loadingGames, setLoadingGames] = useState(true);
+
+  useEffect(() => {
+    async function fetchGames() {
+      if (!user) return;
+
+      // Busquem partides on l'usuari sigui blanques O negres
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .or(`white_player_id.eq.${user.id},black_player_id.eq.${user.id}`)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error carregant partides:', error);
+      } else {
+        setGames(data || []);
+      }
+      setLoadingGames(false);
+    }
+
+    if (user) fetchGames();
+  }, [user]);
+
+  if (authLoading || (user && loadingGames)) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
+        <Loader2 className="animate-spin mr-2" /> Carregant perfil...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white gap-4">
+        <p>Has d'iniciar sessió per veure el perfil.</p>
+        <Link href="/login" className="text-indigo-400 hover:underline">Anar al Login</Link>
+      </div>
+    );
+  }
+
+  // Càlcul d'estadístiques simples
+  const totalGames = games.length;
+  const wins = games.filter(g => 
+    (g.white_player_id === user.id && g.result === '1-0') || 
+    (g.black_player_id === user.id && g.result === '0-1')
+  ).length;
+  const losses = games.filter(g => 
+    (g.white_player_id === user.id && g.result === '0-1') || 
+    (g.black_player_id === user.id && g.result === '1-0')
+  ).length;
+  const draws = totalGames - wins - losses;
+
+  return (
+    <div className="min-h-screen bg-slate-950 p-4 font-sans text-slate-200">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Capçalera */}
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition group">
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span>Inici</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <User className="text-indigo-500" /> El teu Perfil
+          </h1>
+        </div>
+
+        {/* Targeta d'Usuari */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-xl">
+          <div className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-inner">
+            {user.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full rounded-full" />
+            ) : (
+              user.email?.[0].toUpperCase()
+            )}
+          </div>
+          <div className="text-center md:text-left flex-1">
+            <h2 className="text-2xl font-bold text-white">{user.user_metadata?.full_name || 'Jugador'}</h2>
+            <p className="text-slate-400 mb-4">{user.email}</p>
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+                <span className="block text-xs text-slate-500 uppercase font-bold">Partides</span>
+                <span className="text-xl font-bold text-white">{totalGames}</span>
+              </div>
+              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+                <span className="block text-xs text-slate-500 uppercase font-bold">Victòries</span>
+                <span className="text-xl font-bold text-emerald-400">{wins}</span>
+              </div>
+              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+                <span className="block text-xs text-slate-500 uppercase font-bold">Ràting</span>
+                <span className="text-xl font-bold text-amber-400">1200</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Historial de Partides */}
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <Swords size={20} className="text-slate-400" /> Historial Recent
+        </h3>
+        
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+          {games.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              Encara no has jugat cap partida. 
+              <Link href="/play" className="text-indigo-400 hover:underline ml-1">Juga ara!</Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-800">
+              {games.map((game) => {
+                const isWhite = game.white_player_id === user.id;
+                const opponent = isWhite ? 'Stockfish (CPU)' : 'Stockfish (CPU)'; // Per ara sempre és CPU
+
+                // Determinem si has guanyat tu
+                let outcomeColor = 'text-slate-400';
+                let outcomeLabel = 'Taules';
+                
+                if (game.result === '1/2-1/2') {
+                   outcomeLabel = '🤝 Taules';
+                   outcomeColor = 'text-slate-400';
+                } else if ((isWhite && game.result === '1-0') || (!isWhite && game.result === '0-1')) {
+                   outcomeLabel = '🏆 Victòria';
+                   outcomeColor = 'text-emerald-400';
+                } else {
+                   outcomeLabel = '❌ Derrota';
+                   outcomeColor = 'text-red-400';
+                }
+
+                return (
+                  <div key={game.id} className="p-4 hover:bg-slate-800/50 transition flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                      <div className={`w-10 h-10 rounded flex items-center justify-center font-bold text-lg ${isWhite ? 'bg-slate-200 text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
+                        {isWhite ? 'W' : 'B'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-white">vs {opponent}</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1">
+                          <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                      <div className="text-right">
+                        <p className={`font-bold ${outcomeColor}`}>{outcomeLabel}</p>
+                        <p className="text-xs text-slate-600 font-mono">{game.result}</p>
+                      </div>
+                      {/* Aquí en el futur posarem un botó "Veure" per reproduir el PGN */}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+

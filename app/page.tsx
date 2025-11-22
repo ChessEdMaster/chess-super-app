@@ -1,19 +1,19 @@
 'use client';
 
 import React from 'react';
-// En el teu projecte real de Next.js, descomenta la línia de sota i esborra el "const Link..." local.
-// import Link from 'next/link';
+import Link from 'next/link';
 import { Trophy, BookOpen, ShoppingBag, Users, ArrowRight, PlayCircle } from 'lucide-react';
 
-// Mock de Link per a la previsualització (esborra això al teu projecte real)
-const Link = ({ href, children, className }: any) => (
-  <a href={href} className={className}>
-    {children}
-  </a>
-);
+// Tipus per a les props del component MenuCard
+interface MenuCardProps {
+  title: string;
+  desc: string;
+  icon: React.ElementType;
+  color: string;
+  href: string;
+}
 
-// Aquest serà el teu menú principal
-const MenuCard = ({ title, desc, icon: Icon, color, href }: any) => (
+const MenuCard = ({ title, desc, icon: Icon, color, href }: MenuCardProps) => (
   <Link href={href} className="group relative overflow-hidden rounded-2xl bg-slate-800 p-6 hover:bg-slate-750 transition-all border border-slate-700 hover:border-slate-500 block">
     <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${color}`}>
       <Icon size={100} />
@@ -34,15 +34,19 @@ const MenuCard = ({ title, desc, icon: Icon, color, href }: any) => (
 export default function Home() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8 font-sans">
-      {/* Header Senzill */}
+      {/* Header */}
       <header className="max-w-6xl mx-auto flex justify-between items-center mb-12">
         <div className="flex items-center gap-2">
           <Trophy className="text-indigo-500" size={32} />
           <h1 className="text-2xl font-bold text-white tracking-tight">ChessHub</h1>
         </div>
         <div className="flex gap-4">
-          <button className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">Iniciar Sessió</button>
-          <button className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">Registrar-se</button>
+          <button className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">
+            Iniciar Sessió
+          </button>
+          <button className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+            Registrar-se
+          </button>
         </div>
       </header>
 
@@ -57,9 +61,16 @@ export default function Home() {
             comerç especialitzat i comunitat social. Tot en un sol lloc.
           </p>
           <div className="flex justify-center gap-4">
-            <button className="flex items-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-full font-bold hover:bg-slate-200 transition">
-              <PlayCircle size={20} /> Jugar Ara
-            </button>
+            <Link href="/play">
+              <button className="flex items-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-full font-bold hover:bg-slate-200 transition transform hover:scale-105">
+                <PlayCircle size={20} /> Contra IA
+              </button>
+            </Link>
+            <Link href="/lobby">
+              <button className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-full font-bold hover:bg-indigo-700 transition transform hover:scale-105">
+                <Users size={20} /> Multiplayer
+              </button>
+            </Link>
           </div>
         </div>
 
@@ -67,7 +78,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MenuCard 
             title="Jugar" 
-            desc="Partides ràpides, tornejos i anàlisi amb motor Stockfish." 
+            desc="Partides contra Stockfish IA o contra altres jugadors en temps real." 
             icon={Trophy} 
             color="bg-amber-500"
             href="/play" 
