@@ -28,6 +28,9 @@ export function SiteHeader() {
           <Link href="/play" className="text-slate-300 hover:text-purple-400 transition font-medium">
             Jugar
           </Link>
+          <Link href="/clubs" className="text-slate-300 hover:text-purple-400 transition font-medium">
+            Clubs
+          </Link>
         </nav>
 
         {/* ZONA D'USUARI */}

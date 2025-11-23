@@ -89,11 +89,11 @@ export default function Home() {
             href="/shop"
           />
           <MenuCard
-            title="Club Social"
+            title="Clubs"
             desc="Connecta amb altres jugadors, comparteix partides i xateja."
             icon={Users}
             color="bg-purple-500"
-            href="/club"
+            href="/clubs"
           />
         </div>
       </main>
