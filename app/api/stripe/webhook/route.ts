@@ -2,19 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-11-17.clover',
-});
+function getStripe() {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+        throw new Error('STRIPE_SECRET_KEY no està configurada');
+    }
+    return new Stripe(secretKey, {
+        apiVersion: '2025-11-17.clover',
+    });
+}
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+function getSupabase() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Variables d\'entorn de Supabase no configurades');
+    }
+    
+    return createClient(supabaseUrl, supabaseKey);
+}
 
 export async function POST(req: NextRequest) {
     try {
+        const stripe = getStripe();
+        const supabase = getSupabase();
+        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        
+        if (!webhookSecret) {
+            return NextResponse.json(
+                { error: 'STRIPE_WEBHOOK_SECRET no està configurada' },
+                { status: 500 }
+            );
+        }
+        
         const body = await req.text();
         const signature = req.headers.get('stripe-signature');
 
@@ -73,6 +94,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+    const supabase = getSupabase();
     const orderId = session.metadata?.order_id;
 
     if (!orderId) {
@@ -141,6 +163,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 }
 
 async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
+    const supabase = getSupabase();
     try {
         // Buscar la comanda per payment_intent_id
         const { data: order, error } = await supabase
