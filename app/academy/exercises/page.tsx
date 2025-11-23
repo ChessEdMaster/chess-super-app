@@ -139,12 +139,13 @@ export default function ExercisesPage() {
                 if (count && count >= requiredCount) {
                     await supabase
                         .from('user_achievements')
-                        .insert({
+                        .upsert({
                             user_id: user.id,
                             achievement_id: achievement.id
-                        })
-                        .onConflict('user_id,achievement_id')
-                        .ignore();
+                        }, {
+                            onConflict: 'user_id,achievement_id',
+                            ignoreDuplicates: true
+                        });
                 }
             }
         } catch (error) {
