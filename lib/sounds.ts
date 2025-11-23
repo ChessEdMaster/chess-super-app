@@ -13,6 +13,15 @@ if (typeof window !== 'undefined') {
 
 export function playSound(type: string) {
     try {
+        // Check if sound is enabled (will be checked from settings store)
+        if (typeof window !== 'undefined') {
+            const settings = localStorage.getItem('chess-settings');
+            if (settings) {
+                const { state } = JSON.parse(settings);
+                if (!state.soundEnabled) return;
+            }
+        }
+
         if (sounds[type]) {
             sounds[type].play();
         }

@@ -1,0 +1,17 @@
+# Supabase Environment Variables
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+# Supabase Service Role Key (for server-side operations)
+# IMPORTANT: Keep this secret! Never expose in client-side code
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# Stripe Keys
+# Get these from: https://dashboard.stripe.com/test/apikeys
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+
+# Stripe Webhook Secret
+# Get this after setting up webhook endpoint in Stripe Dashboard
+# Webhook URL should be: https://yourdomain.com/api/stripe/webhook
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here

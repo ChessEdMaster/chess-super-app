@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/components/auth-provider';
 import { Trophy, LogOut, User, Loader2 } from 'lucide-react';
+import { CartButton } from '@/components/shop/cart-button';
 
 export function SiteHeader() {
   const { user, loading, signOut } = useAuth();
@@ -16,8 +17,24 @@ export function SiteHeader() {
           <span className="text-xl font-bold text-white tracking-tight">ChessHub</span>
         </Link>
 
+        {/* NAVIGATION */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/shop" className="text-slate-300 hover:text-emerald-400 transition font-medium">
+            Botiga
+          </Link>
+          <Link href="/academy" className="text-slate-300 hover:text-indigo-400 transition font-medium">
+            Acadèmia
+          </Link>
+          <Link href="/play" className="text-slate-300 hover:text-purple-400 transition font-medium">
+            Jugar
+          </Link>
+        </nav>
+
         {/* ZONA D'USUARI */}
         <div className="flex items-center gap-4">
+          {/* Cart Button - Always visible */}
+          <CartButton />
+
           {loading ? (
             <Loader2 className="animate-spin text-slate-500" size={20} />
           ) : user ? (
@@ -34,7 +51,7 @@ export function SiteHeader() {
                 </span>
               </Link>
 
-              <button 
+              <button
                 onClick={signOut}
                 className="text-slate-400 hover:text-red-400 transition p-2 hover:bg-slate-800 rounded-full"
                 title="Tancar Sessió"

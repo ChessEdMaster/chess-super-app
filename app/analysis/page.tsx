@@ -13,33 +13,71 @@ import {
   Share2,
   Cpu,
   Settings,
-  Loader2
+  Loader2,
+  GitBranch
 } from 'lucide-react';
+import { CoachAgent } from '@/components/coach-agent';
+import { PGNEditor } from '@/components/pgn-editor';
+import { useSettings } from '@/lib/settings';
+import { BOARD_THEMES } from '@/lib/themes';
+import { PGNTree } from '@/lib/pgn-tree';
+import { PGNParser } from '@/lib/pgn-parser';
+import type { Evaluation } from '@/lib/pgn-types';
 
 // Configuració del Motor
 const ENGINE_DEPTH = 15; // Profunditat d'anàlisi (15 és ràpid i fort)
 
 export default function AnalysisPage() {
-  // --- ESTAT DEL JOC ---
+  // --- ESTAT DEL JOC AMB PGN TREE ---
+  const [pgnTree, setPgnTree] = useState<PGNTree>(() => new PGNTree());
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-  const [history, setHistory] = useState<string[]>(['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1']);
-  const [moveHistory, setMoveHistory] = useState<string[]>([]);
-  const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [createVariation, setCreateVariation] = useState(false);
 
   // --- ESTAT DE L'ANÀLISI (NOU) ---
   const engine = useRef<Worker | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [evaluation, setEvaluation] = useState<{ type: 'cp' | 'mate', value: number } | null>(null);
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [bestMove, setBestMove] = useState<string | null>(null);
   const [bestLine, setBestLine] = useState<string>("");
 
-  const moveListRef = useRef<HTMLDivElement>(null);
+  // --- HISTORIAL D'AVALUACIONS PER AL COACH ---
+  const [evaluationHistory, setEvaluationHistory] = useState<Array<Evaluation | null>>([null]);
+  const [lastMove, setLastMove] = useState<string | null>(null);
 
-  // Assegurar que estem al client
+  // Settings
+  const { boardTheme } = useSettings();
+  const theme = BOARD_THEMES[boardTheme];
+
+  // Assegurar que estem al client + Carregar PGN si ve del localStorage
   useEffect(() => {
     setIsClient(true);
+
+    // Comprovar si hi ha un PGN guardat (des de la partida online)
+    const savedPGN = localStorage.getItem('analysis_pgn');
+    if (savedPGN) {
+      try {
+        // Parse PGN into tree
+        const newTree = PGNParser.parse(savedPGN);
+        setPgnTree(newTree);
+
+        // Set position to end of game
+        const mainLine = newTree.getMainLine();
+        if (mainLine.length > 0) {
+          newTree.goToNode(mainLine[mainLine.length - 1]);
+        }
+
+        setFen(newTree.getCurrentFen());
+        const chess = new Chess(newTree.getCurrentFen());
+        setGame(chess);
+
+        // Netejar localStorage
+        localStorage.removeItem('analysis_pgn');
+      } catch (e) {
+        console.error('Error carregant PGN:', e);
+      }
+    }
   }, []);
 
   // 1. INICIALITZAR STOCKFISH (AL MUNTAR)
@@ -144,15 +182,19 @@ export default function AnalysisPage() {
       });
       if (!move) return false;
 
-      // Tallar història futura si estem al passat
-      const newHistory = history.slice(0, currentMoveIndex + 1);
-      const newMoveHistory = moveHistory.slice(0, currentMoveIndex);
+      // Add move to PGN tree
+      const newNode = pgnTree.addMove(move.san, createVariation);
+      if (!newNode) return false;
 
       setGame(gameCopy);
       setFen(gameCopy.fen());
-      setHistory([...newHistory, gameCopy.fen()]);
-      setMoveHistory([...newMoveHistory, move.san]);
-      setCurrentMoveIndex(prev => prev + 1);
+      setLastMove(move.san);
+      setPgnTree(pgnTree); // Trigger re-render
+
+      // Reset variation mode after creating
+      if (createVariation) {
+        setCreateVariation(false);
+      }
 
       return true;
     } catch (error) {
@@ -160,35 +202,52 @@ export default function AnalysisPage() {
     }
   }
 
-  const jumpToMove = (index: number) => {
-    // index 0 = posició inicial, index 1 = després de 1r moviment
-    if (index < 0 || index >= history.length) return;
-
-    const targetFen = history[index];
-    setGame(new Chess(targetFen));
-    setFen(targetFen);
-    setCurrentMoveIndex(index);
-  };
-
   const resetBoard = () => {
+    const newTree = new PGNTree();
     const newGame = new Chess();
     const initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+    setPgnTree(newTree);
     setGame(newGame);
     setFen(initialFen);
-    setHistory([initialFen]);
-    setMoveHistory([]);
-    setCurrentMoveIndex(0);
     setEvaluation(null);
     setBestMove(null);
     setBestLine("");
+    setCreateVariation(false);
   };
 
-  // Auto-scroll
-  useEffect(() => {
-    if (moveListRef.current) {
-      moveListRef.current.scrollTop = moveListRef.current.scrollHeight;
+  const handlePositionChange = (newFen: string) => {
+    setFen(newFen);
+    setGame(new Chess(newFen));
+  };
+
+  // Navigation shortcuts
+  const goForward = () => {
+    pgnTree.goForward();
+    handlePositionChange(pgnTree.getCurrentFen());
+    setPgnTree(pgnTree);
+  };
+
+  const goBack = () => {
+    pgnTree.goBack();
+    handlePositionChange(pgnTree.getCurrentFen());
+    setPgnTree(pgnTree);
+  };
+
+  const goToStart = () => {
+    pgnTree.reset();
+    handlePositionChange(pgnTree.getCurrentFen());
+    setPgnTree(pgnTree);
+  };
+
+  const goToEnd = () => {
+    const mainLine = pgnTree.getMainLine();
+    if (mainLine.length > 0) {
+      pgnTree.goToNode(mainLine[mainLine.length - 1]);
+      handlePositionChange(pgnTree.getCurrentFen());
+      setPgnTree(pgnTree);
     }
-  }, [moveHistory]);
+  };
 
   // Helper per mostrar l'avaluació
   const getEvalText = () => {
@@ -235,8 +294,8 @@ export default function AnalysisPage() {
               onPieceDrop={onDrop}
               boardOrientation="white"
               animationDurationInMs={200}
-              customDarkSquareStyle={{ backgroundColor: '#779556' }}
-              customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+              customDarkSquareStyle={{ backgroundColor: theme.dark }}
+              customLightSquareStyle={{ backgroundColor: theme.light }}
               customArrows={bestMove ? [[bestMove.substring(0, 2), bestMove.substring(2, 4), 'rgb(0, 128, 0)']] : []}
             />
           </div>
@@ -244,36 +303,43 @@ export default function AnalysisPage() {
           {/* Controls de Navegació */}
           <div className="flex items-center justify-center gap-2 mt-6 w-full max-w-[650px]">
             <button
-              onClick={() => jumpToMove(0)}
-              disabled={currentMoveIndex === 0}
+              onClick={goToStart}
+              disabled={pgnTree.isAtStart()}
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Anar al principi"
             >
               <ChevronsLeft size={24} />
             </button>
             <button
-              onClick={() => jumpToMove(currentMoveIndex - 1)}
-              disabled={currentMoveIndex === 0}
+              onClick={goBack}
+              disabled={pgnTree.isAtStart()}
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Moviment anterior"
             >
               <ChevronLeft size={24} />
             </button>
             <button
-              onClick={() => jumpToMove(currentMoveIndex + 1)}
-              disabled={currentMoveIndex === history.length - 1}
+              onClick={goForward}
+              disabled={pgnTree.isAtEnd()}
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Moviment següent"
             >
               <ChevronRight size={24} />
             </button>
             <button
-              onClick={() => jumpToMove(history.length - 1)}
-              disabled={currentMoveIndex === history.length - 1}
+              onClick={goToEnd}
+              disabled={pgnTree.isAtEnd()}
               className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition text-white"
               title="Anar al final"
             >
               <ChevronsRight size={24} />
+            </button>
+            <button
+              onClick={() => setCreateVariation(!createVariation)}
+              className={`p-3 rounded-lg transition text-white ml-2 ${createVariation ? 'bg-amber-600 hover:bg-amber-500' : 'bg-slate-800 hover:bg-slate-700'}`}
+              title="Crear variació"
+            >
+              <GitBranch size={24} />
             </button>
           </div>
         </div>
@@ -290,23 +356,20 @@ export default function AnalysisPage() {
             >
               <RotateCcw size={16} /> Reset
             </button>
-            <button
-              className="flex-1 bg-indigo-600 hover:bg-indigo-500 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition text-white"
-              title="Guardar estudi (pròximament)"
-            >
-              <Save size={16} /> Guardar
-            </button>
-            <button
-              onClick={() => {
-                const pgn = game.pgn();
-                navigator.clipboard.writeText(pgn);
-                alert('PGN copiat al porta-retalls!');
-              }}
-              className="flex-1 bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition text-white"
-            >
-              <Share2 size={16} /> PGN
-            </button>
+            {createVariation && (
+              <div className="flex-1 bg-amber-500/20 border border-amber-500/50 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-amber-300">
+                <GitBranch size={16} /> Mode Variació
+              </div>
+            )}
           </div>
+
+          {/* Coach Agent */}
+          <CoachAgent
+            evaluation={evaluation}
+            previousEval={null}
+            currentMove={lastMove}
+            turn={game.turn()}
+          />
 
           {/* Info Stockfish */}
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
@@ -330,41 +393,15 @@ export default function AnalysisPage() {
             </div>
           </div>
 
-          {/* Llista de Moviments */}
-          <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[200px]">
-            <div className="p-3 bg-slate-800 border-b border-slate-700 font-bold text-slate-300 text-sm uppercase tracking-wider">
-              Partida
-            </div>
-
-            <div ref={moveListRef} className="flex-1 overflow-y-auto p-2 font-mono text-sm content-start">
-              <div className="flex flex-wrap gap-1 content-start">
-                {moveHistory.map((move, i) => {
-                  const moveNum = Math.floor(i / 2) + 1;
-                  const isActive = (i + 1) === currentMoveIndex;
-
-                  return (
-                    <React.Fragment key={i}>
-                      {i % 2 === 0 && (
-                        <span className="text-slate-500 ml-2 select-none">{moveNum}.</span>
-                      )}
-                      <button
-                        onClick={() => jumpToMove(i + 1)}
-                        className={`px-1.5 rounded hover:bg-indigo-900/50 transition ${isActive
-                          ? 'bg-indigo-600 text-white font-bold'
-                          : 'text-slate-300'
-                          }`}
-                      >
-                        {move}
-                      </button>
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-              {moveHistory.length === 0 && (
-                <p className="text-slate-600 text-center mt-10 italic">Fes un moviment per començar l'anàlisi</p>
-              )}
-            </div>
-          </div>
+          {/* PGN Editor */}
+          <PGNEditor
+            tree={pgnTree}
+            onTreeChange={setPgnTree}
+            onPositionChange={handlePositionChange}
+            currentMove={lastMove || undefined}
+            autoAnnotate={true}
+            engineEval={evaluation}
+          />
 
         </div>
       </div>

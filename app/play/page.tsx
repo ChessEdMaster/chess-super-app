@@ -10,6 +10,8 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { MoveHistory } from '@/components/move-history';
 import { playSound } from '@/lib/sounds';
+import { useSettings } from '@/lib/settings';
+import { BOARD_THEMES } from '@/lib/themes';
 
 // Configuració de potència (10 és un bon equilibri per navegador)
 const ENGINE_DEPTH = 10;
@@ -25,6 +27,10 @@ export default function PlayPage() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Settings
+  const { boardTheme } = useSettings();
+  const theme = BOARD_THEMES[boardTheme];
 
   // Gestió de Coronació
   const [showPromotionDialog, setShowPromotionDialog] = useState(false);
@@ -284,8 +290,8 @@ export default function PlayPage() {
             position={fen}
             onPieceDrop={onDrop}
             boardOrientation="white"
-            customDarkSquareStyle={{ backgroundColor: '#779556' }}
-            customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+            customDarkSquareStyle={{ backgroundColor: theme.dark }}
+            customLightSquareStyle={{ backgroundColor: theme.light }}
             animationDurationInMs={200}
             arePiecesDraggable={!isGameOver && !isEngineThinking}
           />

@@ -1,0 +1,366 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Chess } from 'chess.js';
+import { Chessboard } from 'react-chessboard';
+import {
+    CheckCircle,
+    XCircle,
+    Lightbulb,
+    RotateCcw,
+    Trophy,
+    Clock,
+    Target
+} from 'lucide-react';
+import { AcademyExercise } from '@/lib/academy-types';
+import { useSettings } from '@/lib/settings';
+import { BOARD_THEMES } from '@/lib/themes';
+import { playSound } from '@/lib/sounds';
+
+interface PuzzleSolverProps {
+    exercise: AcademyExercise;
+    onSolved: (timeSpent: number, attempts: number, hintsUsed: number) => void;
+    onSkip?: () => void;
+}
+
+export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) {
+    const [game, setGame] = useState<Chess>(new Chess(exercise.fen));
+    const [fen, setFen] = useState(exercise.fen);
+    const [moveIndex, setMoveIndex] = useState(0);
+    const [attempts, setAttempts] = useState(0);
+    const [hintsUsed, setHintsUsed] = useState(0);
+    const [startTime] = useState(Date.now());
+    const [isSolved, setIsSolved] = useState(false);
+    const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const [showHint, setShowHint] = useState(false);
+
+    const { boardTheme } = useSettings();
+    const theme = BOARD_THEMES[boardTheme];
+
+    const currentTurn = game.turn() === 'w' ? 'white' : 'black';
+
+    useEffect(() => {
+        const newGame = new Chess(exercise.fen);
+        setGame(newGame);
+        setFen(exercise.fen);
+        setMoveIndex(0);
+        setAttempts(0);
+        setHintsUsed(0);
+        setIsSolved(false);
+        setFeedback(null);
+        setShowHint(false);
+    }, [exercise]);
+
+    const handleMove = (sourceSquare: string, targetSquare: string) => {
+        if (isSolved) return false;
+
+        const gameCopy = new Chess(game.fen());
+        const uciMove = `${sourceSquare}${targetSquare}`;
+
+        try {
+            const result = gameCopy.move({
+                from: sourceSquare,
+                to: targetSquare,
+                promotion: 'q'
+            });
+
+            if (!result) return false;
+
+            setAttempts(prev => prev + 1);
+
+            const expectedMove = exercise.solution[moveIndex];
+
+            if (uciMove === expectedMove) {
+                setGame(gameCopy);
+                setFen(gameCopy.fen());
+                setMoveIndex(prev => prev + 1);
+                playSound('move');
+
+                if (moveIndex + 1 >= exercise.solution.length) {
+                    solvePuzzle();
+                } else {
+                    setFeedback({
+                        type: 'success',
+                        message: '✓ Correcte! Continua...'
+                    });
+
+                    setTimeout(() => {
+                        makeOpponentMove(gameCopy);
+                    }, 500);
+                }
+
+                return true;
+            } else {
+                setFeedback({
+                    type: 'error',
+                    message: '✗ Aquest no és el moviment correcte. Torna-ho a intentar!'
+                });
+                playSound('illegal');
+                return false;
+            }
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const makeOpponentMove = (currentGame: Chess) => {
+        const nextMoveIndex = moveIndex + 1;
+        if (nextMoveIndex < exercise.solution.length) {
+            const opponentMove = exercise.solution[nextMoveIndex];
+            const from = opponentMove.substring(0, 2);
+            const to = opponentMove.substring(2, 4);
+
+            try {
+                const result = currentGame.move({
+                    from,
+                    to,
+                    promotion: 'q'
+                });
+
+                if (result) {
+                    setGame(new Chess(currentGame.fen()));
+                    setFen(currentGame.fen());
+                    setMoveIndex(prev => prev + 2);
+                    playSound('move');
+
+                    if (nextMoveIndex + 1 >= exercise.solution.length) {
+                        setTimeout(() => solvePuzzle(), 500);
+                    }
+                }
+            } catch (error) {
+                console.error('Error making opponent move:', error);
+            }
+        }
+    };
+
+    const solvePuzzle = () => {
+        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        setIsSolved(true);
+        setFeedback({
+            type: 'success',
+            message: '🎉 Puzzle resolt correctament!'
+        });
+        playSound('game_end');
+        onSolved(timeSpent, attempts, hintsUsed);
+    };
+
+    const resetPuzzle = () => {
+        const newGame = new Chess(exercise.fen);
+        setGame(newGame);
+        setFen(exercise.fen);
+        setMoveIndex(0);
+        setFeedback(null);
+        setShowHint(false);
+    };
+
+    const toggleHint = () => {
+        if (!showHint) {
+            setHintsUsed(prev => prev + 1);
+        }
+        setShowHint(!showHint);
+    };
+
+    const getHintText = () => {
+        if (moveIndex >= exercise.solution.length) return '';
+
+        const nextMove = exercise.solution[moveIndex];
+        const from = nextMove.substring(0, 2);
+
+        return `Pista: Busca un moviment des de ${from.toUpperCase()}`;
+    };
+
+    const getDifficultyColor = () => {
+        switch (exercise.difficulty) {
+            case 'easy': return 'text-emerald-400 bg-emerald-900/30 border-emerald-500/30';
+            case 'medium': return 'text-amber-400 bg-amber-900/30 border-amber-500/30';
+            case 'hard': return 'text-red-400 bg-red-900/30 border-red-500/30';
+            default: return 'text-slate-400 bg-slate-900/30 border-slate-500/30';
+        }
+    };
+
+    return (
+        <div className="w-full max-w-6xl mx-auto p-4">
+            <div className="flex flex-col lg:flex-row gap-6">
+
+                <div className="flex-1">
+                    <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
+                        <Chessboard
+                            id={`puzzle-${exercise.id}`}
+                            position={fen}
+                            onPieceDrop={({ sourceSquare, targetSquare }) => {
+                                if (!targetSquare) return false;
+                                return handleMove(sourceSquare, targetSquare);
+                            }}
+                            boardOrientation={currentTurn}
+                            customDarkSquareStyle={{ backgroundColor: theme.dark }}
+                            customLightSquareStyle={{ backgroundColor: theme.light }}
+                            arePiecesDraggable={!isSolved}
+                        />
+                    </div>
+
+                    <div className="mt-4 max-w-[600px] mx-auto flex gap-4">
+                        <div className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-3 flex items-center gap-2">
+                            <Target className="text-indigo-400" size={20} />
+                            <div>
+                                <div className="text-xs text-slate-400">Intents</div>
+                                <div className="text-lg font-bold text-white">{attempts}</div>
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-3 flex items-center gap-2">
+                            <Clock className="text-amber-400" size={20} />
+                            <div>
+                                <div className="text-xs text-slate-400">Temps</div>
+                                <div className="text-lg font-bold text-white">
+                                    {Math.floor((Date.now() - startTime) / 1000)}s
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-3 flex items-center gap-2">
+                            <Lightbulb className="text-emerald-400" size={20} />
+                            <div>
+                                <div className="text-xs text-slate-400">Pistes</div>
+                                <div className="text-lg font-bold text-white">{hintsUsed}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="w-full lg:w-96 flex flex-col gap-4">
+
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <div className="flex items-start justify-between mb-3">
+                            <div>
+                                <h2 className="text-xl font-bold text-white mb-1">
+                                    {exercise.title || 'Puzzle Tàctic'}
+                                </h2>
+                                {exercise.description && (
+                                    <p className="text-slate-400 text-sm">{exercise.description}</p>
+                                )}
+                            </div>
+                            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getDifficultyColor()}`}>
+                                {exercise.difficulty === 'easy' ? 'Fàcil' : exercise.difficulty === 'medium' ? 'Mitjà' : 'Difícil'}
+                            </span>
+                        </div>
+
+                        {exercise.tags && exercise.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {exercise.tags.map((tag, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="text-xs px-2 py-1 bg-slate-800 text-slate-300 rounded border border-slate-700"
+                                    >
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-4 pt-4 border-t border-slate-800">
+                            <div className="flex items-center gap-2">
+                                <Trophy className="text-amber-400" size={16} />
+                                <span className="text-sm text-slate-400">
+                                    Rating: <span className="text-white font-bold">{exercise.rating}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <div className="flex items-start gap-3 mb-4">
+                            <Target className="text-indigo-400 mt-1" size={20} />
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                    Objectiu
+                                </h3>
+                                <p className="text-white text-base">
+                                    {currentTurn === 'white' ? 'Les blanques' : 'Les negres'} mouen i guanyen.
+                                </p>
+                                <p className="text-slate-400 text-sm mt-2">
+                                    Troba la millor seqüència de moviments.
+                                </p>
+                            </div>
+                        </div>
+
+                        {!isSolved && (
+                            <button
+                                onClick={toggleHint}
+                                className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-2 transition"
+                            >
+                                <Lightbulb size={16} />
+                                {showHint ? 'Amagar pista' : 'Mostrar pista'}
+                            </button>
+                        )}
+
+                        {showHint && (
+                            <div className="mt-3 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
+                                <p className="text-sm text-indigo-200">
+                                    {getHintText()}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {feedback && (
+                        <div className={`border rounded-xl p-4 ${feedback.type === 'success'
+                                ? 'bg-emerald-900/20 border-emerald-500/30'
+                                : feedback.type === 'error'
+                                    ? 'bg-red-900/20 border-red-500/30'
+                                    : 'bg-blue-900/20 border-blue-500/30'
+                            }`}>
+                            <div className="flex items-start gap-3">
+                                {feedback.type === 'success' ? (
+                                    <CheckCircle className="text-emerald-400 mt-0.5" size={20} />
+                                ) : feedback.type === 'error' ? (
+                                    <XCircle className="text-red-400 mt-0.5" size={20} />
+                                ) : (
+                                    <Lightbulb className="text-blue-400 mt-0.5" size={20} />
+                                )}
+                                <p className={`text-sm ${feedback.type === 'success'
+                                        ? 'text-emerald-200'
+                                        : feedback.type === 'error'
+                                            ? 'text-red-200'
+                                            : 'text-blue-200'
+                                    }`}>
+                                    {feedback.message}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={resetPuzzle}
+                            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition"
+                        >
+                            <RotateCcw size={20} />
+                            Reiniciar
+                        </button>
+
+                        {onSkip && !isSolved && (
+                            <button
+                                onClick={onSkip}
+                                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-lg font-bold transition"
+                            >
+                                Saltar
+                            </button>
+                        )}
+                    </div>
+
+                    {isSolved && (
+                        <div className="bg-gradient-to-r from-emerald-900/40 to-green-900/40 border border-emerald-500/50 rounded-xl p-6 text-center">
+                            <Trophy className="text-amber-400 mx-auto mb-3" size={48} />
+                            <h3 className="text-xl font-bold text-white mb-2">
+                                Puzzle Resolt!
+                            </h3>
+                            <div className="text-sm text-slate-300 space-y-1">
+                                <div>Temps: {Math.floor((Date.now() - startTime) / 1000)}s</div>
+                                <div>Intents: {attempts}</div>
+                                <div>Pistes usades: {hintsUsed}</div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

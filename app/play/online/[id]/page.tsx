@@ -6,11 +6,13 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { Copy, Loader2, Flag, Handshake } from 'lucide-react';
+import { Copy, Loader2, Flag, Handshake, X, RotateCw, Search } from 'lucide-react';
 import { ChessClock } from '@/components/chess-clock';
 import { ChatBox } from '@/components/chat-box';
 import { MoveHistory } from '@/components/move-history';
 import { playSound } from '@/lib/sounds';
+import { useSettings } from '@/lib/settings';
+import { BOARD_THEMES } from '@/lib/themes';
 
 export default function OnlineGamePage() {
   const { id } = useParams();
@@ -24,6 +26,11 @@ export default function OnlineGamePage() {
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [status, setStatus] = useState('Carregant...');
   const [players, setPlayers] = useState({ white: '...', black: '...' });
+  const [drawOffer, setDrawOffer] = useState<string | null>(null); // 'white' | 'black' | null
+
+  // Settings
+  const { boardTheme } = useSettings();
+  const theme = BOARD_THEMES[boardTheme];
 
   // Assegurar que estem al client
   useEffect(() => {
@@ -192,6 +199,7 @@ export default function OnlineGamePage() {
           setGame(incomeGame);
           setFen(newData.fen || incomeGame.fen());
           setGameData(newData);
+          setDrawOffer(newData.draw_offer_by); // Sincronitzar oferta de taules
 
           updateStatus(incomeGame, newData);
         })
@@ -258,8 +266,60 @@ export default function OnlineGamePage() {
     }).eq('id', id);
   };
 
-  const handleDraw = () => {
-    alert("Funcionalitat de taules properament!");
+  const handleOfferDraw = async () => {
+    if (gameData?.status !== 'active') return;
+    // Si ja he ofert, no faig res (o podria cancel·lar)
+    if (drawOffer === orientation) return;
+
+    await supabase.from('games').update({
+      draw_offer_by: orientation
+    }).eq('id', id);
+  };
+
+  const handleAcceptDraw = async () => {
+    await supabase.from('games').update({
+      status: 'finished',
+      result: '1/2-1/2',
+      draw_offer_by: null
+    }).eq('id', id);
+  };
+
+  const handleDeclineDraw = async () => {
+    await supabase.from('games').update({
+      draw_offer_by: null
+    }).eq('id', id);
+  };
+
+  const handleRematch = async () => {
+    // Lògica simple: Crear nova partida i redirigir (millorable amb invitació)
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('games')
+      .insert({
+        white_player_id: user.id, // Qui demana revenja juga amb blanques (o es podria alternar)
+        black_player_id: null, // Esperem que l'altre s'uneixi (o podríem forçar-ho si tinguéssim API)
+        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        pgn: '',
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (data) {
+      // Enviar missatge al xat amb l'enllaç (opció ràpida)
+      await supabase.from('messages').insert({
+        game_id: id,
+        user_id: user.id,
+        content: `REVENJA: /play/online/${data.id}`
+      });
+      router.push(`/play/online/${data.id}`);
+    }
+  };
+
+  const goToAnalysis = () => {
+    // Guardar PGN al localStorage per recuperar-lo a l'anàlisi
+    localStorage.setItem('analysis_pgn', game.pgn());
+    router.push('/analysis');
   };
 
   const handleTimeout = async (winnerColor: 'w' | 'b') => {
@@ -324,8 +384,8 @@ export default function OnlineGamePage() {
               position={fen}
               onPieceDrop={onDrop}
               boardOrientation={orientation}
-              customDarkSquareStyle={{ backgroundColor: '#779556' }}
-              customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+              customDarkSquareStyle={{ backgroundColor: theme.dark }}
+              customLightSquareStyle={{ backgroundColor: theme.light }}
               animationDurationInMs={200}
               arePiecesDraggable={gameData?.status === 'active' && !game.isGameOver()}
             />
@@ -336,10 +396,49 @@ export default function OnlineGamePage() {
             <button onClick={handleResign} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 hover:border-red-500/50 disabled:opacity-50">
               <Flag size={18} /> Rendir-se
             </button>
-            <button onClick={handleDraw} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50">
-              <Handshake size={18} /> Oferir Taules
-            </button>
+
+            {/* Botó Taules Dinàmic */}
+            {drawOffer && drawOffer !== orientation ? (
+              <div className="flex gap-2">
+                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition animate-pulse">
+                  <Handshake size={18} /> Acceptar
+                </button>
+                <button onClick={handleDeclineDraw} className="w-12 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl flex items-center justify-center transition border border-slate-700">
+                  <X size={18} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleOfferDraw}
+                disabled={gameData.status !== 'active' || drawOffer === orientation}
+                className={`bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50 ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
+              >
+                <Handshake size={18} /> {drawOffer === orientation ? 'Oferta enviada...' : 'Oferir Taules'}
+              </button>
+            )}
           </div>
+
+          {/* MODAL GAME OVER */}
+          {gameData.status === 'finished' && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+              <div className="bg-slate-900 border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transform scale-100 animate-in fade-in zoom-in duration-300">
+                <h2 className="text-3xl font-bold text-white mb-2">Partida Finalitzada</h2>
+                <p className="text-xl text-amber-400 font-bold mb-6">{status.replace('Partida Finalitzada: ', '')}</p>
+
+                <div className="flex flex-col gap-3">
+                  <button onClick={handleRematch} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/50">
+                    <RotateCw size={20} /> Revenja
+                  </button>
+                  <button onClick={goToAnalysis} className="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700">
+                    <Search size={20} /> Analitzar Partida
+                  </button>
+                  <button onClick={() => router.push('/lobby')} className="w-full text-slate-400 hover:text-white py-2 text-sm transition">
+                    Tornar al Lobby
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* COLUMNA DRETA: Info, Xat, Historial */}
