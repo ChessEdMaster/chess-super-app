@@ -41,7 +41,7 @@ export default function Home() {
             Més que només <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Escacs</span>
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
-            La plataforma definitiva que combina joc competitiu, formació acadèmica, 
+            La plataforma definitiva que combina joc competitiu, formació acadèmica,
             comerç especialitzat i comunitat social. Tot en un sol lloc.
           </p>
           <div className="flex justify-center gap-4">
@@ -60,40 +60,40 @@ export default function Home() {
 
         {/* Grid de Mòduls */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MenuCard 
-            title="Jugar" 
-            desc="Partides contra Stockfish IA o contra altres jugadors en temps real." 
-            icon={Trophy} 
+          <MenuCard
+            title="Jugar"
+            desc="Partides contra Stockfish IA o contra altres jugadors en temps real."
+            icon={Trophy}
             color="bg-amber-500"
-            href="/play" 
+            href="/play"
           />
-          <MenuCard 
-            title="Anàlisi" 
-            desc="Tauler d'anàlisi lliure amb historial de moviments i navegació completa." 
-            icon={Search} 
+          <MenuCard
+            title="Anàlisi"
+            desc="Tauler d'anàlisi lliure amb historial de moviments i navegació completa."
+            icon={Search}
             color="bg-indigo-500"
-            href="/analysis" 
+            href="/analysis"
           />
-          <MenuCard 
-            title="Acadèmia" 
-            desc="Cursos interactius estil Moodle per millorar el teu nivell." 
-            icon={BookOpen} 
+          <MenuCard
+            title="Acadèmia"
+            desc="Cursos interactius estil Moodle per millorar el teu nivell."
+            icon={BookOpen}
             color="bg-emerald-500"
-            href="/learn" 
+            href="/academy"
           />
-          <MenuCard 
-            title="Botiga" 
-            desc="Equipament oficial, taulers i marxandatge exclusiu." 
-            icon={ShoppingBag} 
+          <MenuCard
+            title="Botiga"
+            desc="Equipament oficial, taulers i marxandatge exclusiu."
+            icon={ShoppingBag}
             color="bg-blue-500"
-            href="/shop" 
+            href="/shop"
           />
-          <MenuCard 
-            title="Club Social" 
-            desc="Connecta amb altres jugadors, comparteix partides i xateja." 
-            icon={Users} 
+          <MenuCard
+            title="Club Social"
+            desc="Connecta amb altres jugadors, comparteix partides i xateja."
+            icon={Users}
             color="bg-purple-500"
-            href="/club" 
+            href="/club"
           />
         </div>
       </main>

@@ -25,9 +25,14 @@ export default function ProfilePage() {
       if (!user) return;
 
       // Busquem partides on l'usuari sigui blanques O negres
+      // I fem join amb profiles per obtenir els noms
       const { data, error } = await supabase
         .from('games')
-        .select('*')
+        .select(`
+          *,
+          white:white_player_id(username),
+          black:black_player_id(username)
+        `)
         .or(`white_player_id.eq.${user.id},black_player_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
@@ -53,12 +58,12 @@ export default function ProfilePage() {
 
   // Càlcul d'estadístiques simples
   const totalGames = games.length;
-  const wins = games.filter(g => 
-    (g.white_player_id === user.id && g.result === '1-0') || 
+  const wins = games.filter(g =>
+    (g.white_player_id === user.id && g.result === '1-0') ||
     (g.black_player_id === user.id && g.result === '0-1')
   ).length;
-  const losses = games.filter(g => 
-    (g.white_player_id === user.id && g.result === '0-1') || 
+  const losses = games.filter(g =>
+    (g.white_player_id === user.id && g.result === '0-1') ||
     (g.black_player_id === user.id && g.result === '1-0')
   ).length;
   const draws = totalGames - wins - losses;
@@ -66,7 +71,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-slate-950 p-4 font-sans text-slate-200">
       <div className="max-w-4xl mx-auto">
-        
+
         {/* Capçalera */}
         <div className="flex items-center justify-center mb-8">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -107,32 +112,38 @@ export default function ProfilePage() {
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <Swords size={20} className="text-slate-400" /> Historial Recent
         </h3>
-        
+
         <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
           {games.length === 0 ? (
             <div className="p-8 text-center text-slate-500">
-              Encara no has jugat cap partida. 
+              Encara no has jugat cap partida.
               <Link href="/play" className="text-indigo-400 hover:underline ml-1">Juga ara!</Link>
             </div>
           ) : (
             <div className="divide-y divide-slate-800">
               {games.map((game) => {
                 const isWhite = game.white_player_id === user.id;
-                const opponent = isWhite ? 'Stockfish (CPU)' : 'Stockfish (CPU)'; // Per ara sempre és CPU
+                // Determinar nom del rival
+                let opponentName = 'Stockfish (CPU)';
+                if (isWhite) {
+                  if (game.black_player_id) opponentName = game.black?.username || 'Jugador 2';
+                } else {
+                  if (game.white_player_id) opponentName = game.white?.username || 'Jugador 1';
+                }
 
                 // Determinem si has guanyat tu
                 let outcomeColor = 'text-slate-400';
                 let outcomeLabel = 'Taules';
-                
+
                 if (game.result === '1/2-1/2') {
-                   outcomeLabel = '🤝 Taules';
-                   outcomeColor = 'text-slate-400';
+                  outcomeLabel = '🤝 Taules';
+                  outcomeColor = 'text-slate-400';
                 } else if ((isWhite && game.result === '1-0') || (!isWhite && game.result === '0-1')) {
-                   outcomeLabel = '🏆 Victòria';
-                   outcomeColor = 'text-emerald-400';
+                  outcomeLabel = '🏆 Victòria';
+                  outcomeColor = 'text-emerald-400';
                 } else {
-                   outcomeLabel = '❌ Derrota';
-                   outcomeColor = 'text-red-400';
+                  outcomeLabel = '❌ Derrota';
+                  outcomeColor = 'text-red-400';
                 }
 
                 return (
@@ -142,13 +153,13 @@ export default function ProfilePage() {
                         {isWhite ? 'W' : 'B'}
                       </div>
                       <div>
-                        <p className="font-bold text-white">vs {opponent}</p>
+                        <p className="font-bold text-white">vs {opponentName}</p>
                         <p className="text-xs text-slate-500 flex items-center gap-1">
                           <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
                       <div className="text-right">
                         <p className={`font-bold ${outcomeColor}`}>{outcomeLabel}</p>

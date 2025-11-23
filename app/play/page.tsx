@@ -8,6 +8,8 @@ import { Chessboard } from 'react-chessboard';
 import { Trophy, RefreshCw, User, Cpu, AlertTriangle, Loader2, Flag, XCircle, Save } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
+import { MoveHistory } from '@/components/move-history';
+import { playSound } from '@/lib/sounds';
 
 // Configuració de potència (10 és un bon equilibri per navegador)
 const ENGINE_DEPTH = 10;
@@ -15,7 +17,7 @@ const ENGINE_DEPTH = 10;
 export default function PlayPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [game, setGame] = useState(() => new Chess()); 
+  const [game, setGame] = useState(() => new Chess());
   const [fen, setFen] = useState(game.fen());
   const [moveStatus, setMoveStatus] = useState("El teu torn (Blanques)");
   const [isClient, setIsClient] = useState(false);
@@ -23,13 +25,12 @@ export default function PlayPage() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Gestió de Coronació
   const [showPromotionDialog, setShowPromotionDialog] = useState(false);
-  const [promotionMove, setPromotionMove] = useState<{from: string, to: string} | null>(null);
+  const [promotionMove, setPromotionMove] = useState<{ from: string, to: string } | null>(null);
 
   const engine = useRef<Worker | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   // --- PROTECCIÓ DE RUTA ---
   useEffect(() => {
@@ -38,13 +39,6 @@ export default function PlayPage() {
     }
   }, [user, loading, router]);
 
-  // Auto-scroll historial
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [history]);
-
   // Inicialització Worker + Client
   useEffect(() => {
     setIsClient(true);
@@ -52,7 +46,7 @@ export default function PlayPage() {
     const workerCode = `importScripts('${stockfishUrl}');`;
     const blob = new Blob([workerCode], { type: 'application/javascript' });
     const localWorkerUrl = URL.createObjectURL(blob);
-    
+
     const stockfishWorker = new Worker(localWorkerUrl);
     engine.current = stockfishWorker;
 
@@ -88,14 +82,20 @@ export default function PlayPage() {
 
     safeGameMutate((gameCopy) => {
       try {
-        gameCopy.move({ from, to, promotion: promotion || 'q' });
+        const move = gameCopy.move({ from, to, promotion: promotion || 'q' });
+        if (move) {
+          if (gameCopy.isCheckmate()) playSound('game_end');
+          else if (gameCopy.isCheck()) playSound('check');
+          else if (move.captured) playSound('capture');
+          else playSound('move');
+        }
       } catch (e) { console.error(e); }
-      
+
       setFen(gameCopy.fen());
       setHistory(gameCopy.history());
       checkGameStatus(gameCopy);
       setIsEngineThinking(false);
-      
+
       if (!gameCopy.isGameOver()) {
         setMoveStatus("El teu torn (Blanques)");
       }
@@ -117,7 +117,7 @@ export default function PlayPage() {
     const piece = game.get(sourceSquare as any);
     // Detectar Coronació visual
     if (
-      piece?.type === 'p' && 
+      piece?.type === 'p' &&
       ((piece.color === 'w' && targetSquare[1] === '8') || (piece.color === 'b' && targetSquare[1] === '1'))
     ) {
       setPromotionMove({ from: sourceSquare, to: targetSquare });
@@ -137,6 +137,12 @@ export default function PlayPage() {
     } catch (error) { return false; }
 
     if (!move) return false;
+
+    // Sons
+    if (gameCopy.isCheckmate()) playSound('game_end');
+    else if (gameCopy.isCheck()) playSound('check');
+    else if (move.captured) playSound('capture');
+    else playSound('move');
 
     setGame(gameCopy);
     setFen(gameCopy.fen());
@@ -162,8 +168,10 @@ export default function PlayPage() {
       if (currentGame.isCheckmate()) {
         const winner = currentGame.turn() === 'w' ? "Stockfish" : "TU";
         setMoveStatus(`🏆 FINAL: Escac i mat! Guanya ${winner}`);
+        playSound('game_end');
       } else {
         setMoveStatus("🤝 FINAL: Taules");
+        playSound('game_end');
       }
       return true;
     }
@@ -182,12 +190,14 @@ export default function PlayPage() {
     setShowPromotionDialog(false);
     setPromotionMove(null);
     engine.current?.postMessage('ucinewgame');
+    playSound('game_start');
   }
 
   function resignGame() {
     setIsGameOver(true);
     setMoveStatus("🏳️ T'has rendit. Guanya Stockfish.");
     setIsEngineThinking(false);
+    playSound('game_end');
   }
 
   // --- GUARDAR PARTIDA A SUPABASE ---
@@ -203,9 +213,9 @@ export default function PlayPage() {
     // Determinar resultat en format text estàndard
     let result = '1/2-1/2';
     if (game.isCheckmate()) {
-       result = game.turn() === 'w' ? '0-1' : '1-0'; // Si torn blanques i és mat -> guanyen negres
+      result = game.turn() === 'w' ? '0-1' : '1-0'; // Si torn blanques i és mat -> guanyen negres
     } else if (moveStatus.includes("rendit")) {
-       result = '0-1'; // Assumim que l'usuari (blanques) es rendeix
+      result = '0-1'; // Assumim que l'usuari (blanques) es rendeix
     }
 
     try {
@@ -239,7 +249,7 @@ export default function PlayPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 font-sans text-slate-200">
-      
+
       {/* Capçalera Simplificada - El SiteHeader ja gestiona la navegació */}
       <div className="w-full max-w-6xl mb-6 flex justify-center">
         <div className="text-xl font-bold flex items-center gap-2 text-white">
@@ -248,28 +258,28 @@ export default function PlayPage() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl items-start justify-center">
-        
+
         {/* COLUMNA ESQUERRA: Tauler */}
         <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900 mx-auto lg:mx-0">
-           {isEngineThinking && (
+          {isEngineThinking && (
             <div className="absolute top-4 right-4 z-20 bg-slate-900/80 px-3 py-1 rounded-full text-xs font-bold text-amber-400 flex items-center gap-2 border border-amber-500/30 backdrop-blur-sm animate-pulse pointer-events-none">
-               <Cpu size={14} /> CALCULANT...
+              <Cpu size={14} /> CALCULANT...
             </div>
           )}
           {showPromotionDialog && (
             <div className="absolute inset-0 z-50 bg-slate-900/80 flex flex-col items-center justify-center backdrop-blur-sm">
               <p className="text-white font-bold mb-4">Corona el peó:</p>
               <div className="flex gap-2">
-                {['q','r','b','n'].map((p) => (
+                {['q', 'r', 'b', 'n'].map((p) => (
                   <button key={p} onClick={() => onPromotionSelect(p)} className="w-12 h-12 bg-slate-700 hover:bg-amber-500 text-2xl rounded border-2 border-slate-600">
                     {p === 'q' ? '♛' : p === 'r' ? '♜' : p === 'b' ? '♝' : '♞'}
                   </button>
                 ))}
               </div>
-              <button onClick={() => {setShowPromotionDialog(false); setPromotionMove(null); setFen(game.fen())}} className="mt-4 text-xs text-slate-400 hover:text-white flex items-center gap-1"><XCircle size={14}/> Cancel·lar</button>
+              <button onClick={() => { setShowPromotionDialog(false); setPromotionMove(null); setFen(game.fen()) }} className="mt-4 text-xs text-slate-400 hover:text-white flex items-center gap-1"><XCircle size={14} /> Cancel·lar</button>
             </div>
           )}
-          <Chessboard 
+          <Chessboard
             options={{
               id: "PlayVsStockfish",
               position: fen,
@@ -285,7 +295,7 @@ export default function PlayPage() {
 
         {/* COLUMNA DRETA: Info + Historial */}
         <div className="w-full lg:w-96 flex flex-col gap-4 h-[600px]">
-          
+
           {/* CPU */}
           <div className="bg-slate-800 p-3 rounded-xl flex items-center justify-between border border-slate-700">
             <div className="flex items-center gap-3">
@@ -295,62 +305,37 @@ export default function PlayPage() {
           </div>
 
           {/* HISTORIAL */}
-          <div className="flex-1 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col relative">
-             <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-slate-900 to-transparent pointer-events-none"></div>
-            <div className="p-3 bg-slate-800 border-b border-slate-700 font-bold text-slate-300 text-sm flex justify-between items-center shadow-md z-10">
-              <span>Historial</span>
-              <span className="text-[10px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-500 border border-slate-800">PGN</span>
-            </div>
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 font-mono text-xs sm:text-sm scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
-              <div className="grid grid-cols-[30px_1fr_1fr] gap-y-1">
-                {history.reduce((rows: any[], move, index) => {
-                  if (index % 2 === 0) {
-                    rows.push([`${(index/2) + 1}.`, move]);
-                  } else {
-                    rows[rows.length - 1].push(move);
-                  }
-                  return rows;
-                }, []).map((row, i) => (
-                  <React.Fragment key={i}>
-                    <div className="text-slate-500 text-right pr-2">{row[0]}</div>
-                    <div className="bg-slate-800/50 rounded px-2 py-1 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer">{row[1]}</div>
-                    <div className="bg-slate-800/50 rounded px-2 py-1 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer">{row[2] || ''}</div>
-                  </React.Fragment>
-                ))}
-              </div>
-              {history.length === 0 && <div className="flex flex-col items-center justify-center h-full text-slate-600 text-xs gap-2 opacity-50"><span>Esperant moviments...</span></div>}
-            </div>
-          </div>
+          <MoveHistory history={history} />
 
           {/* Estat i Accions */}
           <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3 shadow-lg">
             <div className={`text-center font-bold text-sm ${isGameOver ? "text-amber-400" : moveStatus.includes("ESCAC") ? "text-red-400" : "text-white"}`}>{moveStatus}</div>
-            
+
             {isGameOver ? (
-               <button 
-                 onClick={saveGame} 
-                 disabled={isSaving}
-                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-900/20 disabled:opacity-50"
-               >
-                 {isSaving ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>} 
-                 {isSaving ? 'Guardant...' : 'Guardar Partida'}
-               </button>
+              <button
+                onClick={saveGame}
+                disabled={isSaving}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+              >
+                {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                {isSaving ? 'Guardant...' : 'Guardar Partida'}
+              </button>
             ) : (
-               <button onClick={resignGame} className="w-full bg-slate-700 hover:bg-red-500/20 text-slate-300 hover:text-red-400 py-2.5 rounded-lg font-bold text-sm flex justify-center items-center gap-2 transition border border-transparent hover:border-red-500/30"><Flag size={16}/> Rendir-se</button>
+              <button onClick={resignGame} className="w-full bg-slate-700 hover:bg-red-500/20 text-slate-300 hover:text-red-400 py-2.5 rounded-lg font-bold text-sm flex justify-center items-center gap-2 transition border border-transparent hover:border-red-500/30"><Flag size={16} /> Rendir-se</button>
             )}
 
-            <button onClick={resetGame} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-lg font-bold text-sm flex justify-center items-center gap-2 transition"><RefreshCw size={16}/> Nova Partida</button>
+            <button onClick={resetGame} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-lg font-bold text-sm flex justify-center items-center gap-2 transition"><RefreshCw size={16} /> Nova Partida</button>
           </div>
 
-           {/* TU - ARA CLICABLE */}
-           <Link href="/profile" className="block">
+          {/* TU - ARA CLICABLE */}
+          <Link href="/profile" className="block">
             <div className="bg-slate-800 p-3 rounded-xl flex items-center justify-between border border-slate-700 hover:border-indigo-500/50 transition cursor-pointer group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center shadow-inner text-white font-bold group-hover:scale-110 transition-transform">
                   {user?.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="U" className="w-full h-full rounded" />
                   ) : (
-                    user?.email?.[0].toUpperCase() || <User size={20}/>
+                    user?.email?.[0].toUpperCase() || <User size={20} />
                   )}
                 </div>
                 <div>
