@@ -280,16 +280,14 @@ export default function PlayPage() {
             </div>
           )}
           <Chessboard
-            options={{
-              id: "PlayVsStockfish",
-              position: fen,
-              onPieceDrop: onDrop,
-              boardOrientation: "white",
-              darkSquareStyle: { backgroundColor: '#779556' },
-              lightSquareStyle: { backgroundColor: '#ebecd0' },
-              animationDurationInMs: 200,
-              allowDragging: !isGameOver && !isEngineThinking,
-            }}
+            id="PlayVsStockfish"
+            position={fen}
+            onPieceDrop={onDrop}
+            boardOrientation="white"
+            customDarkSquareStyle={{ backgroundColor: '#779556' }}
+            customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+            animationDurationInMs={200}
+            arePiecesDraggable={!isGameOver && !isEngineThinking}
           />
         </div>
 

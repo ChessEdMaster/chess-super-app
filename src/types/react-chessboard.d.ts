@@ -20,6 +20,5 @@ declare module 'react-chessboard' {
         [key: string]: any;
     }
 
-    const Chessboard: React.FC<ChessboardProps>;
-    export default Chessboard;
+    export const Chessboard: React.FC<ChessboardProps>;
 }

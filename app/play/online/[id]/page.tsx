@@ -320,16 +320,14 @@ export default function OnlineGamePage() {
 
           <div className="relative w-full aspect-square shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
             <Chessboard
-              options={{
-                id: `online-game-${id}`,
-                position: fen,
-                onPieceDrop: onDrop,
-                boardOrientation: orientation,
-                darkSquareStyle: { backgroundColor: '#779556' },
-                lightSquareStyle: { backgroundColor: '#ebecd0' },
-                animationDurationInMs: 200,
-                allowDragging: gameData?.status === 'active' && !game.isGameOver(),
-              }}
+              id={`online-game-${id}`}
+              position={fen}
+              onPieceDrop={onDrop}
+              boardOrientation={orientation}
+              customDarkSquareStyle={{ backgroundColor: '#779556' }}
+              customLightSquareStyle={{ backgroundColor: '#ebecd0' }}
+              animationDurationInMs={200}
+              arePiecesDraggable={gameData?.status === 'active' && !game.isGameOver()}
             />
           </div>
 
