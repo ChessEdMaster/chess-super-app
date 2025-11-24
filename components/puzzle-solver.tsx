@@ -44,11 +44,11 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     // CRÍTICO: Resetear completamente cuando cambia el exercise
     useEffect(() => {
         if (!exercise?.fen) return;
-        
+
         // Crear nueva instancia de Chess con el FEN del puzzle
         const newGame = new Chess(exercise.fen);
         const newFen = newGame.fen();
-        
+
         // Actualizar estado con nuevas referencias para forzar re-render
         setGame(newGame);
         setFen(newFen);
@@ -204,15 +204,15 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
                         <Chessboard
                             id={`puzzle-${exercise.id}`}
+                            key={exercise.id} // Force re-mount on new puzzle
                             position={fen}
-                            onPieceDrop={({ sourceSquare, targetSquare }): boolean => {
+                            onPieceDrop={((sourceSquare: string, targetSquare: string) => {
                                 if (!targetSquare) {
                                     return false;
                                 }
-                                // CRÍTICO: Retornar explícitamente el resultado booleano
                                 const result = handleMove(sourceSquare, targetSquare);
                                 return result === true;
-                            }}
+                            }) as any}
                             boardOrientation={currentTurn}
                             customDarkSquareStyle={{ backgroundColor: theme.dark }}
                             customLightSquareStyle={{ backgroundColor: theme.light }}
@@ -324,10 +324,10 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
                     {feedback && (
                         <div className={`border rounded-xl p-4 ${feedback.type === 'success'
-                                ? 'bg-emerald-900/20 border-emerald-500/30'
-                                : feedback.type === 'error'
-                                    ? 'bg-red-900/20 border-red-500/30'
-                                    : 'bg-blue-900/20 border-blue-500/30'
+                            ? 'bg-emerald-900/20 border-emerald-500/30'
+                            : feedback.type === 'error'
+                                ? 'bg-red-900/20 border-red-500/30'
+                                : 'bg-blue-900/20 border-blue-500/30'
                             }`}>
                             <div className="flex items-start gap-3">
                                 {feedback.type === 'success' ? (
@@ -338,10 +338,10 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                                     <Lightbulb className="text-blue-400 mt-0.5" size={20} />
                                 )}
                                 <p className={`text-sm ${feedback.type === 'success'
-                                        ? 'text-emerald-200'
-                                        : feedback.type === 'error'
-                                            ? 'text-red-200'
-                                            : 'text-blue-200'
+                                    ? 'text-emerald-200'
+                                    : feedback.type === 'error'
+                                        ? 'text-red-200'
+                                        : 'text-blue-200'
                                     }`}>
                                     {feedback.message}
                                 </p>

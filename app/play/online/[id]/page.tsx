@@ -228,7 +228,7 @@ export default function OnlineGamePage() {
   }
 
   // 2. Gestionar Moviment
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+  function onDrop(sourceSquare: string, targetSquare: string): boolean {
     // Validacions bàsiques
     if (!targetSquare) {
       return false;
@@ -421,7 +421,7 @@ export default function OnlineGamePage() {
             <Chessboard
               id={`online-game-${id}`}
               position={fen}
-              onPieceDrop={onDrop}
+              onPieceDrop={onDrop as any}
               boardOrientation={orientation}
               customDarkSquareStyle={{ backgroundColor: theme.dark }}
               customLightSquareStyle={{ backgroundColor: theme.light }}

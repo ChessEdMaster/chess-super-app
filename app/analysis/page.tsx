@@ -172,7 +172,7 @@ export default function AnalysisPage() {
   }, [fen, isClient]); // S'executa cada cop que 'fen' canvia
 
   // --- LÒGICA DEL JOC ---
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+  function onDrop(sourceSquare: string, targetSquare: string): boolean {
     if (!targetSquare) {
       return false;
     }
@@ -185,7 +185,7 @@ export default function AnalysisPage() {
         to: targetSquare,
         promotion: 'q',
       });
-      
+
       if (!move) {
         return false;
       }
@@ -334,7 +334,7 @@ export default function AnalysisPage() {
           <div className="w-full max-w-[650px] aspect-square">
             <Chessboard
               position={fen}
-              onPieceDrop={onDrop}
+              onPieceDrop={onDrop as any}
               boardOrientation="white"
               animationDurationInMs={200}
               customDarkSquareStyle={{ backgroundColor: theme.dark }}
