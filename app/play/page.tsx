@@ -117,7 +117,7 @@ export default function PlayPage() {
   };
 
   // Gestió de Moviments
-  function onDrop(sourceSquare: string, targetSquare: string): boolean {
+  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
     if (isEngineThinking || isGameOver || !targetSquare) {
       return false;
     }
@@ -305,7 +305,7 @@ export default function PlayPage() {
           <Chessboard
             id="PlayVsStockfish"
             position={fen}
-            onPieceDrop={onDrop as any}
+            onPieceDrop={onDrop}
             boardOrientation="white"
             customDarkSquareStyle={{ backgroundColor: theme.dark }}
             customLightSquareStyle={{ backgroundColor: theme.light }}

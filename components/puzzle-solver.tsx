@@ -24,10 +24,19 @@ interface PuzzleSolverProps {
 }
 
 export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) {
-    // Inicializar con FEN por defecto si exercise.fen no está disponible
-    const initialFen = exercise?.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    const [game, setGame] = useState<Chess>(() => new Chess(initialFen));
-    const [fen, setFen] = useState(initialFen);
+    // CRÍTICO: Inicializar directamente con el FEN del ejercicio
+    const [game, setGame] = useState<Chess>(() => {
+        if (exercise?.fen) {
+            return new Chess(exercise.fen);
+        }
+        return new Chess();
+    });
+    const [fen, setFen] = useState(() => {
+        if (exercise?.fen) {
+            return exercise.fen;
+        }
+        return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    });
     const [moveIndex, setMoveIndex] = useState(0);
     const [attempts, setAttempts] = useState(0);
     const [hintsUsed, setHintsUsed] = useState(0);
@@ -43,21 +52,28 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
     // CRÍTICO: Resetear completamente cuando cambia el exercise
     useEffect(() => {
-        if (!exercise?.fen) return;
+        if (!exercise?.fen) {
+            console.warn('PuzzleSolver: exercise.fen no está disponible');
+            return;
+        }
 
-        // Crear nueva instancia de Chess con el FEN del puzzle
-        const newGame = new Chess(exercise.fen);
-        const newFen = newGame.fen();
+        try {
+            // Crear nueva instancia de Chess con el FEN del puzzle
+            const newGame = new Chess(exercise.fen);
+            const newFen = newGame.fen();
 
-        // Actualizar estado con nuevas referencias para forzar re-render
-        setGame(newGame);
-        setFen(newFen);
-        setMoveIndex(0);
-        setAttempts(0);
-        setHintsUsed(0);
-        setIsSolved(false);
-        setFeedback(null);
-        setShowHint(false);
+            // Actualizar estado con nuevas referencias para forzar re-render
+            setGame(newGame);
+            setFen(newFen);
+            setMoveIndex(0);
+            setAttempts(0);
+            setHintsUsed(0);
+            setIsSolved(false);
+            setFeedback(null);
+            setShowHint(false);
+        } catch (error) {
+            console.error('Error inicializando puzzle con FEN:', exercise.fen, error);
+        }
     }, [exercise?.fen, exercise?.id]);
 
     const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
@@ -204,15 +220,15 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
                         <Chessboard
                             id={`puzzle-${exercise.id}`}
-                            key={exercise.id} // Force re-mount on new puzzle
+                            key={exercise.id}
                             position={fen}
-                            onPieceDrop={((sourceSquare: string, targetSquare: string) => {
+                            onPieceDrop={({ sourceSquare, targetSquare }) => {
                                 if (!targetSquare) {
                                     return false;
                                 }
                                 const result = handleMove(sourceSquare, targetSquare);
                                 return result === true;
-                            }) as any}
+                            }}
                             boardOrientation={currentTurn}
                             customDarkSquareStyle={{ backgroundColor: theme.dark }}
                             customLightSquareStyle={{ backgroundColor: theme.light }}
