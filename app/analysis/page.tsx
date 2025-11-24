@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { CoachAgent } from '@/components/coach-agent';
 import { PGNEditor } from '@/components/pgn-editor';
+import { OpeningExplorer } from '@/components/analysis/opening-explorer';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { PGNTree } from '@/lib/pgn-tree';
@@ -34,6 +35,7 @@ export default function AnalysisPage() {
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   const [isClient, setIsClient] = useState(false);
   const [createVariation, setCreateVariation] = useState(false);
+  const [activeTab, setActiveTab] = useState<'analysis' | 'database'>('analysis');
 
   // --- ESTAT DE L'ANÀLISI (NOU) ---
   const engine = useRef<Worker | null>(null);
@@ -202,6 +204,35 @@ export default function AnalysisPage() {
     }
   }
 
+  const handleExplorerMove = (uci: string) => {
+    const from = uci.substring(0, 2);
+    const to = uci.substring(2, 4);
+    const promotion = uci.length > 4 ? uci.substring(4, 5) : undefined;
+
+    // Check if move is valid
+    const gameCopy = new Chess(game.fen());
+    try {
+      const move = gameCopy.move({
+        from,
+        to,
+        promotion: promotion || 'q',
+      });
+
+      if (move) {
+        // Add move to PGN tree
+        const newNode = pgnTree.addMove(move.san, createVariation);
+        if (newNode) {
+          setGame(gameCopy);
+          setFen(gameCopy.fen());
+          setLastMove(move.san);
+          setPgnTree(pgnTree);
+        }
+      }
+    } catch (e) {
+      console.error("Invalid move from explorer:", uci);
+    }
+  };
+
   const resetBoard = () => {
     const newTree = new PGNTree();
     const newGame = new Chess();
@@ -347,61 +378,84 @@ export default function AnalysisPage() {
         {/* 2. PANELL LATERAL */}
         <div className="w-full lg:w-96 flex flex-col gap-4">
 
-
-          {/* Barra Eines */}
-          <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex gap-2">
+          {/* Tabs */}
+          <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-800">
             <button
-              onClick={resetBoard}
-              className="flex-1 bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition text-white"
+              onClick={() => setActiveTab('analysis')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${activeTab === 'analysis' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-white'}`}
             >
-              <RotateCcw size={16} /> Reset
+              Anàlisi
             </button>
-            {createVariation && (
-              <div className="flex-1 bg-amber-500/20 border border-amber-500/50 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-amber-300">
-                <GitBranch size={16} /> Mode Variació
+            <button
+              onClick={() => setActiveTab('database')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${activeTab === 'database' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+            >
+              Base de Dades
+            </button>
+          </div>
+
+          {activeTab === 'analysis' ? (
+            <>
+              {/* Barra Eines */}
+              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex gap-2">
+                <button
+                  onClick={resetBoard}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition text-white"
+                >
+                  <RotateCcw size={16} /> Reset
+                </button>
+                {createVariation && (
+                  <div className="flex-1 bg-amber-500/20 border border-amber-500/50 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-amber-300">
+                    <GitBranch size={16} /> Mode Variació
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Coach Agent */}
-          <CoachAgent
-            evaluation={evaluation}
-            previousEval={null}
-            currentMove={lastMove}
-            turn={game.turn()}
-          />
+              {/* Coach Agent */}
+              <CoachAgent
+                evaluation={evaluation}
+                previousEval={null}
+                currentMove={lastMove}
+                turn={game.turn()}
+              />
 
-          {/* Info Stockfish */}
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
-                <Cpu size={14} /> Stockfish 10
-              </h3>
-              <Settings size={14} className="text-slate-500 cursor-pointer hover:text-white transition" />
+              {/* Info Stockfish */}
+              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                    <Cpu size={14} /> Stockfish 10
+                  </h3>
+                  <Settings size={14} className="text-slate-500 cursor-pointer hover:text-white transition" />
+                </div>
+                <div className="text-sm font-mono text-emerald-400 bg-slate-950/50 p-2 rounded border border-slate-800/50 h-16 overflow-hidden flex items-center">
+                  {bestLine ? (
+                    <>
+                      <span className="font-bold mr-2 text-white">{getEvalText()}</span>
+                      <span className="text-slate-400">{bestLine}...</span>
+                    </>
+                  ) : (
+                    <span className="text-slate-600 flex items-center gap-2">
+                      <Loader2 size={12} className="animate-spin" /> Calculant...
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* PGN Editor */}
+              <PGNEditor
+                tree={pgnTree}
+                onTreeChange={setPgnTree}
+                onPositionChange={handlePositionChange}
+                currentMove={lastMove || undefined}
+                autoAnnotate={true}
+                engineEval={evaluation}
+              />
+            </>
+          ) : (
+            <div className="flex-1 h-full min-h-[500px]">
+              <OpeningExplorer fen={fen} onSelectMove={handleExplorerMove} />
             </div>
-            <div className="text-sm font-mono text-emerald-400 bg-slate-950/50 p-2 rounded border border-slate-800/50 h-16 overflow-hidden flex items-center">
-              {bestLine ? (
-                <>
-                  <span className="font-bold mr-2 text-white">{getEvalText()}</span>
-                  <span className="text-slate-400">{bestLine}...</span>
-                </>
-              ) : (
-                <span className="text-slate-600 flex items-center gap-2">
-                  <Loader2 size={12} className="animate-spin" /> Calculant...
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* PGN Editor */}
-          <PGNEditor
-            tree={pgnTree}
-            onTreeChange={setPgnTree}
-            onPositionChange={handlePositionChange}
-            currentMove={lastMove || undefined}
-            autoAnnotate={true}
-            engineEval={evaluation}
-          />
+          )}
 
         </div>
       </div>
