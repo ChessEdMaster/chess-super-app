@@ -233,20 +233,27 @@ export default function OnlineGamePage() {
 
   // 2. Gestionar Moviment
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+    console.log('[Online onDrop] Called:', { sourceSquare, targetSquare, gameStatus: gameData?.status, currentFen: game.fen() });
+    
     // Validacions bàsiques
     if (!targetSquare) {
+      console.log('[Online onDrop] No target square');
       return false;
     }
     if (gameData?.status === 'pending') {
+      console.log('[Online onDrop] Game is pending');
       return false;
     }
     if (gameData?.status === 'finished') {
+      console.log('[Online onDrop] Game is finished');
       return false;
     }
     if (game.turn() === 'w' && orientation === 'black') {
+      console.log('[Online onDrop] Not your turn (white to move, you are black)');
       return false; // No és el teu torn
     }
     if (game.turn() === 'b' && orientation === 'white') {
+      console.log('[Online onDrop] Not your turn (black to move, you are white)');
       return false; // No és el teu torn
     }
 
@@ -259,19 +266,25 @@ export default function OnlineGamePage() {
         to: targetSquare,
         promotion: 'q',
       });
+      console.log('[Online onDrop] Move created:', move);
     } catch (e) {
+      console.error('[Online onDrop] Move failed:', e);
       return false;
     }
 
     if (!move) {
+      console.log('[Online onDrop] Move is null');
       return false;
     }
 
     // CRÍTICO: Actualizar estado local ANTES de retornar true (optimistic update)
     // Crear nueva instancia para actualizar estado y forzar re-render
     const updatedGame = new Chess(gameCopy.fen());
+    const newFen = updatedGame.fen();
+    console.log('[Online onDrop] New FEN:', newFen);
+    
     setGame(updatedGame);
-    setFen(updatedGame.fen());
+    setFen(newFen);
 
     // Sons locals (optimistic)
     if (updatedGame.isCheckmate()) {
@@ -286,13 +299,15 @@ export default function OnlineGamePage() {
 
     // Enviar movimiento a la base de datos (async, no bloquea el return)
     supabase.from('games').update({
-      fen: updatedGame.fen(),
+      fen: newFen,
       pgn: updatedGame.pgn(),
     }).eq('id', id).then(({ error }) => {
       if (error) {
-        console.error('Error actualizando partida:', error);
+        console.error('[Online onDrop] Error actualizando partida:', error);
         // En caso de error, revertir el estado (opcional, pero recomendado)
         // Por ahora solo logueamos el error
+      } else {
+        console.log('[Online onDrop] Move saved to database successfully');
       }
     });
 

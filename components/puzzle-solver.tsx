@@ -81,7 +81,12 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     }, [exercise?.fen, exercise?.id]);
 
     const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
-        if (isSolved) return false;
+        console.log('[Puzzle handleMove] Called:', { sourceSquare, targetSquare, isSolved, currentFen: game.fen() });
+        
+        if (isSolved) {
+            console.log('[Puzzle handleMove] Puzzle already solved');
+            return false;
+        }
 
         // CRÍTICO: Crear nueva instancia para evitar mutabilidad
         const gameCopy = new Chess(game.fen());
@@ -95,8 +100,11 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             });
 
             if (!result) {
+                console.log('[Puzzle handleMove] Move is null');
                 return false;
             }
+            
+            console.log('[Puzzle handleMove] Move created:', result);
 
             setAttempts(prev => prev + 1);
 

@@ -19,8 +19,10 @@ const ENGINE_DEPTH = 10;
 export default function PlayPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [game, setGame] = useState(() => new Chess());
-  const [fen, setFen] = useState(game.fen());
+  // CRÍTICO: Inicializar game y fen correctamente para evitar problemas de sincronización
+  const initialGame = new Chess();
+  const [game, setGame] = useState(initialGame);
+  const [fen, setFen] = useState(initialGame.fen());
   const [moveStatus, setMoveStatus] = useState("El teu torn (Blanques)");
   const [isClient, setIsClient] = useState(false);
   const [isEngineThinking, setIsEngineThinking] = useState(false);
@@ -122,7 +124,11 @@ export default function PlayPage() {
 
   // Gestió de Moviments
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+    // Debug: Log para identificar problemas
+    console.log('[onDrop] Called:', { sourceSquare, targetSquare, isEngineThinking, isGameOver, currentFen: game.fen() });
+    
     if (isEngineThinking || isGameOver || !targetSquare) {
+      console.log('[onDrop] Rejected:', { isEngineThinking, isGameOver, hasTarget: !!targetSquare });
       return false;
     }
 
@@ -132,12 +138,14 @@ export default function PlayPage() {
       piece?.type === 'p' &&
       ((piece.color === 'w' && targetSquare[1] === '8') || (piece.color === 'b' && targetSquare[1] === '1'))
     ) {
+      console.log('[onDrop] Promotion detected');
       setPromotionMove({ from: sourceSquare, to: targetSquare });
       setShowPromotionDialog(true);
       return false;
     }
 
     const result = attemptMove(sourceSquare, targetSquare);
+    console.log('[onDrop] Move result:', result);
     if (result) {
       setMoveFrom(null);
       setOptionSquares({});
@@ -235,22 +243,29 @@ export default function PlayPage() {
   }
 
   function attemptMove(source: string, target: string, promotionPiece: string = 'q'): boolean {
+    console.log('[attemptMove] Starting:', { source, target, promotionPiece, currentFen: game.fen() });
+    
     // CRÍTICO: Crear nueva instancia para evitar mutabilidad
     const gameCopy = new Chess(game.fen());
     let move = null;
 
     try {
       move = gameCopy.move({ from: source, to: target, promotion: promotionPiece });
+      console.log('[attemptMove] Move created:', move);
     } catch (error) {
+      console.error('[attemptMove] Move failed:', error);
       return false;
     }
 
     if (!move) {
+      console.log('[attemptMove] Move is null');
       return false;
     }
 
     // CRÍTICO: Crear nueva instancia para actualizar estado
     const updatedGame = new Chess(gameCopy.fen());
+    const newFen = updatedGame.fen();
+    console.log('[attemptMove] New FEN:', newFen);
 
     // Sons
     if (updatedGame.isCheckmate()) {
@@ -265,11 +280,12 @@ export default function PlayPage() {
 
     // Actualizar estado con nueva instancia
     setGame(updatedGame);
-    setFen(updatedGame.fen());
+    setFen(newFen);
     setHistory(updatedGame.history());
+    console.log('[attemptMove] State updated');
 
     if (!checkGameStatus(updatedGame)) {
-      setTimeout(() => { findBestMove(updatedGame.fen()); }, 200);
+      setTimeout(() => { findBestMove(newFen); }, 200);
     }
     return true;
   }

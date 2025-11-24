@@ -177,7 +177,10 @@ export default function AnalysisPage() {
 
   // --- LÒGICA DEL JOC ---
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+    console.log('[Analysis onDrop] Called:', { sourceSquare, targetSquare, currentFen: game.fen() });
+    
     if (!targetSquare) {
+      console.log('[Analysis onDrop] No target square');
       return false;
     }
 
@@ -191,19 +194,26 @@ export default function AnalysisPage() {
       });
 
       if (!move) {
+        console.log('[Analysis onDrop] Move is null');
         return false;
       }
+
+      console.log('[Analysis onDrop] Move created:', move);
 
       // Add move to PGN tree
       const newNode = pgnTree.addMove(move.san, createVariation);
       if (!newNode) {
+        console.log('[Analysis onDrop] Failed to add move to PGN tree');
         return false;
       }
 
       // CRÍTICO: Crear nueva instancia para actualizar estado
       const updatedGame = new Chess(gameCopy.fen());
+      const newFen = updatedGame.fen();
+      console.log('[Analysis onDrop] New FEN:', newFen);
+      
       setGame(updatedGame);
-      setFen(updatedGame.fen());
+      setFen(newFen);
       setLastMove(move.san);
       setPgnTree(pgnTree); // Trigger re-render
 
@@ -212,8 +222,10 @@ export default function AnalysisPage() {
         setCreateVariation(false);
       }
 
+      console.log('[Analysis onDrop] Move successful');
       return true;
     } catch (error) {
+      console.error('[Analysis onDrop] Error:', error);
       return false;
     }
   }
