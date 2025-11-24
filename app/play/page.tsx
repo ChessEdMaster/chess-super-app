@@ -36,6 +36,10 @@ export default function PlayPage() {
   const [showPromotionDialog, setShowPromotionDialog] = useState(false);
   const [promotionMove, setPromotionMove] = useState<{ from: string, to: string } | null>(null);
 
+  // Click to move state
+  const [moveFrom, setMoveFrom] = useState<string | null>(null);
+  const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; borderRadius?: string }>>({});
+
   const engine = useRef<Worker | null>(null);
 
   // --- PROTECCIÓ DE RUTA ---
@@ -134,7 +138,100 @@ export default function PlayPage() {
     }
 
     const result = attemptMove(sourceSquare, targetSquare);
+    if (result) {
+      setMoveFrom(null);
+      setOptionSquares({});
+    }
     return result === true;
+  }
+
+  function getMoveOptions(square: string) {
+    const moves = game.moves({
+      square: square as any,
+      verbose: true,
+    });
+    if (moves.length === 0) {
+      setOptionSquares({});
+      return false;
+    }
+
+    const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
+    moves.map((move) => {
+      const targetPiece = game.get(move.to as any);
+      const sourcePiece = game.get(square as any);
+      const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
+
+      newSquares[move.to] = {
+        background: isCapture
+          ? 'radial-gradient(circle, rgba(255,0,0,.5) 25%, transparent 25%)'
+          : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
+        borderRadius: '50%',
+      };
+      return move;
+    });
+    newSquares[square] = {
+      background: 'rgba(255, 255, 0, 0.4)',
+    };
+    setOptionSquares(newSquares);
+    return true;
+  }
+
+  function onSquareClick(square: string) {
+    if (isEngineThinking || isGameOver) return;
+
+    // If we have a moveFrom, try to move to the clicked square
+    if (moveFrom) {
+      // If clicked on the same square, deselect
+      if (moveFrom === square) {
+        setMoveFrom(null);
+        setOptionSquares({});
+        return;
+      }
+
+      // Check for promotion
+      const piece = game.get(moveFrom as any);
+      if (
+        piece?.type === 'p' &&
+        ((piece.color === 'w' && square[1] === '8') || (piece.color === 'b' && square[1] === '1'))
+      ) {
+        // Check if it's a valid move first
+        const moves = game.moves({ square: moveFrom as any, verbose: true });
+        const isPromotion = moves.find(m => m.to === square && m.promotion);
+
+        if (isPromotion) {
+          setPromotionMove({ from: moveFrom, to: square });
+          setShowPromotionDialog(true);
+          return;
+        }
+      }
+
+      // Attempt move
+      const moveResult = attemptMove(moveFrom, square);
+      if (moveResult) {
+        setMoveFrom(null);
+        setOptionSquares({});
+        return;
+      }
+
+      // If move failed, check if we clicked on another piece of our own to select it instead
+      const clickedPiece = game.get(square as any);
+      if (clickedPiece && clickedPiece.color === game.turn()) {
+        setMoveFrom(square);
+        getMoveOptions(square);
+        return;
+      }
+
+      // Otherwise, just deselect
+      setMoveFrom(null);
+      setOptionSquares({});
+    } else {
+      // No piece selected, try to select
+      const piece = game.get(square as any);
+      if (piece && piece.color === game.turn()) {
+        setMoveFrom(square);
+        getMoveOptions(square);
+      }
+    }
   }
 
   function attemptMove(source: string, target: string, promotionPiece: string = 'q'): boolean {
@@ -306,9 +403,15 @@ export default function PlayPage() {
             id="PlayVsStockfish"
             position={fen}
             onPieceDrop={onDrop}
+            onSquareClick={onSquareClick}
+            onSquareRightClick={() => {
+              setMoveFrom(null);
+              setOptionSquares({});
+            }}
             boardOrientation="white"
             customDarkSquareStyle={{ backgroundColor: theme.dark }}
             customLightSquareStyle={{ backgroundColor: theme.light }}
+            customSquareStyles={optionSquares}
             animationDurationInMs={200}
             arePiecesDraggable={!isGameOver && !isEngineThinking}
           />

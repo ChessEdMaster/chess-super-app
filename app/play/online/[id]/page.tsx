@@ -28,6 +28,10 @@ export default function OnlineGamePage() {
   const [players, setPlayers] = useState({ white: '...', black: '...' });
   const [drawOffer, setDrawOffer] = useState<string | null>(null); // 'white' | 'black' | null
 
+  // Click to move state
+  const [moveFrom, setMoveFrom] = useState<string | null>(null);
+  const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; borderRadius?: string }>>({});
+
   // Settings
   const { boardTheme } = useSettings();
   const theme = BOARD_THEMES[boardTheme];
@@ -295,6 +299,81 @@ export default function OnlineGamePage() {
     return true;
   }
 
+  function getMoveOptions(square: string) {
+    const moves = game.moves({
+      square: square as any,
+      verbose: true,
+    });
+    if (moves.length === 0) {
+      setOptionSquares({});
+      return false;
+    }
+
+    const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
+    moves.map((move) => {
+      const targetPiece = game.get(move.to as any);
+      const sourcePiece = game.get(square as any);
+      const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
+
+      newSquares[move.to] = {
+        background: isCapture
+          ? 'radial-gradient(circle, rgba(255,0,0,.5) 25%, transparent 25%)'
+          : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
+        borderRadius: '50%',
+      };
+      return move;
+    });
+    newSquares[square] = {
+      background: 'rgba(255, 255, 0, 0.4)',
+    };
+    setOptionSquares(newSquares);
+    return true;
+  }
+
+  function onSquareClick(square: string) {
+    // Validacions bàsiques
+    if (gameData?.status !== 'active' || game.isGameOver()) return;
+    if (game.turn() === 'w' && orientation === 'black') return;
+    if (game.turn() === 'b' && orientation === 'white') return;
+
+    // If we have a moveFrom, try to move to the clicked square
+    if (moveFrom) {
+      // If clicked on the same square, deselect
+      if (moveFrom === square) {
+        setMoveFrom(null);
+        setOptionSquares({});
+        return;
+      }
+
+      // Attempt move (reuse onDrop logic essentially)
+      const moveResult = onDrop({ sourceSquare: moveFrom, targetSquare: square });
+      if (moveResult) {
+        setMoveFrom(null);
+        setOptionSquares({});
+        return;
+      }
+
+      // If move failed, check if we clicked on another piece of our own to select it instead
+      const clickedPiece = game.get(square as any);
+      if (clickedPiece && clickedPiece.color === game.turn()) {
+        setMoveFrom(square);
+        getMoveOptions(square);
+        return;
+      }
+
+      // Otherwise, just deselect
+      setMoveFrom(null);
+      setOptionSquares({});
+    } else {
+      // No piece selected, try to select
+      const piece = game.get(square as any);
+      if (piece && piece.color === game.turn()) {
+        setMoveFrom(square);
+        getMoveOptions(square);
+      }
+    }
+  }
+
   const handleResign = async () => {
     if (!confirm("Estàs segur que vols rendir-te?")) return;
 
@@ -427,6 +506,12 @@ export default function OnlineGamePage() {
               customLightSquareStyle={{ backgroundColor: theme.light }}
               animationDurationInMs={200}
               arePiecesDraggable={gameData?.status === 'active' && !game.isGameOver()}
+              onSquareClick={onSquareClick}
+              onSquareRightClick={() => {
+                setMoveFrom(null);
+                setOptionSquares({});
+              }}
+              customSquareStyles={optionSquares}
             />
           </div>
 

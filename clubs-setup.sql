@@ -182,27 +182,55 @@ CREATE POLICY "Owners can update their clubs" ON public.clubs
 
 -- Membres: Només membres poden veure la llista de membres
 ALTER TABLE public.club_members ENABLE ROW LEVEL SECURITY;
+
+-- CRÍTICO: Evitar recursión infinita - usar verificación directa del club
 DROP POLICY IF EXISTS "Members can read club members" ON public.club_members;
 CREATE POLICY "Members can read club members" ON public.club_members 
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.club_members cm WHERE cm.club_id = club_members.club_id AND cm.user_id = auth.uid())
+    -- El propietario del club puede ver todos los miembros
+    EXISTS (SELECT 1 FROM public.clubs WHERE id = club_members.club_id AND owner_id = auth.uid())
+    OR
+    -- O el usuario es miembro del club (verificación directa sin recursión)
+    user_id = auth.uid()
+    OR
+    -- O el club es público y el usuario está autenticado
+    EXISTS (SELECT 1 FROM public.clubs WHERE id = club_members.club_id AND is_public = true AND auth.uid() IS NOT NULL)
   );
+
+-- Permitir que el propietario se añada automáticamente al crear el club
+DROP POLICY IF EXISTS "Owners can add themselves" ON public.club_members;
+CREATE POLICY "Owners can add themselves" ON public.club_members 
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND
+    EXISTS (SELECT 1 FROM public.clubs WHERE id = club_id AND owner_id = auth.uid())
+  );
+
+-- Permitir que usuarios se unan a clubs públicos
 DROP POLICY IF EXISTS "Users can join public clubs" ON public.club_members;
 CREATE POLICY "Users can join public clubs" ON public.club_members 
   FOR INSERT WITH CHECK (
     auth.uid() = user_id AND 
     EXISTS (SELECT 1 FROM public.clubs WHERE id = club_id AND is_public = true)
   );
+
+-- Permitir que el propietario añada otros miembros directamente
+DROP POLICY IF EXISTS "Owners can add members" ON public.club_members;
+CREATE POLICY "Owners can add members" ON public.club_members 
+  FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.clubs WHERE id = club_id AND owner_id = auth.uid())
+  );
+
 DROP POLICY IF EXISTS "Users can leave clubs" ON public.club_members;
 CREATE POLICY "Users can leave clubs" ON public.club_members 
   FOR DELETE USING (auth.uid() = user_id);
+
 DROP POLICY IF EXISTS "Owners and admins can manage members" ON public.club_members;
+-- CRÍTICO: Solo permitir al propietario actualizar miembros para evitar recursión
+-- Los admins pueden gestionar miembros a través de funciones de seguridad si es necesario
 CREATE POLICY "Owners and admins can manage members" ON public.club_members 
   FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.club_members cm 
-      WHERE cm.club_id = club_members.club_id 
-      AND cm.user_id = auth.uid() 
-      AND cm.role IN ('owner', 'admin'))
+    -- Solo el propietario del club puede gestionar miembros
+    EXISTS (SELECT 1 FROM public.clubs WHERE id = club_members.club_id AND owner_id = auth.uid())
   );
 
 -- Posts: Només membres del club poden veure i crear posts
