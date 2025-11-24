@@ -7,7 +7,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 import { spawn } from 'child_process';
 import fs from 'fs';
-import path from 'path';
 import csv from 'csv-parser';
 import { createClient } from '@supabase/supabase-js';
 
