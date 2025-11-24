@@ -6,8 +6,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Trash2, ArrowUp, MoreVertical } from 'lucide-react';
-import type { MoveNode, Variation } from '@/lib/pgn-types';
+import { ChevronRight, ChevronDown, Trash2, ArrowUp } from 'lucide-react';
+import type { MoveNode } from '@/lib/pgn-types';
 import { NAG_SYMBOLS } from '@/lib/pgn-types';
 
 interface VariationTreeProps {
@@ -39,7 +39,7 @@ export function VariationTree({
         });
     };
 
-    const renderMove = (node: MoveNode, depth: number = 0, isMainLine: boolean = true) => {
+    const renderMove = (node: MoveNode, depth: number = 0) => {
         const isActive = currentNode?.id === node.id;
         const hasVariations = node.variations.length > 0;
         const isExpanded = expandedNodes.has(node.id);
@@ -154,7 +154,7 @@ export function VariationTree({
                                 </div>
 
                                 {/* Variation Moves */}
-                                {variation.moves.map((varNode) => renderMove(varNode, depth + 1, false))}
+                                {variation.moves.map((varNode) => renderMove(varNode, depth + 1))}
                             </div>
                         ))}
                     </div>
@@ -180,7 +180,7 @@ export function VariationTree({
                     </div>
                 ) : (
                     <div className="space-y-0.5">
-                        {mainLine.map((node) => renderMove(node, 0, true))}
+                        {mainLine.map((node) => renderMove(node, 0))}
                     </div>
                 )}
             </div>
@@ -204,14 +204,14 @@ export function MoveList({ moves, currentNode, onSelectNode }: MoveListProps) {
             <button
                 onClick={() => onSelectNode(null)}
                 className={`px-2 py-1 rounded text-xs font-medium transition ${currentNode === null
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-slate-400 hover:bg-slate-800'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-400 hover:bg-slate-800'
                     }`}
             >
                 Start
             </button>
 
-            {moves.map((node, index) => {
+            {moves.map((node) => {
                 const isActive = currentNode?.id === node.id;
                 const showMoveNumber = node.color === 'w';
 
@@ -225,8 +225,8 @@ export function MoveList({ moves, currentNode, onSelectNode }: MoveListProps) {
                         <button
                             onClick={() => onSelectNode(node)}
                             className={`px-2 py-1 rounded font-mono text-sm transition ${isActive
-                                    ? 'bg-indigo-600 text-white font-bold'
-                                    : 'text-slate-300 hover:bg-slate-800'
+                                ? 'bg-indigo-600 text-white font-bold'
+                                : 'text-slate-300 hover:bg-slate-800'
                                 }`}
                         >
                             {node.move}

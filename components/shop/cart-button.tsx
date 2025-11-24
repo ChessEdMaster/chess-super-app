@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingCart, X } from 'lucide-react';
 import { useCartStore } from '@/lib/cart-store';
 import { formatPrice } from '@/lib/ecommerce-types';
@@ -66,12 +67,14 @@ export function CartButton() {
                                     {items.map((item) => (
                                         <div key={item.id} className="flex gap-3 bg-slate-800/50 p-2 rounded">
                                             {/* Image */}
-                                            <div className="w-16 h-16 bg-slate-700 rounded flex-shrink-0">
+                                            <div className="w-16 h-16 bg-slate-700 rounded flex-shrink-0 relative overflow-hidden">
                                                 {item.product?.images && item.product.images.length > 0 ? (
-                                                    <img
+                                                    <Image
                                                         src={item.product.images[0]}
                                                         alt={item.product.name}
-                                                        className="w-full h-full object-cover rounded"
+                                                        fill
+                                                        className="object-cover rounded"
+                                                        sizes="64px"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center">

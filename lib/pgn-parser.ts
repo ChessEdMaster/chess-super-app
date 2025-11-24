@@ -5,13 +5,9 @@
 
 import { Chess } from 'chess.js';
 import type {
-    PGNGame,
     PGNMetadata,
     MoveNode,
-    Variation,
-    Annotation,
     PGNExportOptions,
-    NAGSymbol,
 } from './pgn-types';
 import { NAG_SYMBOLS } from './pgn-types';
 import { PGNTree } from './pgn-tree';

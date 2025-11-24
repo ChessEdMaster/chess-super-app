@@ -21,7 +21,23 @@ export default function OnlineGamePage() {
 
   const [isClient, setIsClient] = useState(false);
   const [game, setGame] = useState(new Chess());
-  const [gameData, setGameData] = useState<any>(null);
+
+  interface GameData {
+    id: string;
+    white_player_id: string | null;
+    black_player_id: string | null;
+    fen: string;
+    pgn: string;
+    status: 'pending' | 'active' | 'finished';
+    result?: string;
+    white_time?: number;
+    black_time?: number;
+    draw_offer_by?: string | null;
+    white?: { username: string; avatar_url?: string };
+    black?: { username: string; avatar_url?: string };
+  }
+
+  const [gameData, setGameData] = useState<GameData | null>(null);
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [status, setStatus] = useState('Carregant...');
@@ -152,7 +168,7 @@ export default function OnlineGamePage() {
       }
 
       // C. Actualitzar estat local (ara amb dades completes)
-      setGameData(finalGameData);
+      setGameData(finalGameData as GameData);
       setPlayers({
         white: finalGameData.white?.username || user.user_metadata?.full_name || 'Jugador 1',
         black: finalGameData.black?.username || (currentBlackId ? 'Jugador 2' : 'Esperant rival...')
@@ -202,7 +218,7 @@ export default function OnlineGamePage() {
 
           setGame(incomeGame);
           setFen(newData.fen || incomeGame.fen());
-          setGameData(newData);
+          setGameData(newData as GameData);
           setDrawOffer(newData.draw_offer_by); // Sincronitzar oferta de taules
 
           updateStatus(incomeGame, newData);
@@ -234,7 +250,7 @@ export default function OnlineGamePage() {
   // 2. Gestionar Moviment
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
     console.log('[Online onDrop] Called:', { sourceSquare, targetSquare, gameStatus: gameData?.status, currentFen: game.fen() });
-    
+
     // Validacions bàsiques
     if (!targetSquare) {
       console.log('[Online onDrop] No target square');
@@ -282,7 +298,7 @@ export default function OnlineGamePage() {
     const updatedGame = new Chess(gameCopy.fen());
     const newFen = updatedGame.fen();
     console.log('[Online onDrop] New FEN:', newFen);
-    
+
     setGame(updatedGame);
     setFen(newFen);
 

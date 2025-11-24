@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
@@ -10,7 +11,17 @@ import { Trophy, Calendar, User, Swords, Loader2 } from 'lucide-react';
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [games, setGames] = useState<any[]>([]);
+  interface GameRecord {
+    id: string;
+    white_player_id: string | null;
+    black_player_id: string | null;
+    result: string;
+    created_at: string;
+    white?: { username: string };
+    black?: { username: string };
+  }
+
+  const [games, setGames] = useState<GameRecord[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
 
   // --- PROTECCIÓ DE RUTA ---
@@ -81,9 +92,15 @@ export default function ProfilePage() {
 
         {/* Targeta d'Usuari */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-xl">
-          <div className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-inner">
+          <div className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-inner overflow-hidden">
             {user.user_metadata?.avatar_url ? (
-              <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full rounded-full" />
+              <Image
+                src={user.user_metadata.avatar_url}
+                alt="Avatar"
+                width={96}
+                height={96}
+                className="w-full h-full rounded-full object-cover"
+              />
             ) : (
               user.email?.[0].toUpperCase()
             )}

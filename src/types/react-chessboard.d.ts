@@ -16,8 +16,16 @@ declare module 'react-chessboard' {
         customLightSquareStyle?: React.CSSProperties;
         /** Array of custom arrows: [from, to, color] */
         customArrows?: [string, string, string][];
-        /** Any other props accepted by the component */
-        [key: string]: any;
+        /** Custom square styles */
+        customSquareStyles?: Record<string, React.CSSProperties>;
+        /** Square click handler */
+        onSquareClick?: (square: string) => void;
+        /** Square right click handler */
+        onSquareRightClick?: (square: string) => void;
+        /** Whether pieces can be dragged */
+        arePiecesDraggable?: boolean;
+        /** Component ID */
+        id?: string;
     }
 
     export const Chessboard: React.FC<ChessboardProps>;

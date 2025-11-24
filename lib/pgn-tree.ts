@@ -14,7 +14,6 @@ import type {
     NAGSymbol,
     Evaluation,
     VisualAnnotation,
-    NavigationPath,
 } from './pgn-types';
 
 export class PGNTree {

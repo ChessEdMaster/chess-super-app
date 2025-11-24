@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
@@ -126,13 +127,13 @@ export default function PlayPage() {
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
     // Debug: Log para identificar problemas
     console.log('[onDrop] Called:', { sourceSquare, targetSquare, isEngineThinking, isGameOver, currentFen: game.fen() });
-    
+
     if (isEngineThinking || isGameOver || !targetSquare) {
       console.log('[onDrop] Rejected:', { isEngineThinking, isGameOver, hasTarget: !!targetSquare });
       return false;
     }
 
-    const piece = game.get(sourceSquare as any);
+    const piece = game.get(sourceSquare as Parameters<typeof game.get>[0]);
     // Detectar Coronació visual
     if (
       piece?.type === 'p' &&
@@ -155,7 +156,7 @@ export default function PlayPage() {
 
   function getMoveOptions(square: string) {
     const moves = game.moves({
-      square: square as any,
+      square: square as Parameters<typeof game.moves>[0]['square'],
       verbose: true,
     });
     if (moves.length === 0) {
@@ -164,9 +165,9 @@ export default function PlayPage() {
     }
 
     const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
-    moves.map((move) => {
-      const targetPiece = game.get(move.to as any);
-      const sourcePiece = game.get(square as any);
+    moves.forEach((move) => {
+      const targetPiece = game.get(move.to as Parameters<typeof game.get>[0]);
+      const sourcePiece = game.get(square as Parameters<typeof game.get>[0]);
       const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
 
       newSquares[move.to] = {
@@ -175,7 +176,6 @@ export default function PlayPage() {
           : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
         borderRadius: '50%',
       };
-      return move;
     });
     newSquares[square] = {
       background: 'rgba(255, 255, 0, 0.4)',
@@ -197,13 +197,13 @@ export default function PlayPage() {
       }
 
       // Check for promotion
-      const piece = game.get(moveFrom as any);
+      const piece = game.get(moveFrom as Parameters<typeof game.get>[0]);
       if (
         piece?.type === 'p' &&
         ((piece.color === 'w' && square[1] === '8') || (piece.color === 'b' && square[1] === '1'))
       ) {
         // Check if it's a valid move first
-        const moves = game.moves({ square: moveFrom as any, verbose: true });
+        const moves = game.moves({ square: moveFrom as Parameters<typeof game.moves>[0]['square'], verbose: true });
         const isPromotion = moves.find(m => m.to === square && m.promotion);
 
         if (isPromotion) {
@@ -222,7 +222,7 @@ export default function PlayPage() {
       }
 
       // If move failed, check if we clicked on another piece of our own to select it instead
-      const clickedPiece = game.get(square as any);
+      const clickedPiece = game.get(square as Parameters<typeof game.get>[0]);
       if (clickedPiece && clickedPiece.color === game.turn()) {
         setMoveFrom(square);
         getMoveOptions(square);
@@ -234,7 +234,7 @@ export default function PlayPage() {
       setOptionSquares({});
     } else {
       // No piece selected, try to select
-      const piece = game.get(square as any);
+      const piece = game.get(square as Parameters<typeof game.get>[0]);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
         getMoveOptions(square);
@@ -244,7 +244,7 @@ export default function PlayPage() {
 
   function attemptMove(source: string, target: string, promotionPiece: string = 'q'): boolean {
     console.log('[attemptMove] Starting:', { source, target, promotionPiece, currentFen: game.fen() });
-    
+
     // CRÍTICO: Crear nueva instancia para evitar mutabilidad
     const gameCopy = new Chess(game.fen());
     let move = null;
@@ -366,9 +366,9 @@ export default function PlayPage() {
 
       if (error) throw error;
       alert("✅ Partida guardada al teu perfil!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error:", error);
-      alert("❌ Error guardant: " + error.message);
+      alert("❌ Error guardant: " + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsSaving(false);
     }
@@ -471,9 +471,15 @@ export default function PlayPage() {
           <Link href="/profile" className="block">
             <div className="bg-slate-800 p-3 rounded-xl flex items-center justify-between border border-slate-700 hover:border-indigo-500/50 transition cursor-pointer group">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center shadow-inner text-white font-bold group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center shadow-inner text-white font-bold group-hover:scale-110 transition-transform overflow-hidden">
                   {user?.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="U" className="w-full h-full rounded" />
+                    <Image
+                      src={user.user_metadata.avatar_url}
+                      alt="User Avatar"
+                      width={40}
+                      height={40}
+                      className="w-full h-full rounded object-cover"
+                    />
                   ) : (
                     user?.email?.[0].toUpperCase() || <User size={20} />
                   )}

@@ -178,7 +178,7 @@ export default function AnalysisPage() {
   // --- LÒGICA DEL JOC ---
   function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
     console.log('[Analysis onDrop] Called:', { sourceSquare, targetSquare, currentFen: game.fen() });
-    
+
     if (!targetSquare) {
       console.log('[Analysis onDrop] No target square');
       return false;
@@ -200,8 +200,11 @@ export default function AnalysisPage() {
 
       console.log('[Analysis onDrop] Move created:', move);
 
-      // Add move to PGN tree
-      const newNode = pgnTree.addMove(move.san, createVariation);
+      // Add move to PGN tree - create new instance for immutability
+      const newTree = new PGNTree();
+      // Copy tree state (simplified - in production use proper cloning)
+      Object.assign(newTree, pgnTree);
+      const newNode = newTree.addMove(move.san, createVariation);
       if (!newNode) {
         console.log('[Analysis onDrop] Failed to add move to PGN tree');
         return false;
@@ -211,11 +214,11 @@ export default function AnalysisPage() {
       const updatedGame = new Chess(gameCopy.fen());
       const newFen = updatedGame.fen();
       console.log('[Analysis onDrop] New FEN:', newFen);
-      
+
       setGame(updatedGame);
       setFen(newFen);
       setLastMove(move.san);
-      setPgnTree(pgnTree); // Trigger re-render
+      setPgnTree(newTree); // Set new tree instance
 
       // Reset variation mode after creating
       if (createVariation) {
@@ -233,7 +236,7 @@ export default function AnalysisPage() {
 
   function getMoveOptions(square: string) {
     const moves = game.moves({
-      square: square as any,
+      square: square as Parameters<typeof game.moves>[0]['square'],
       verbose: true,
     });
     if (moves.length === 0) {
@@ -242,9 +245,9 @@ export default function AnalysisPage() {
     }
 
     const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
-    moves.map((move) => {
-      const targetPiece = game.get(move.to as any);
-      const sourcePiece = game.get(square as any);
+    moves.forEach((move) => {
+      const targetPiece = game.get(move.to as Parameters<typeof game.get>[0]);
+      const sourcePiece = game.get(square as Parameters<typeof game.get>[0]);
       const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
 
       newSquares[move.to] = {
@@ -253,7 +256,6 @@ export default function AnalysisPage() {
           : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
         borderRadius: '50%',
       };
-      return move;
     });
     newSquares[square] = {
       background: 'rgba(255, 255, 0, 0.4)',
@@ -281,7 +283,7 @@ export default function AnalysisPage() {
       }
 
       // If move failed, check if we clicked on another piece of our own to select it instead
-      const clickedPiece = game.get(square as any);
+      const clickedPiece = game.get(square as Parameters<typeof game.get>[0]);
       if (clickedPiece && clickedPiece.color === game.turn()) {
         setMoveFrom(square);
         getMoveOptions(square);
@@ -293,7 +295,7 @@ export default function AnalysisPage() {
       setOptionSquares({});
     } else {
       // No piece selected, try to select
-      const piece = game.get(square as any);
+      const piece = game.get(square as Parameters<typeof game.get>[0]);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
         getMoveOptions(square);
@@ -316,15 +318,17 @@ export default function AnalysisPage() {
       });
 
       if (move) {
-        // Add move to PGN tree
-        const newNode = pgnTree.addMove(move.san, createVariation);
+        // Add move to PGN tree - create new instance for immutability
+        const newTree = new PGNTree();
+        Object.assign(newTree, pgnTree);
+        const newNode = newTree.addMove(move.san, createVariation);
         if (newNode) {
           // CRÍTICO: Crear nueva instancia para actualizar estado
           const updatedGame = new Chess(gameCopy.fen());
           setGame(updatedGame);
           setFen(updatedGame.fen());
           setLastMove(move.san);
-          setPgnTree(pgnTree);
+          setPgnTree(newTree);
         }
       }
     } catch (e) {
@@ -353,29 +357,37 @@ export default function AnalysisPage() {
 
   // Navigation shortcuts
   const goForward = () => {
-    pgnTree.goForward();
-    handlePositionChange(pgnTree.getCurrentFen());
-    setPgnTree(pgnTree);
+    const newTree = new PGNTree();
+    Object.assign(newTree, pgnTree);
+    newTree.goForward();
+    handlePositionChange(newTree.getCurrentFen());
+    setPgnTree(newTree);
   };
 
   const goBack = () => {
-    pgnTree.goBack();
-    handlePositionChange(pgnTree.getCurrentFen());
-    setPgnTree(pgnTree);
+    const newTree = new PGNTree();
+    Object.assign(newTree, pgnTree);
+    newTree.goBack();
+    handlePositionChange(newTree.getCurrentFen());
+    setPgnTree(newTree);
   };
 
   const goToStart = () => {
-    pgnTree.reset();
-    handlePositionChange(pgnTree.getCurrentFen());
-    setPgnTree(pgnTree);
+    const newTree = new PGNTree();
+    Object.assign(newTree, pgnTree);
+    newTree.reset();
+    handlePositionChange(newTree.getCurrentFen());
+    setPgnTree(newTree);
   };
 
   const goToEnd = () => {
-    const mainLine = pgnTree.getMainLine();
+    const newTree = new PGNTree();
+    Object.assign(newTree, pgnTree);
+    const mainLine = newTree.getMainLine();
     if (mainLine.length > 0) {
-      pgnTree.goToNode(mainLine[mainLine.length - 1]);
-      handlePositionChange(pgnTree.getCurrentFen());
-      setPgnTree(pgnTree);
+      newTree.goToNode(mainLine[mainLine.length - 1]);
+      handlePositionChange(newTree.getCurrentFen());
+      setPgnTree(newTree);
     }
   };
 

@@ -49,10 +49,13 @@ export function PGNEditor({
     // Auto-annotate with engine evaluation
     useEffect(() => {
         if (autoAnnotate && engineEval && currentNode) {
-            tree.setEvaluation(engineEval);
-            onTreeChange(tree);
+            // Create new tree instance for immutability
+            const newTree = new PGNTree();
+            Object.assign(newTree, tree);
+            newTree.setEvaluation(engineEval);
+            onTreeChange(newTree);
         }
-    }, [engineEval, currentNode?.id]);
+    }, [engineEval, currentNode?.id, autoAnnotate, tree, onTreeChange]);
 
     // Handle node selection
     const handleSelectNode = (node: MoveNode | null) => {
@@ -198,8 +201,8 @@ export function PGNEditor({
                     <button
                         onClick={() => setViewMode('linear')}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${viewMode === 'linear'
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                             }`}
                     >
                         <FileText size={16} />
@@ -208,8 +211,8 @@ export function PGNEditor({
                     <button
                         onClick={() => setViewMode('tree')}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${viewMode === 'tree'
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                             }`}
                     >
                         <GitBranch size={16} />

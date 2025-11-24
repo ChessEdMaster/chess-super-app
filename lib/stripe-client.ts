@@ -17,7 +17,7 @@ export const getStripe = () => {
     return stripePromise;
 };
 
-export async function redirectToCheckout(sessionId: string): Promise<void> {
+export async function redirectToCheckout(): Promise<void> {
     // Note: stripe.redirectToCheckout() is deprecated in newer versions of Stripe.js
     // The modern approach is to redirect directly to the checkout URL:
     // window.location.href = checkoutUrl;

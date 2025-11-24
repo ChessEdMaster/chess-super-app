@@ -46,7 +46,18 @@ async function importPuzzles() {
     // 1. Spawn del procés zstd per descomprimir en streaming
     const zstd = spawn('zstd', ['-d', '-c', CSV_FILE_PATH]);
 
-    let batch: any[] = [];
+    interface Puzzle {
+        fen: string;
+        solution: string[];
+        title: string;
+        description: string;
+        difficulty: 'easy' | 'medium' | 'hard';
+        rating: number;
+        tags: string[];
+        created_at: string;
+    }
+
+    let batch: Puzzle[] = [];
     let totalProcessed = 0;
     let totalInserted = 0;
 
@@ -101,7 +112,16 @@ async function importPuzzles() {
     process.exit(0);
 }
 
-async function insertBatch(batch: any[]) {
+async function insertBatch(batch: Array<{
+    fen: string;
+    solution: string[];
+    title: string;
+    description: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    rating: number;
+    tags: string[];
+    created_at: string;
+}>) {
     const { error } = await supabase.from('academy_exercises').insert(batch);
 
     if (error) {

@@ -18,13 +18,53 @@ export function ChatBox({ gameId, userId, username }: ChatBoxProps) {
     useEffect(() => {
         // Carregar missatges antics
         const fetchMessages = async () => {
-            const { data } = await supabase
-                .from('messages')
-                .select('*, profiles:user_id(username)')
-                .eq('game_id', gameId)
-                .order('created_at', { ascending: true });
+            try {
+                // Primero obtener los mensajes
+                const { data: messagesData, error: messagesError } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('game_id', gameId)
+                    .order('created_at', { ascending: true });
 
-            if (data) setMessages(data);
+                if (messagesError) {
+                    console.error('[ChatBox] Error fetching messages:', messagesError);
+                    return;
+                }
+
+                if (!messagesData) return;
+
+                // Luego obtener los perfiles para cada mensaje
+                const messagesWithProfiles = await Promise.all(
+                    messagesData.map(async (msg) => {
+                        try {
+                            const { data: profile, error: profileError } = await supabase
+                                .from('profiles')
+                                .select('username')
+                                .eq('id', msg.user_id)
+                                .single();
+                            
+                            if (profileError) {
+                                console.warn('[ChatBox] Error fetching profile for user:', msg.user_id, profileError);
+                            }
+                            
+                            return {
+                                ...msg,
+                                profiles: profile ? { username: profile.username } : null
+                            };
+                        } catch (error) {
+                            console.error('[ChatBox] Error processing message:', error);
+                            return {
+                                ...msg,
+                                profiles: null
+                            };
+                        }
+                    })
+                );
+
+                setMessages(messagesWithProfiles);
+            } catch (error) {
+                console.error('[ChatBox] Error in fetchMessages:', error);
+            }
         };
 
         fetchMessages();

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/auth-provider';
 import { Trophy, LogOut, User, Loader2 } from 'lucide-react';
 import { CartButton } from '@/components/shop/cart-button';
@@ -45,7 +46,13 @@ export function SiteHeader() {
               {/* Només visible si estàs loguejat */}
               <Link href="/profile" className="flex items-center gap-2 text-slate-300 hover:text-white transition bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hover:border-indigo-500/50">
                 {user.user_metadata?.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} className="w-6 h-6 rounded-full" alt="Avatar" />
+                  <Image
+                    src={user.user_metadata.avatar_url}
+                    width={24}
+                    height={24}
+                    className="w-6 h-6 rounded-full"
+                    alt="Avatar"
+                  />
                 ) : (
                   <User size={18} />
                 )}

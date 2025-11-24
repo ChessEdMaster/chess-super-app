@@ -24,7 +24,7 @@ export interface Product {
     sale_price: number | null;
     sku: string | null;
     images: string[];
-    specifications: Record<string, any>;
+    specifications: Record<string, unknown>;
     stock_quantity: number;
     low_stock_threshold: number;
     is_active: boolean;

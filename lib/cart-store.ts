@@ -72,9 +72,9 @@ export const useCartStore = create<CartState>((set, get) => ({
 
             set({ items: cartItems || [], isLoading: false });
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error loading cart:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error instanceof Error ? error.message : 'Unknown error', isLoading: false });
         }
     },
 
@@ -155,9 +155,9 @@ export const useCartStore = create<CartState>((set, get) => ({
             await get().loadCart(user.id);
             toast.success('Producte afegit a la cistella');
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error adding to cart:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error instanceof Error ? error.message : 'Unknown error', isLoading: false });
             toast.error('Error afegint el producte');
         }
     },
@@ -189,9 +189,9 @@ export const useCartStore = create<CartState>((set, get) => ({
             await get().loadCart(user.id);
             toast.success('Producte eliminat');
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error removing from cart:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error instanceof Error ? error.message : 'Unknown error', isLoading: false });
             toast.error('Error eliminant el producte');
         }
     },
@@ -230,9 +230,9 @@ export const useCartStore = create<CartState>((set, get) => ({
 
             await get().loadCart(user.id);
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error updating quantity:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error instanceof Error ? error.message : 'Unknown error', isLoading: false });
             toast.error('Error actualitzant la quantitat');
         }
     },
@@ -260,9 +260,9 @@ export const useCartStore = create<CartState>((set, get) => ({
 
             set({ items: [], isLoading: false });
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error clearing cart:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error instanceof Error ? error.message : 'Unknown error', isLoading: false });
         }
     },
 }));
