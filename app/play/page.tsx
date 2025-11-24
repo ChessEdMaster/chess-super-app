@@ -117,8 +117,10 @@ export default function PlayPage() {
   };
 
   // Gestió de Moviments
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) {
-    if (isEngineThinking || isGameOver || !targetSquare) return false;
+  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+    if (isEngineThinking || isGameOver || !targetSquare) {
+      return false;
+    }
 
     const piece = game.get(sourceSquare as any);
     // Detectar Coronació visual
@@ -131,31 +133,46 @@ export default function PlayPage() {
       return false;
     }
 
-    return attemptMove(sourceSquare, targetSquare);
+    const result = attemptMove(sourceSquare, targetSquare);
+    return result === true;
   }
 
-  function attemptMove(source: string, target: string, promotionPiece: string = 'q') {
+  function attemptMove(source: string, target: string, promotionPiece: string = 'q'): boolean {
+    // CRÍTICO: Crear nueva instancia para evitar mutabilidad
     const gameCopy = new Chess(game.fen());
     let move = null;
 
     try {
       move = gameCopy.move({ from: source, to: target, promotion: promotionPiece });
-    } catch (error) { return false; }
+    } catch (error) {
+      return false;
+    }
 
-    if (!move) return false;
+    if (!move) {
+      return false;
+    }
+
+    // CRÍTICO: Crear nueva instancia para actualizar estado
+    const updatedGame = new Chess(gameCopy.fen());
 
     // Sons
-    if (gameCopy.isCheckmate()) playSound('game_end');
-    else if (gameCopy.isCheck()) playSound('check');
-    else if (move.captured) playSound('capture');
-    else playSound('move');
+    if (updatedGame.isCheckmate()) {
+      playSound('game_end');
+    } else if (updatedGame.isCheck()) {
+      playSound('check');
+    } else if (move.captured) {
+      playSound('capture');
+    } else {
+      playSound('move');
+    }
 
-    setGame(gameCopy);
-    setFen(gameCopy.fen());
-    setHistory(gameCopy.history());
+    // Actualizar estado con nueva instancia
+    setGame(updatedGame);
+    setFen(updatedGame.fen());
+    setHistory(updatedGame.history());
 
-    if (!checkGameStatus(gameCopy)) {
-      setTimeout(() => { findBestMove(gameCopy.fen()); }, 200);
+    if (!checkGameStatus(updatedGame)) {
+      setTimeout(() => { findBestMove(updatedGame.fen()); }, 200);
     }
     return true;
   }

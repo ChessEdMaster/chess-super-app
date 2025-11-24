@@ -228,14 +228,25 @@ export default function OnlineGamePage() {
   }
 
   // 2. Gestionar Moviment
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) {
+  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
     // Validacions bàsiques
-    if (!targetSquare) return false;
-    if (gameData?.status === 'pending') return false;
-    if (gameData?.status === 'finished') return false;
-    if (game.turn() === 'w' && orientation === 'black') return false; // No és el teu torn
-    if (game.turn() === 'b' && orientation === 'white') return false; // No és el teu torn
+    if (!targetSquare) {
+      return false;
+    }
+    if (gameData?.status === 'pending') {
+      return false;
+    }
+    if (gameData?.status === 'finished') {
+      return false;
+    }
+    if (game.turn() === 'w' && orientation === 'black') {
+      return false; // No és el teu torn
+    }
+    if (game.turn() === 'b' && orientation === 'white') {
+      return false; // No és el teu torn
+    }
 
+    // CRÍTICO: Crear nueva instancia para validar el movimiento
     const gameCopy = new Chess(game.fen());
     let move = null;
     try {
@@ -244,15 +255,43 @@ export default function OnlineGamePage() {
         to: targetSquare,
         promotion: 'q',
       });
-    } catch (e) { return false; }
+    } catch (e) {
+      return false;
+    }
 
-    if (!move) return false;
+    if (!move) {
+      return false;
+    }
+
+    // CRÍTICO: Actualizar estado local ANTES de retornar true (optimistic update)
+    // Crear nueva instancia para actualizar estado y forzar re-render
+    const updatedGame = new Chess(gameCopy.fen());
+    setGame(updatedGame);
+    setFen(updatedGame.fen());
 
     // Sons locals (optimistic)
-    if (gameCopy.isCheckmate()) playSound('game_end');
-    else if (gameCopy.isCheck()) playSound('check');
-    else if (move.captured) playSound('capture');
-    else playSound('move');
+    if (updatedGame.isCheckmate()) {
+      playSound('game_end');
+    } else if (updatedGame.isCheck()) {
+      playSound('check');
+    } else if (move.captured) {
+      playSound('capture');
+    } else {
+      playSound('move');
+    }
+
+    // Enviar movimiento a la base de datos (async, no bloquea el return)
+    supabase.from('games').update({
+      fen: updatedGame.fen(),
+      pgn: updatedGame.pgn(),
+    }).eq('id', id).then(({ error }) => {
+      if (error) {
+        console.error('Error actualizando partida:', error);
+        // En caso de error, revertir el estado (opcional, pero recomendado)
+        // Por ahora solo logueamos el error
+      }
+    });
+
     return true;
   }
 

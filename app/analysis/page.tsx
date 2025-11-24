@@ -172,9 +172,12 @@ export default function AnalysisPage() {
   }, [fen, isClient]); // S'executa cada cop que 'fen' canvia
 
   // --- LÒGICA DEL JOC ---
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) {
-    if (!targetSquare) return false;
+  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+    if (!targetSquare) {
+      return false;
+    }
 
+    // CRÍTICO: Crear nueva instancia para evitar mutabilidad
     const gameCopy = new Chess(game.fen());
     try {
       const move = gameCopy.move({
@@ -182,14 +185,21 @@ export default function AnalysisPage() {
         to: targetSquare,
         promotion: 'q',
       });
-      if (!move) return false;
+      
+      if (!move) {
+        return false;
+      }
 
       // Add move to PGN tree
       const newNode = pgnTree.addMove(move.san, createVariation);
-      if (!newNode) return false;
+      if (!newNode) {
+        return false;
+      }
 
-      setGame(gameCopy);
-      setFen(gameCopy.fen());
+      // CRÍTICO: Crear nueva instancia para actualizar estado
+      const updatedGame = new Chess(gameCopy.fen());
+      setGame(updatedGame);
+      setFen(updatedGame.fen());
       setLastMove(move.san);
       setPgnTree(pgnTree); // Trigger re-render
 
@@ -209,7 +219,7 @@ export default function AnalysisPage() {
     const to = uci.substring(2, 4);
     const promotion = uci.length > 4 ? uci.substring(4, 5) : undefined;
 
-    // Check if move is valid
+    // CRÍTICO: Crear nueva instancia para validar movimiento
     const gameCopy = new Chess(game.fen());
     try {
       const move = gameCopy.move({
@@ -222,8 +232,10 @@ export default function AnalysisPage() {
         // Add move to PGN tree
         const newNode = pgnTree.addMove(move.san, createVariation);
         if (newNode) {
-          setGame(gameCopy);
-          setFen(gameCopy.fen());
+          // CRÍTICO: Crear nueva instancia para actualizar estado
+          const updatedGame = new Chess(gameCopy.fen());
+          setGame(updatedGame);
+          setFen(updatedGame.fen());
           setLastMove(move.san);
           setPgnTree(pgnTree);
         }

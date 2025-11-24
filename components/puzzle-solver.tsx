@@ -24,8 +24,10 @@ interface PuzzleSolverProps {
 }
 
 export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) {
-    const [game, setGame] = useState<Chess>(new Chess(exercise.fen));
-    const [fen, setFen] = useState(exercise.fen);
+    // Inicializar con FEN por defecto si exercise.fen no está disponible
+    const initialFen = exercise?.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    const [game, setGame] = useState<Chess>(() => new Chess(initialFen));
+    const [fen, setFen] = useState(initialFen);
     const [moveIndex, setMoveIndex] = useState(0);
     const [attempts, setAttempts] = useState(0);
     const [hintsUsed, setHintsUsed] = useState(0);
@@ -39,21 +41,29 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
     const currentTurn = game.turn() === 'w' ? 'white' : 'black';
 
+    // CRÍTICO: Resetear completamente cuando cambia el exercise
     useEffect(() => {
+        if (!exercise?.fen) return;
+        
+        // Crear nueva instancia de Chess con el FEN del puzzle
         const newGame = new Chess(exercise.fen);
+        const newFen = newGame.fen();
+        
+        // Actualizar estado con nuevas referencias para forzar re-render
         setGame(newGame);
-        setFen(exercise.fen);
+        setFen(newFen);
         setMoveIndex(0);
         setAttempts(0);
         setHintsUsed(0);
         setIsSolved(false);
         setFeedback(null);
         setShowHint(false);
-    }, [exercise]);
+    }, [exercise?.fen, exercise?.id]);
 
-    const handleMove = (sourceSquare: string, targetSquare: string) => {
+    const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
         if (isSolved) return false;
 
+        // CRÍTICO: Crear nueva instancia para evitar mutabilidad
         const gameCopy = new Chess(game.fen());
         const uciMove = `${sourceSquare}${targetSquare}`;
 
@@ -64,15 +74,19 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                 promotion: 'q'
             });
 
-            if (!result) return false;
+            if (!result) {
+                return false;
+            }
 
             setAttempts(prev => prev + 1);
 
             const expectedMove = exercise.solution[moveIndex];
 
             if (uciMove === expectedMove) {
-                setGame(gameCopy);
-                setFen(gameCopy.fen());
+                // CRÍTICO: Crear nueva instancia para actualizar estado
+                const updatedGame = new Chess(gameCopy.fen());
+                setGame(updatedGame);
+                setFen(updatedGame.fen());
                 setMoveIndex(prev => prev + 1);
                 playSound('move');
 
@@ -85,7 +99,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                     });
 
                     setTimeout(() => {
-                        makeOpponentMove(gameCopy);
+                        makeOpponentMove(updatedGame);
                     }, 500);
                 }
 
@@ -111,15 +125,19 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             const to = opponentMove.substring(2, 4);
 
             try {
-                const result = currentGame.move({
+                // CRÍTICO: Crear nueva instancia para evitar mutar el estado
+                const gameCopy = new Chess(currentGame.fen());
+                const result = gameCopy.move({
                     from,
                     to,
                     promotion: 'q'
                 });
 
                 if (result) {
-                    setGame(new Chess(currentGame.fen()));
-                    setFen(currentGame.fen());
+                    // CRÍTICO: Crear nueva instancia para actualizar estado
+                    const updatedGame = new Chess(gameCopy.fen());
+                    setGame(updatedGame);
+                    setFen(updatedGame.fen());
                     setMoveIndex(prev => prev + 2);
                     playSound('move');
 
@@ -187,9 +205,13 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                         <Chessboard
                             id={`puzzle-${exercise.id}`}
                             position={fen}
-                            onPieceDrop={({ sourceSquare, targetSquare }) => {
-                                if (!targetSquare) return false;
-                                return handleMove(sourceSquare, targetSquare);
+                            onPieceDrop={({ sourceSquare, targetSquare }): boolean => {
+                                if (!targetSquare) {
+                                    return false;
+                                }
+                                // CRÍTICO: Retornar explícitamente el resultado booleano
+                                const result = handleMove(sourceSquare, targetSquare);
+                                return result === true;
                             }}
                             boardOrientation={currentTurn}
                             customDarkSquareStyle={{ backgroundColor: theme.dark }}
