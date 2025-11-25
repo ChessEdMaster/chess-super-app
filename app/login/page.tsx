@@ -24,9 +24,12 @@ export default function LoginPage() {
         </div>
         <h1 className="text-3xl font-bold text-white mb-2">Benvingut a ChessHub</h1>
         <p className="text-slate-400 mb-8">Inicia sessió per guardar les teves partides i tenir rànquing oficial.</p>
-        
+
         <button
-          onClick={signInWithGoogle}
+          onClick={() => {
+            localStorage.setItem('auth_intent', 'login');
+            signInWithGoogle();
+          }}
           className="w-full bg-white text-slate-900 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-200 transition mb-6"
         >
           {/* Google Icon SVG */}
@@ -34,9 +37,15 @@ export default function LoginPage() {
           Continuar amb Google
         </button>
 
-        <Link href="/" className="text-slate-500 hover:text-white text-sm flex items-center justify-center gap-1 transition">
-          <ArrowLeft size={14} /> Tornar a l'inici
-        </Link>
+        <div className="text-slate-400 text-sm mb-6">
+          No tens compte? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 font-bold">Registra't aquí</Link>
+        </div>
+
+        <div className="pt-6 border-t border-slate-800">
+          <Link href="/" className="text-slate-500 hover:text-white text-sm flex items-center justify-center gap-1 transition">
+            <ArrowLeft size={14} /> Tornar a l'inici
+          </Link>
+        </div>
       </div>
     </div>
   );

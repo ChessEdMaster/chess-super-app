@@ -6,10 +6,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { Trophy, Calendar, User, Swords, Loader2 } from 'lucide-react';
+import { Trophy, Calendar, User, Swords, Loader2, LogOut } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
   interface GameRecord {
     id: string;
@@ -84,10 +84,16 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto">
 
         {/* Capçalera */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <User className="text-indigo-500" /> El teu Perfil
           </h1>
+          <button
+            onClick={signOut}
+            className="flex items-center gap-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 px-4 py-2 rounded-lg transition border border-red-500/30 text-sm font-bold"
+          >
+            <LogOut size={16} /> Tancar Sessió
+          </button>
         </div>
 
         {/* Targeta d'Usuari */}

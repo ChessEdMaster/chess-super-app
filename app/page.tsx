@@ -3,22 +3,31 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trophy, Users, PlayCircle, Lock, Gem, Coins, Star, Swords } from 'lucide-react';
+import { Trophy, Users, PlayCircle, Lock, Gem, Coins, Star, Swords, LogOut } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
+import WelcomePage from './welcome/page';
 
 export default function Home() {
-  const { role, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const router = useRouter();
   const isSuperAdmin = role === 'SuperAdmin';
 
   useEffect(() => {
-    if (!loading && !isSuperAdmin) {
-      router.push('/clubs');
+    if (!loading) {
+      if (user) {
+        if (!isSuperAdmin) {
+          router.push('/profile');
+        }
+      }
     }
-  }, [loading, isSuperAdmin, router]);
+  }, [loading, user, isSuperAdmin, router]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">Carregant perfil...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">Carregant...</div>;
+  }
+
+  if (!user) {
+    return <WelcomePage />;
   }
 
   // If not superadmin, we show a locked screen briefly before redirect (or if redirect fails/is slow)
@@ -28,9 +37,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
           <Lock size={64} className="text-slate-500 mb-4" />
           <h2 className="text-2xl font-bold text-slate-300 mb-2">Zona de Batalla Bloquejada</h2>
-          <p className="text-slate-400 mb-6">Uneix-te a un Club per desbloquejar funcionalitats.</p>
-          <Link href="/clubs" className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
-            Anar als Clubs
+          <p className="text-slate-400 mb-6">Accés restringit al teu perfil.</p>
+          <Link href="/profile" className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
+            Anar al Perfil
           </Link>
         </div>
       </div>

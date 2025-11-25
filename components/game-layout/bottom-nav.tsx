@@ -15,14 +15,14 @@ export function BottomNav() {
     const navItems = [
         { name: 'Batalla', href: '/', icon: Swords, locked: !isSuperAdmin },
         { name: 'Aventura', href: '/adventure', icon: Map, locked: !isSuperAdmin },
-        { name: 'Clubs', href: '/clubs', icon: Users, locked: false }, // Always open
-        { name: 'Perfil', href: '/profile', icon: User, locked: !isSuperAdmin },
+        { name: 'Clubs', href: '/clubs', icon: Users, locked: !isSuperAdmin },
+        { name: 'Perfil', href: '/profile', icon: User, locked: false }, // Always open
         { name: 'Botiga', href: '/shop', icon: ShoppingBag, locked: !isSuperAdmin },
     ];
 
     const handleLockedClick = (e: React.MouseEvent, name: string) => {
         e.preventDefault();
-        toast.error(`Funcionalitat ${name} bloquejada per a Reclutes. Accedeix als Clubs!`, {
+        toast.error(`Funcionalitat ${name} bloquejada. Accés restringit al Perfil.`, {
             style: {
                 background: '#1e293b',
                 color: '#fff',
