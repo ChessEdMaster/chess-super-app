@@ -10,7 +10,8 @@ import {
     Settings,
     Trophy,
     ArrowLeft,
-    Menu
+    Menu,
+    GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth-provider';
@@ -106,6 +107,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
     const navItems = [
         { href: `/clubs/manage/${clubId}`, label: 'Visió General', icon: LayoutDashboard },
         { href: `/clubs/manage/${clubId}/members`, label: 'Socis i Membres', icon: Users },
+        { href: `/clubs/manage/${clubId}/groups`, label: 'Acadèmia i Grups', icon: GraduationCap },
         { href: `/clubs/manage/${clubId}/plans`, label: 'Plans i Quotes', icon: CreditCard },
         { href: `/clubs/manage/${clubId}/matches`, label: 'Competicions', icon: Trophy },
         { href: `/clubs/manage/${clubId}/settings`, label: 'Configuració', icon: Settings },

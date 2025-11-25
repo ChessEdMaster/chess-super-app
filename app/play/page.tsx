@@ -257,32 +257,30 @@ export default function PlayPage() {
   }
 
   function attemptMove(source: string, target: string, promotionPiece: string = 'q'): boolean {
-    console.log('[attemptMove] Starting:', { source, target, promotionPiece, currentFen: game.fen() });
+    // CRÍTICO: Sempre treballar sobre una còpia per evitar mutacions d'estat
+    // Això soluciona el problema de "Tauler Bloquejat"
+    const gameCopy = new Chess(game.fen());
 
-    // CRÍTICO: Hacer el movimiento en la instancia actual
     let move = null;
     try {
-      move = game.move({ from: source, to: target, promotion: promotionPiece });
-      console.log('[attemptMove] Move created:', move);
+      move = gameCopy.move({ from: source, to: target, promotion: promotionPiece });
     } catch (error) {
-      console.error('[attemptMove] Move failed:', error);
+      // chess.js v1 llança errors per moviments invàlids (ex: torn incorrecte)
+      // Simplement retornem false i el tauler farà "snapback"
       return false;
     }
 
     if (!move) {
-      console.log('[attemptMove] Move is null');
       return false;
     }
 
-    // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
-    const newGame = new Chess(game.fen());
-    const newFen = newGame.fen();
-    console.log('[attemptMove] New FEN:', newFen);
+    // Si el moviment és vàlid, actualitzem l'estat amb la NOVA instància
+    const newFen = gameCopy.fen();
 
     // Sons
-    if (newGame.isCheckmate()) {
+    if (gameCopy.isCheckmate()) {
       playSound('game_end');
-    } else if (newGame.isCheck()) {
+    } else if (gameCopy.isCheck()) {
       playSound('check');
     } else if (move.captured) {
       playSound('capture');
@@ -291,12 +289,11 @@ export default function PlayPage() {
     }
 
     // Actualizar estado con nueva instancia (fuerza re-render)
-    setGame(newGame);
+    setGame(gameCopy);
     setFen(newFen);
-    setHistory(newGame.history());
-    console.log('[attemptMove] State updated');
+    setHistory(gameCopy.history());
 
-    if (!checkGameStatus(newGame)) {
+    if (!checkGameStatus(gameCopy)) {
       setTimeout(() => { findBestMove(newFen); }, 200);
     }
     return true;

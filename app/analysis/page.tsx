@@ -192,58 +192,54 @@ export default function AnalysisPage() {
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
     console.log('[Analysis onDrop] Called:', { sourceSquare, targetSquare, currentFen: game.fen() });
 
-    if (!targetSquare) {
-      console.log('[Analysis onDrop] No target square');
-      return false;
-    }
+    if (!targetSquare) return false;
 
-    // CRÍTICO: Hacer el movimiento en la instancia actual
+    // CRÍTICO: "Copy before Move" pattern
+    const gameCopy = new Chess(game.fen());
     let move = null;
+
     try {
-      move = game.move({
+      move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: 'q',
       });
-
-      if (!move) {
-        console.log('[Analysis onDrop] Move is null');
-        return false;
-      }
-
-      console.log('[Analysis onDrop] Move created:', move);
-
-      // Add move to PGN tree - create new instance for immutability
-      const newTree = new PGNTree();
-      // Copy tree state (simplified - in production use proper cloning)
-      Object.assign(newTree, pgnTree);
-      const newNode = newTree.addMove(move.san, createVariation);
-      if (!newNode) {
-        console.log('[Analysis onDrop] Failed to add move to PGN tree');
-        return false;
-      }
-
-      // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
-      const newGame = new Chess(game.fen());
-      const newFen = newGame.fen();
-      console.log('[Analysis onDrop] New FEN:', newFen);
-
-      setGame(newGame);
-      setFen(newFen);
-      setLastMove(move.san);
-      setPgnTree(newTree); // Set new tree instance
-
-      // Reset variation mode after creating
-      if (createVariation) {
-        setCreateVariation(false);
-      }
-
-      console.log('[Analysis onDrop] Move successful');
-      return true;
     } catch (error) {
-      console.error('[Analysis onDrop] Error:', error);
       return false;
     }
+
+    if (!move) {
+      return false;
+    }
+
+    console.log('[Analysis onDrop] Move created:', move);
+
+    // Add move to PGN tree - create new instance for immutability
+    const newTree = new PGNTree();
+    // Copy tree state
+    Object.assign(newTree, pgnTree);
+    const newNode = newTree.addMove(move.san, createVariation);
+
+    if (!newNode) {
+      console.log('[Analysis onDrop] Failed to add move to PGN tree');
+      return false;
+    }
+
+    // Update state
+    const newFen = gameCopy.fen();
+    console.log('[Analysis onDrop] New FEN:', newFen);
+
+    setGame(gameCopy);
+    setFen(newFen);
+    setLastMove(move.san);
+    setPgnTree(newTree);
+
+    // Reset variation mode after creating
+    if (createVariation) {
+      setCreateVariation(false);
+    }
+
+    return true;
   }
 
 
@@ -321,8 +317,9 @@ export default function AnalysisPage() {
     const to = uci.substring(2, 4);
     const promotion = uci.length > 4 ? uci.substring(4, 5) : undefined;
 
-    // CRÍTICO: Crear nueva instancia para validar movimiento
+    // CRÍTICO: "Copy before Move" pattern
     const gameCopy = new Chess(game.fen());
+
     try {
       const move = gameCopy.move({
         from,
@@ -335,11 +332,10 @@ export default function AnalysisPage() {
         const newTree = new PGNTree();
         Object.assign(newTree, pgnTree);
         const newNode = newTree.addMove(move.san, createVariation);
+
         if (newNode) {
-          // CRÍTICO: Crear nueva instancia para actualizar estado
-          const updatedGame = new Chess(gameCopy.fen());
-          setGame(updatedGame);
-          setFen(updatedGame.fen());
+          setGame(gameCopy);
+          setFen(gameCopy.fen());
           setLastMove(move.san);
           setPgnTree(newTree);
         }

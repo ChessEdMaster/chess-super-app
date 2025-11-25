@@ -19,8 +19,8 @@ import { playSound } from '@/lib/sounds';
 
 // CRÍTICO: Dynamic import para evitar problemas de SSR
 const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
-  ssr: false,
-  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
 });
 
 interface PuzzleSolverProps {
@@ -87,66 +87,57 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     }, [exercise?.fen, exercise?.id]);
 
     const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
-        console.log('[Puzzle handleMove] Called:', { sourceSquare, targetSquare, isSolved, currentFen: game.fen() });
-        
-        if (isSolved) {
-            console.log('[Puzzle handleMove] Puzzle already solved');
-            return false;
-        }
+        if (isSolved) return false;
 
-        // CRÍTICO: Hacer el movimiento en la instancia actual
+        // CRÍTICO: "Copy before Move" pattern
+        const gameCopy = new Chess(game.fen());
         const uciMove = `${sourceSquare}${targetSquare}`;
         let result = null;
 
         try {
-            result = game.move({
+            result = gameCopy.move({
                 from: sourceSquare,
                 to: targetSquare,
                 promotion: 'q'
             });
+        } catch (error) {
+            return false;
+        }
 
-            if (!result) {
-                console.log('[Puzzle handleMove] Move is null');
-                return false;
-            }
-            
-            console.log('[Puzzle handleMove] Move created:', result);
+        if (!result) return false;
 
-            setAttempts(prev => prev + 1);
+        setAttempts(prev => prev + 1);
 
-            const expectedMove = exercise.solution[moveIndex];
+        const expectedMove = exercise.solution[moveIndex];
 
-            if (uciMove === expectedMove) {
-                // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
-                const newGame = new Chess(game.fen());
-                setGame(newGame);
-                setFen(newGame.fen());
-                setMoveIndex(prev => prev + 1);
-                playSound('move');
+        if (uciMove === expectedMove) {
+            // Moviment Correcte
+            setGame(gameCopy);
+            setFen(gameCopy.fen());
+            setMoveIndex(prev => prev + 1);
+            playSound('move');
 
-                if (moveIndex + 1 >= exercise.solution.length) {
-                    solvePuzzle();
-                } else {
-                    setFeedback({
-                        type: 'success',
-                        message: '✓ Correcte! Continua...'
-                    });
-
-                    setTimeout(() => {
-                        makeOpponentMove(newGame);
-                    }, 500);
-                }
-
-                return true;
+            if (moveIndex + 1 >= exercise.solution.length) {
+                solvePuzzle();
             } else {
                 setFeedback({
-                    type: 'error',
-                    message: '✗ Aquest no és el moviment correcte. Torna-ho a intentar!'
+                    type: 'success',
+                    message: '✓ Correcte! Continua...'
                 });
-                playSound('illegal');
-                return false;
+
+                setTimeout(() => {
+                    makeOpponentMove(gameCopy);
+                }, 500);
             }
-        } catch (error) {
+
+            return true;
+        } else {
+            // Moviment Incorrecte
+            setFeedback({
+                type: 'error',
+                message: '✗ Aquest no és el moviment correcte. Torna-ho a intentar!'
+            });
+            playSound('illegal');
             return false;
         }
     };
@@ -223,26 +214,26 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
         }
     }
 
-    const makeOpponentMove = (currentGame: Chess) => {
+    const makeOpponentMove = (baseGame: Chess) => {
         const nextMoveIndex = moveIndex + 1;
         if (nextMoveIndex < exercise.solution.length) {
             const opponentMove = exercise.solution[nextMoveIndex];
             const from = opponentMove.substring(0, 2);
             const to = opponentMove.substring(2, 4);
 
+            // CRÍTICO: Crear nova còpia per al moviment del rival
+            const gameCopy = new Chess(baseGame.fen());
+
             try {
-                // CRÍTICO: Hacer el movimiento en la instancia actual
-                const result = currentGame.move({
+                const result = gameCopy.move({
                     from,
                     to,
                     promotion: 'q'
                 });
 
                 if (result) {
-                    // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
-                    const newGame = new Chess(currentGame.fen());
-                    setGame(newGame);
-                    setFen(newGame.fen());
+                    setGame(gameCopy);
+                    setFen(gameCopy.fen());
                     setMoveIndex(prev => prev + 2);
                     playSound('move');
 
@@ -309,7 +300,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
                         <Chessboard
                             id={`puzzle-${exercise.id}`}
-                            key={exercise.id}
+                            key={exercise.id} // CRÍTICO: Força re-render quan canvia l'exercici
                             position={fen}
                             onPieceDrop={({ sourceSquare, targetSquare }) => {
                                 if (!targetSquare) {
