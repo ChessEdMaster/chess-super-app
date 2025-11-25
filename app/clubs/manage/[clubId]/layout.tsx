@@ -25,7 +25,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
     const [clubName, setClubName] = useState<string>('Carregant...');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-    const router = useRouter(); // Need to add import
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -40,32 +40,53 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
             if (!clubId) return;
 
             try {
-                // Check membership and role
-                const { data: member, error } = await supabase
+                // CRÍTICO: Separar las consultas para evitar problemas con RLS
+                // 1. Verificar membresía
+                const { data: member, error: memberError } = await supabase
                     .from('club_members')
-                    .select('role, club:clubs(name)')
+                    .select('role')
                     .eq('club_id', clubId)
                     .eq('user_id', user.id)
                     .single();
 
-                if (error || !member) {
-                    console.error('Access denied: Not a member', error);
+                if (memberError || !member) {
+                    console.error('[Club ERP] Access denied: Not a member', memberError);
+                    alert('No tens accés a aquest panell de gestió. Només el propietari i els administradors poden accedir.');
                     router.push('/clubs');
                     return;
                 }
 
+                // 2. Verificar permisos
                 if (!['owner', 'admin'].includes(member.role)) {
-                    console.error('Access denied: Insufficient permissions');
-                    router.push(`/clubs`);
+                    console.error('[Club ERP] Access denied: Insufficient permissions', { role: member.role });
+                    alert('No tens permisos suficients. Només el propietari i els administradors poden accedir.');
+                    router.push('/clubs');
                     return;
                 }
 
-                // @ts-ignore
-                if (member.club) setClubName(member.club.name);
+                // 3. Obtener nombre del club (separado para evitar problemas con RLS)
+                const { data: club, error: clubError } = await supabase
+                    .from('clubs')
+                    .select('name')
+                    .eq('id', clubId)
+                    .single();
+
+                if (clubError) {
+                    console.error('[Club ERP] Error fetching club:', clubError);
+                    alert('Error carregant la informació del club.');
+                    router.push('/clubs');
+                    return;
+                }
+
+                if (club) {
+                    setClubName(club.name);
+                }
+
                 setLoading(false);
 
             } catch (err) {
-                console.error('Error checking permissions:', err);
+                console.error('[Club ERP] Error checking permissions:', err);
+                alert('Error verificant permisos. Torna-ho a intentar.');
                 router.push('/clubs');
             }
         };

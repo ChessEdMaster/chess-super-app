@@ -145,13 +145,21 @@ export default function ClubsPage() {
             if (error) throw error;
 
             // Afegir el creador com a membre amb rol owner
-            await supabase
+            const { error: memberError } = await supabase
                 .from('club_members')
                 .insert({
                     club_id: data.id,
                     user_id: user.id,
                     role: 'owner'
                 });
+
+            if (memberError) {
+                console.error('Error creating membership:', memberError);
+                // No llenzar error, pero loguejar
+            }
+
+            // Esperar una mica per assegurar que la DB s'ha actualitzat
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Redirigir al club creat
             router.push(`/clubs/manage/${data.id}`);
