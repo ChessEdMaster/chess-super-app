@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth, useRBAC } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { Trophy, Calendar, User, Swords, Loader2, LogOut } from 'lucide-react';
+import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, loading: authLoading, signOut } = useAuth();
+  const { checkPermission } = useRBAC();
   const router = useRouter();
   interface GameRecord {
     id: string;
@@ -88,12 +89,21 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <User className="text-indigo-500" /> El teu Perfil
           </h1>
-          <button
-            onClick={signOut}
-            className="flex items-center gap-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 px-4 py-2 rounded-lg transition border border-red-500/30 text-sm font-bold"
-          >
-            <LogOut size={16} /> Tancar Sessió
-          </button>
+          <div className="flex items-center gap-3">
+            {checkPermission('admin.all') && (
+              <Link href="/admin/users">
+                <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-900/20 text-sm font-bold">
+                  <Shield size={16} /> Panel Admin
+                </button>
+              </Link>
+            )}
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 px-4 py-2 rounded-lg transition border border-red-500/30 text-sm font-bold"
+            >
+              <LogOut size={16} /> Tancar Sessió
+            </button>
+          </div>
         </div>
 
         {/* Targeta d'Usuari Centrada */}

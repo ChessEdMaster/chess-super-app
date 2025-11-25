@@ -35,12 +35,6 @@ export function SiteHeader() {
               Clubs
             </Link>
           )}
-          {checkPermission('admin.all') && (
-            <Link href="/admin/users" className="text-red-400 hover:text-red-300 transition font-medium flex items-center gap-1">
-              <Shield size={16} />
-              Admin
-            </Link>
-          )}
         </nav>
 
         {/* ZONA D'USUARI */}
