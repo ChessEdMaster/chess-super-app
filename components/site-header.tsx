@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth, useRBAC } from '@/components/auth-provider';
 import { Trophy, LogOut, User, Loader2 } from 'lucide-react';
 import { CartButton } from '@/components/shop/cart-button';
 
 export function SiteHeader() {
   const { user, loading, signOut } = useAuth();
+  const { checkPermission } = useRBAC();
 
   return (
     <header className="w-full bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
@@ -29,9 +30,11 @@ export function SiteHeader() {
           <Link href="/play" className="text-slate-300 hover:text-purple-400 transition font-medium">
             Jugar
           </Link>
-          <Link href="/clubs" className="text-slate-300 hover:text-purple-400 transition font-medium">
-            Clubs
-          </Link>
+          {checkPermission('view.clubs') && (
+            <Link href="/clubs" className="text-slate-300 hover:text-purple-400 transition font-medium">
+              Clubs
+            </Link>
+          )}
         </nav>
 
         {/* ZONA D'USUARI */}
