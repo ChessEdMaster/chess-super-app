@@ -28,13 +28,41 @@ export async function proxy(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Debug logging
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        console.log('[Middleware Debug] Request to /admin');
+        console.log('[Middleware Debug] User found:', !!user);
+        console.log('[Middleware Debug] App Metadata:', user?.app_metadata);
+        console.log('[Middleware Debug] Role from metadata:', user?.app_metadata?.app_role);
+    }
+
     // Obtenir el rol de les metadades de l'usuari (injectat pel trigger SQL)
-    const role = user?.app_metadata?.app_role
+    let role = user?.app_metadata?.app_role as any;
 
     // 1. Protecció de Rutes d'Administració (només SuperAdmin)
     if (request.nextUrl.pathname.startsWith('/admin')) {
+        // Fallback: Si no trobem el rol a les metadades, el busquem a la base de dades
+        // Això és més segur i robust contra problemes de sincronització de JWT
+        if (!role && user) {
+            console.log('[Middleware] Role not in metadata, fetching from DB...');
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select(`
+                    role_id,
+                    app_roles ( name )
+                `)
+                .eq('id', user.id)
+                .single();
+
+            // @ts-ignore
+            role = profile?.app_roles?.name;
+            console.log('[Middleware] Role fetched from DB:', role);
+        }
+
         // CRÍTICO: Comprovar que el rol té permís d'admin
-        if (!hasPermission(role, 'admin.all')) {
+        const allowed = hasPermission(role, 'admin.all');
+
+        if (!allowed) {
             console.log('[Middleware] Accés denegat a /admin. Rol:', role, 'User ID:', user?.id);
             return NextResponse.redirect(new URL('/', request.url))
         }
