@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth, useRBAC } from '@/components/auth-provider';
-import { Trophy, LogOut, User, Loader2 } from 'lucide-react';
+import { Trophy, LogOut, User, Loader2, Shield } from 'lucide-react';
 import { CartButton } from '@/components/shop/cart-button';
 
 export function SiteHeader() {
@@ -33,6 +33,12 @@ export function SiteHeader() {
           {checkPermission('view.clubs') && (
             <Link href="/clubs" className="text-slate-300 hover:text-purple-400 transition font-medium">
               Clubs
+            </Link>
+          )}
+          {checkPermission('admin.all') && (
+            <Link href="/admin/users" className="text-red-400 hover:text-red-300 transition font-medium flex items-center gap-1">
+              <Shield size={16} />
+              Admin
             </Link>
           )}
         </nav>
