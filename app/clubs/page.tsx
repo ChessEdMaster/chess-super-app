@@ -154,7 +154,7 @@ export default function ClubsPage() {
                 });
 
             // Redirigir al club creat
-            router.push(`/clubs/${data.slug}`);
+            router.push(`/clubs/manage/${data.id}`);
         } catch (error: any) {
             console.error('Error creating club:', error);
             alert(error.message || 'Error al crear el club');

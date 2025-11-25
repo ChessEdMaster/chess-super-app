@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname, useParams, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     Users,
@@ -21,23 +21,65 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
     const params = useParams();
     const clubId = params.clubId as string;
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [clubName, setClubName] = useState<string>('Carregant...');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-    useEffect(() => {
-        const fetchClub = async () => {
-            if (!clubId) return;
-            const { data, error } = await supabase
-                .from('clubs')
-                .select('name')
-                .eq('id', clubId)
-                .single();
+    const router = useRouter(); // Need to add import
+    const [loading, setLoading] = useState(true);
 
-            if (data) setClubName(data.name);
+    useEffect(() => {
+        const checkPermission = async () => {
+            if (authLoading) return;
+
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+
+            if (!clubId) return;
+
+            try {
+                // Check membership and role
+                const { data: member, error } = await supabase
+                    .from('club_members')
+                    .select('role, club:clubs(name)')
+                    .eq('club_id', clubId)
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (error || !member) {
+                    console.error('Access denied: Not a member', error);
+                    router.push('/clubs');
+                    return;
+                }
+
+                if (!['owner', 'admin'].includes(member.role)) {
+                    console.error('Access denied: Insufficient permissions');
+                    router.push(`/clubs`);
+                    return;
+                }
+
+                // @ts-ignore
+                if (member.club) setClubName(member.club.name);
+                setLoading(false);
+
+            } catch (err) {
+                console.error('Error checking permissions:', err);
+                router.push('/clubs');
+            }
         };
-        fetchClub();
-    }, [clubId]);
+
+        checkPermission();
+    }, [user, clubId, authLoading, router]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+        );
+    }
 
     const navItems = [
         { href: `/clubs/manage/${clubId}`, label: 'Visió General', icon: LayoutDashboard },
