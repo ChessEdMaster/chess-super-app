@@ -85,15 +85,19 @@ export default function GroupDetailsPage() {
     }, [isAddMemberOpen]);
 
     const fetchStudentStats = async () => {
-        const memberIds = members.map(m => m.user_id);
-        if (memberIds.length === 0) return;
+        // Only fetch stats for members with a user_id
+        const userIds = members
+            .map(m => m.club_members?.user_id)
+            .filter(id => id);
+
+        if (userIds.length === 0) return;
 
         try {
             // Fetch completed lessons count per user
             const { data, error } = await supabase
                 .from('user_lesson_progress')
                 .select('user_id, completed_at')
-                .in('user_id', memberIds)
+                .in('user_id', userIds)
                 .eq('completed', true);
 
             if (error) throw error;
@@ -101,7 +105,7 @@ export default function GroupDetailsPage() {
             const stats: Record<string, { completed: number, lastActivity: string | null }> = {};
 
             // Initialize
-            memberIds.forEach(id => {
+            userIds.forEach(id => {
                 stats[id] = { completed: 0, lastActivity: null };
             });
 
@@ -136,7 +140,29 @@ export default function GroupDetailsPage() {
             if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
 
             if (data) {
-                setAttendanceState(new Set(data.present_students || []));
+                // Map any legacy user_ids to club_member_ids
+                const presentIds = new Set<string>();
+                const storedIds = data.present_students || [];
+
+                // Create a map of user_id -> club_member_id from current members
+                const userIdToMemberId = new Map<string, string>();
+                members.forEach(m => {
+                    if (m.club_members?.user_id) {
+                        userIdToMemberId.set(m.club_members.user_id, m.club_member_id);
+                    }
+                });
+
+                storedIds.forEach((id: string) => {
+                    // Check if it's a user_id that needs mapping
+                    if (userIdToMemberId.has(id)) {
+                        presentIds.add(userIdToMemberId.get(id)!);
+                    } else {
+                        // Assume it's already a club_member_id
+                        presentIds.add(id);
+                    }
+                });
+
+                setAttendanceState(presentIds);
             } else {
                 setAttendanceState(new Set()); // Reset if no record found
             }
@@ -145,12 +171,12 @@ export default function GroupDetailsPage() {
         }
     };
 
-    const toggleAttendance = (userId: string) => {
+    const toggleAttendance = (memberId: string) => {
         const newSet = new Set(attendanceState);
-        if (newSet.has(userId)) {
-            newSet.delete(userId);
+        if (newSet.has(memberId)) {
+            newSet.delete(memberId);
         } else {
-            newSet.add(userId);
+            newSet.add(memberId);
         }
         setAttendanceState(newSet);
     };
@@ -160,10 +186,6 @@ export default function GroupDetailsPage() {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('No user found');
-
-            // First check if record exists to get ID (upsert needs primary key or unique constraint)
-            // Since we don't have a unique constraint on (group_id, date) yet, we'll do a check-then-update/insert
-            // OR we can just rely on the fact we want one record per group/date.
 
             // Let's try to find existing record first
             const { data: existing } = await supabase
@@ -223,11 +245,16 @@ export default function GroupDetailsPage() {
             .from('club_group_members')
             .select(`
                 *,
-                profiles:user_id (
+                club_members:club_member_id (
                     id,
-                    username,
-                    full_name,
-                    avatar_url
+                    shadow_name,
+                    user_id,
+                    profiles:user_id (
+                        id,
+                        username,
+                        full_name,
+                        avatar_url
+                    )
                 )
             `)
             .eq('group_id', groupId);
@@ -241,6 +268,8 @@ export default function GroupDetailsPage() {
         const { data: allClubMembers } = await supabase
             .from('club_members')
             .select(`
+                id,
+                shadow_name,
                 user_id,
                 profiles:user_id (
                     id,
@@ -253,19 +282,19 @@ export default function GroupDetailsPage() {
 
         if (allClubMembers) {
             // Filter out existing group members
-            const existingMemberIds = new Set(members.map(m => m.user_id));
-            const available = allClubMembers.filter(m => !existingMemberIds.has(m.user_id));
+            const existingMemberIds = new Set(members.map(m => m.club_member_id));
+            const available = allClubMembers.filter(m => !existingMemberIds.has(m.id));
             setClubMembers(available);
         }
     };
 
-    const handleAddMember = async (userId: string) => {
+    const handleAddMember = async (clubMemberId: string) => {
         try {
             const { error } = await supabase
                 .from('club_group_members')
                 .insert({
                     group_id: groupId,
-                    user_id: userId,
+                    club_member_id: clubMemberId,
                     status: 'active'
                 });
 
@@ -279,7 +308,7 @@ export default function GroupDetailsPage() {
         }
     };
 
-    const handleRemoveMember = async (userId: string) => {
+    const handleRemoveMember = async (clubMemberId: string) => {
         if (!confirm('Segur que vols eliminar aquest alumne del grup?')) return;
 
         try {
@@ -287,12 +316,12 @@ export default function GroupDetailsPage() {
                 .from('club_group_members')
                 .delete()
                 .eq('group_id', groupId)
-                .eq('user_id', userId);
+                .eq('club_member_id', clubMemberId);
 
             if (error) throw error;
 
             toast.success('Alumne eliminat del grup');
-            setMembers(members.filter(m => m.user_id !== userId));
+            setMembers(members.filter(m => m.club_member_id !== clubMemberId));
         } catch (error: any) {
             toast.error('Error eliminant alumne: ' + error.message);
         }
@@ -350,8 +379,8 @@ export default function GroupDetailsPage() {
     if (!group) return <div className="p-8 text-center">Grup no trobat</div>;
 
     const filteredClubMembers = clubMembers.filter(m =>
-        m.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+        (m.profiles?.full_name || m.shadow_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (m.profiles?.username || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -412,18 +441,20 @@ export default function GroupDetailsPage() {
                                     </div>
                                     <div className="max-h-[300px] overflow-y-auto space-y-2">
                                         {filteredClubMembers.map((member) => (
-                                            <div key={member.user_id} className="flex items-center justify-between p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors">
+                                            <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="w-8 h-8">
                                                         <AvatarImage src={member.profiles?.avatar_url} />
-                                                        <AvatarFallback>{member.profiles?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                                        <AvatarFallback>{(member.profiles?.username || member.shadow_name)?.[0]?.toUpperCase()}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <p className="text-sm font-medium text-white">{member.profiles?.full_name}</p>
-                                                        <p className="text-xs text-neutral-500">@{member.profiles?.username}</p>
+                                                        <p className="text-sm font-medium text-white">{member.profiles?.full_name || member.shadow_name}</p>
+                                                        <p className="text-xs text-neutral-500">
+                                                            {member.profiles ? `@${member.profiles.username}` : 'Soci Manual'}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <Button size="sm" variant="secondary" onClick={() => handleAddMember(member.user_id)}>
+                                                <Button size="sm" variant="secondary" onClick={() => handleAddMember(member.id)}>
                                                     Afegir
                                                 </Button>
                                             </div>
@@ -454,21 +485,23 @@ export default function GroupDetailsPage() {
                                 </thead>
                                 <tbody className="divide-y divide-neutral-800">
                                     {members.map((member) => (
-                                        <tr key={member.user_id} className="hover:bg-neutral-800/30">
+                                        <tr key={member.id} className="hover:bg-neutral-800/30">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="w-8 h-8">
-                                                        <AvatarImage src={member.profiles?.avatar_url} />
-                                                        <AvatarFallback>{member.profiles?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                                        <AvatarImage src={member.club_members?.profiles?.avatar_url} />
+                                                        <AvatarFallback>{(member.club_members?.profiles?.username || member.club_members?.shadow_name)?.[0]?.toUpperCase()}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <p className="text-sm font-medium text-white">{member.profiles?.full_name}</p>
-                                                        <p className="text-xs text-neutral-500">@{member.profiles?.username}</p>
+                                                        <p className="text-sm font-medium text-white">{member.club_members?.profiles?.full_name || member.club_members?.shadow_name}</p>
+                                                        <p className="text-xs text-neutral-500">
+                                                            {member.club_members?.profiles ? `@${member.club_members?.profiles.username}` : 'Soci Manual'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-neutral-400">
-                                                {new Date(member.joined_at).toLocaleDateString()}
+                                                {new Date(member.joined_at || new Date()).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400">
@@ -480,7 +513,7 @@ export default function GroupDetailsPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="text-neutral-400 hover:text-red-400"
-                                                    onClick={() => handleRemoveMember(member.user_id)}
+                                                    onClick={() => handleRemoveMember(member.club_member_id)}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
@@ -540,11 +573,13 @@ export default function GroupDetailsPage() {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {members.map((member) => {
-                                        const isPresent = attendanceState.has(member.user_id);
+                                        // Use club_member_id for attendance tracking
+                                        const memberId = member.club_member_id;
+                                        const isPresent = attendanceState.has(memberId);
                                         return (
                                             <div
-                                                key={member.user_id}
-                                                onClick={() => toggleAttendance(member.user_id)}
+                                                key={memberId}
+                                                onClick={() => toggleAttendance(memberId)}
                                                 className={`
                                                     cursor-pointer p-4 rounded-xl border transition-all duration-200 flex items-center justify-between
                                                     ${isPresent
@@ -554,14 +589,16 @@ export default function GroupDetailsPage() {
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="w-10 h-10 border border-neutral-700">
-                                                        <AvatarImage src={member.profiles?.avatar_url} />
-                                                        <AvatarFallback>{member.profiles?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                                        <AvatarImage src={member.club_members?.profiles?.avatar_url} />
+                                                        <AvatarFallback>{(member.club_members?.profiles?.username || member.club_members?.shadow_name)?.[0]?.toUpperCase()}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
                                                         <p className={`font-medium ${isPresent ? 'text-white' : 'text-neutral-400'}`}>
-                                                            {member.profiles?.full_name}
+                                                            {member.club_members?.profiles?.full_name || member.club_members?.shadow_name}
                                                         </p>
-                                                        <p className="text-xs text-neutral-500">@{member.profiles?.username}</p>
+                                                        <p className="text-xs text-neutral-500">
+                                                            {member.club_members?.profiles ? `@${member.club_members?.profiles.username}` : 'Soci Manual'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div className={`
@@ -610,43 +647,58 @@ export default function GroupDetailsPage() {
                                 </thead>
                                 <tbody className="divide-y divide-neutral-800">
                                     {members.map((member) => {
-                                        const stats = studentStats[member.user_id] || { completed: 0, lastActivity: null };
+                                        const userId = member.club_members?.user_id;
+                                        // If no user_id (shadow member), they don't have app stats
+                                        const stats = userId ? (studentStats[userId] || { completed: 0, lastActivity: null }) : { completed: 0, lastActivity: null };
+
                                         return (
-                                            <tr key={member.user_id} className="hover:bg-neutral-800/30">
+                                            <tr key={member.id} className="hover:bg-neutral-800/30">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="w-8 h-8">
-                                                            <AvatarImage src={member.profiles?.avatar_url} />
-                                                            <AvatarFallback>{member.profiles?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                                            <AvatarImage src={member.club_members?.profiles?.avatar_url} />
+                                                            <AvatarFallback>{(member.club_members?.profiles?.username || member.club_members?.shadow_name)?.[0]?.toUpperCase()}</AvatarFallback>
                                                         </Avatar>
                                                         <div>
-                                                            <p className="text-sm font-medium text-white">{member.profiles?.full_name}</p>
-                                                            <p className="text-xs text-neutral-500">@{member.profiles?.username}</p>
+                                                            <p className="text-sm font-medium text-white">{member.club_members?.profiles?.full_name || member.club_members?.shadow_name}</p>
+                                                            <p className="text-xs text-neutral-500">
+                                                                {member.club_members?.profiles ? `@${member.club_members?.profiles.username}` : 'Soci Manual'}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="flex-1 h-2 bg-neutral-800 rounded-full w-24 overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-emerald-500 rounded-full"
-                                                                style={{ width: `${Math.min((stats.completed / 20) * 100, 100)}%` }} // Assuming 20 lessons for now
-                                                            />
+                                                    {userId ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex-1 h-2 bg-neutral-800 rounded-full w-24 overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-emerald-500 rounded-full"
+                                                                    style={{ width: `${Math.min((stats.completed / 20) * 100, 100)}%` }} // Assuming 20 lessons for now
+                                                                />
+                                                            </div>
+                                                            <span className="text-sm text-white font-medium">{stats.completed}</span>
                                                         </div>
-                                                        <span className="text-sm text-white font-medium">{stats.completed}</span>
-                                                    </div>
+                                                    ) : (
+                                                        <span className="text-sm text-neutral-500">N/A (Soci Manual)</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-neutral-400">
-                                                    {stats.lastActivity ? new Date(stats.lastActivity).toLocaleDateString() : 'Mai'}
+                                                    {stats.lastActivity ? new Date(stats.lastActivity).toLocaleDateString() : (userId ? 'Mai' : '-')}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {stats.completed > 5 ? (
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400">
-                                                            Bon Ritme
-                                                        </span>
+                                                    {userId ? (
+                                                        stats.completed > 5 ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400">
+                                                                Bon Ritme
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400">
+                                                                Poc Actiu
+                                                            </span>
+                                                        )
                                                     ) : (
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400">
-                                                            Poc Actiu
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-800 text-neutral-400">
+                                                            Presencial
                                                         </span>
                                                     )}
                                                 </td>

@@ -3,15 +3,20 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Search, Filter, MoreVertical, Shield, UserCheck } from 'lucide-react';
+import { Search, Filter, MoreVertical, Shield, UserCheck, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ClubMember {
     id: string;
-    user_id: string;
+    user_id: string | null;
     role: 'owner' | 'admin' | 'moderator' | 'member';
     joined_at: string;
-    profiles: {
+    shadow_name?: string;
+    profiles?: {
         username: string;
         full_name: string;
         avatar_url: string;
@@ -24,6 +29,12 @@ export default function ClubMembersPage() {
     const [members, setMembers] = useState<ClubMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Invite/Add Member State
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
+    const [newMemberName, setNewMemberName] = useState('');
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchMembers();
@@ -46,10 +57,37 @@ export default function ClubMembersPage() {
         setLoading(false);
     };
 
-    const filteredMembers = members.filter(member =>
-        member.profiles?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleAddShadowMember = async () => {
+        if (!newMemberName.trim()) return;
+        setIsSubmitting(true);
+
+        const { error } = await supabase.from('club_members').insert({
+            club_id: clubId,
+            role: 'member',
+            shadow_name: newMemberName,
+            user_id: null
+        });
+
+        if (error) {
+            console.error('Error adding member:', error);
+        } else {
+            setNewMemberName('');
+            setIsInviteOpen(false);
+            fetchMembers();
+        }
+        setIsSubmitting(false);
+    };
+
+    const filteredMembers = members.filter(member => {
+        const searchLower = searchTerm.toLowerCase();
+        const username = member.profiles?.username?.toLowerCase() || '';
+        const fullName = member.profiles?.full_name?.toLowerCase() || '';
+        const shadowName = member.shadow_name?.toLowerCase() || '';
+
+        return username.includes(searchLower) ||
+            fullName.includes(searchLower) ||
+            shadowName.includes(searchLower);
+    });
 
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
@@ -67,10 +105,63 @@ export default function ClubMembersPage() {
                     <h1 className="text-3xl font-bold text-white">Socis i Membres</h1>
                     <p className="text-neutral-400 mt-2">Gestiona els membres del teu club i els seus rols.</p>
                 </div>
-                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
-                    <UserCheck className="w-4 h-4 mr-2" />
-                    INVITAR MEMBRE
-                </Button>
+
+                <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            AFEGIR MEMBRE
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-neutral-900 border-neutral-800 text-white sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Afegir nou membre</DialogTitle>
+                        </DialogHeader>
+                        <Tabs defaultValue="manual" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 bg-neutral-800">
+                                <TabsTrigger value="manual">Manual (Soci)</TabsTrigger>
+                                <TabsTrigger value="invite">Invitar (App)</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="manual" className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nom i Cognoms</Label>
+                                    <Input
+                                        id="name"
+                                        placeholder="Ex: Joan Garcia"
+                                        value={newMemberName}
+                                        onChange={(e) => setNewMemberName(e.target.value)}
+                                        className="bg-neutral-950 border-neutral-800"
+                                    />
+                                    <p className="text-xs text-neutral-500">
+                                        Aquest usuari no tindrà accés a l'app, però podràs gestionar el seu expedient.
+                                    </p>
+                                </div>
+                                <Button
+                                    className="w-full bg-emerald-500 hover:bg-emerald-600"
+                                    onClick={handleAddShadowMember}
+                                    disabled={!newMemberName.trim() || isSubmitting}
+                                >
+                                    {isSubmitting ? 'Afegint...' : 'Crear Soci'}
+                                </Button>
+                            </TabsContent>
+                            <TabsContent value="invite" className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email o Nom d'usuari</Label>
+                                    <Input
+                                        id="email"
+                                        placeholder="usuari@exemple.com"
+                                        value={inviteEmail}
+                                        onChange={(e) => setInviteEmail(e.target.value)}
+                                        className="bg-neutral-950 border-neutral-800"
+                                    />
+                                </div>
+                                <Button className="w-full" variant="secondary" disabled>
+                                    Pròximament
+                                </Button>
+                            </TabsContent>
+                        </Tabs>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             {/* Filters */}
@@ -109,11 +200,15 @@ export default function ClubMembersPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center">
                                         <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-white font-bold mr-3">
-                                            {member.profiles?.username?.[0]?.toUpperCase() || '?'}
+                                            {member.profiles?.username?.[0]?.toUpperCase() || member.shadow_name?.[0]?.toUpperCase() || '?'}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-white">{member.profiles?.full_name || 'Sense nom'}</p>
-                                            <p className="text-xs text-neutral-500">@{member.profiles?.username}</p>
+                                            <p className="text-sm font-medium text-white">
+                                                {member.profiles?.full_name || member.shadow_name || 'Sense nom'}
+                                            </p>
+                                            <p className="text-xs text-neutral-500">
+                                                {member.profiles ? `@${member.profiles.username}` : <span className="text-emerald-500/70 flex items-center gap-1"><Users className="w-3 h-3" /> Soci Manual</span>}
+                                            </p>
                                         </div>
                                     </div>
                                 </td>
