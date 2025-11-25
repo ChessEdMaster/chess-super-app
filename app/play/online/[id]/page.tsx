@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
 import { Copy, Loader2, Flag, Handshake, X, RotateCw, Search } from 'lucide-react';
 import { ChessClock } from '@/components/chess-clock';
 import { ChatBox } from '@/components/chat-box';
@@ -13,6 +13,12 @@ import { MoveHistory } from '@/components/move-history';
 import { playSound } from '@/lib/sounds';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
+
+// CRÍTICO: Dynamic import para evitar problemas de SSR
+const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
+});
 
 export default function OnlineGamePage() {
   const { id } = useParams();
@@ -273,11 +279,10 @@ export default function OnlineGamePage() {
       return false; // No és el teu torn
     }
 
-    // CRÍTICO: Crear nueva instancia para validar el movimiento
-    const gameCopy = new Chess(game.fen());
+    // CRÍTICO: Hacer el movimiento en la instancia actual
     let move = null;
     try {
-      move = gameCopy.move({
+      move = game.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: 'q',
@@ -293,19 +298,18 @@ export default function OnlineGamePage() {
       return false;
     }
 
-    // CRÍTICO: Actualizar estado local ANTES de retornar true (optimistic update)
-    // Crear nueva instancia para actualizar estado y forzar re-render
-    const updatedGame = new Chess(gameCopy.fen());
-    const newFen = updatedGame.fen();
+    // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
+    const newGame = new Chess(game.fen());
+    const newFen = newGame.fen();
     console.log('[Online onDrop] New FEN:', newFen);
 
-    setGame(updatedGame);
+    setGame(newGame);
     setFen(newFen);
 
     // Sons locals (optimistic)
-    if (updatedGame.isCheckmate()) {
+    if (newGame.isCheckmate()) {
       playSound('game_end');
-    } else if (updatedGame.isCheck()) {
+    } else if (newGame.isCheck()) {
       playSound('check');
     } else if (move.captured) {
       playSound('capture');
@@ -316,7 +320,7 @@ export default function OnlineGamePage() {
     // Enviar movimiento a la base de datos (async, no bloquea el return)
     supabase.from('games').update({
       fen: newFen,
-      pgn: updatedGame.pgn(),
+      pgn: newGame.pgn(),
     }).eq('id', id).then(({ error }) => {
       if (error) {
         console.error('[Online onDrop] Error actualizando partida:', error);

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { Chess } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,6 +24,12 @@ import { BOARD_THEMES } from '@/lib/themes';
 import { PGNTree } from '@/lib/pgn-tree';
 import { PGNParser } from '@/lib/pgn-parser';
 import type { Evaluation } from '@/lib/pgn-types';
+
+// CRÍTICO: Dynamic import para evitar problemas de SSR
+const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
+});
 
 // Configuració del Motor
 const ENGINE_DEPTH = 15; // Profunditat d'anàlisi (15 és ràpid i fort)
@@ -87,26 +93,33 @@ export default function AnalysisPage() {
   }, []);
 
   // 1. INICIALITZAR STOCKFISH (AL MUNTAR)
+  // CRÍTICO: Solo inicializar una vez usando useRef
   useEffect(() => {
-    const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
-    const workerCode = `importScripts('${stockfishUrl}');`;
-    const blob = new Blob([workerCode], { type: 'application/javascript' });
-    const localWorkerUrl = URL.createObjectURL(blob);
+    // Solo crear el worker si no existe
+    if (!engine.current) {
+      const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
+      const workerCode = `importScripts('${stockfishUrl}');`;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const localWorkerUrl = URL.createObjectURL(blob);
 
-    const stockfishWorker = new Worker(localWorkerUrl);
-    engine.current = stockfishWorker;
+      const stockfishWorker = new Worker(localWorkerUrl);
+      engine.current = stockfishWorker;
 
-    // Configurar Web Worker
-    stockfishWorker.postMessage('uci');
+      // Configurar Web Worker
+      stockfishWorker.postMessage('uci');
 
-    // Esperar una mica abans de configurar MultiPV
-    setTimeout(() => {
-      stockfishWorker.postMessage('setoption name MultiPV value 1');
-    }, 100);
+      // Esperar una mica abans de configurar MultiPV
+      setTimeout(() => {
+        stockfishWorker.postMessage('setoption name MultiPV value 1');
+      }, 100);
+    }
 
     return () => {
-      stockfishWorker.terminate();
-      URL.revokeObjectURL(localWorkerUrl);
+      // Solo limpiar al desmontar el componente
+      if (engine.current) {
+        engine.current.terminate();
+        engine.current = null;
+      }
     };
   }, []);
 
@@ -184,10 +197,10 @@ export default function AnalysisPage() {
       return false;
     }
 
-    // CRÍTICO: Crear nueva instancia para evitar mutabilidad
-    const gameCopy = new Chess(game.fen());
+    // CRÍTICO: Hacer el movimiento en la instancia actual
+    let move = null;
     try {
-      const move = gameCopy.move({
+      move = game.move({
         from: sourceSquare,
         to: targetSquare,
         promotion: 'q',
@@ -210,12 +223,12 @@ export default function AnalysisPage() {
         return false;
       }
 
-      // CRÍTICO: Crear nueva instancia para actualizar estado
-      const updatedGame = new Chess(gameCopy.fen());
-      const newFen = updatedGame.fen();
+      // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
+      const newGame = new Chess(game.fen());
+      const newFen = newGame.fen();
       console.log('[Analysis onDrop] New FEN:', newFen);
-
-      setGame(updatedGame);
+      
+      setGame(newGame);
       setFen(newFen);
       setLastMove(move.san);
       setPgnTree(newTree); // Set new tree instance

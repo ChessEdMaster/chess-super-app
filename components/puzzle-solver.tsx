@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Chess } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
 import {
     CheckCircle,
     XCircle,
@@ -16,6 +16,12 @@ import { AcademyExercise } from '@/lib/academy-types';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
+
+// CRÍTICO: Dynamic import para evitar problemas de SSR
+const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
+});
 
 interface PuzzleSolverProps {
     exercise: AcademyExercise;
@@ -88,12 +94,12 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             return false;
         }
 
-        // CRÍTICO: Crear nueva instancia para evitar mutabilidad
-        const gameCopy = new Chess(game.fen());
+        // CRÍTICO: Hacer el movimiento en la instancia actual
         const uciMove = `${sourceSquare}${targetSquare}`;
+        let result = null;
 
         try {
-            const result = gameCopy.move({
+            result = game.move({
                 from: sourceSquare,
                 to: targetSquare,
                 promotion: 'q'
@@ -111,10 +117,10 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             const expectedMove = exercise.solution[moveIndex];
 
             if (uciMove === expectedMove) {
-                // CRÍTICO: Crear nueva instancia para actualizar estado
-                const updatedGame = new Chess(gameCopy.fen());
-                setGame(updatedGame);
-                setFen(updatedGame.fen());
+                // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
+                const newGame = new Chess(game.fen());
+                setGame(newGame);
+                setFen(newGame.fen());
                 setMoveIndex(prev => prev + 1);
                 playSound('move');
 
@@ -127,7 +133,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                     });
 
                     setTimeout(() => {
-                        makeOpponentMove(updatedGame);
+                        makeOpponentMove(newGame);
                     }, 500);
                 }
 
@@ -225,19 +231,18 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             const to = opponentMove.substring(2, 4);
 
             try {
-                // CRÍTICO: Crear nueva instancia para evitar mutar el estado
-                const gameCopy = new Chess(currentGame.fen());
-                const result = gameCopy.move({
+                // CRÍTICO: Hacer el movimiento en la instancia actual
+                const result = currentGame.move({
                     from,
                     to,
                     promotion: 'q'
                 });
 
                 if (result) {
-                    // CRÍTICO: Crear nueva instancia para actualizar estado
-                    const updatedGame = new Chess(gameCopy.fen());
-                    setGame(updatedGame);
-                    setFen(updatedGame.fen());
+                    // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
+                    const newGame = new Chess(currentGame.fen());
+                    setGame(newGame);
+                    setFen(newGame.fen());
                     setMoveIndex(prev => prev + 2);
                     playSound('move');
 

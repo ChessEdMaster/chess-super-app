@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
 import { Trophy, RefreshCw, User, Cpu, AlertTriangle, Loader2, Flag, XCircle, Save } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
@@ -13,6 +13,12 @@ import { MoveHistory } from '@/components/move-history';
 import { playSound } from '@/lib/sounds';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
+
+// CRÍTICO: Dynamic import para evitar problemas de SSR
+const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
+});
 
 // Configuració de potència (10 és un bon equilibri per navegador)
 const ENGINE_DEPTH = 10;
@@ -53,27 +59,35 @@ export default function PlayPage() {
   }, [user, loading, router]);
 
   // Inicialització Worker + Client
+  // CRÍTICO: Solo inicializar una vez usando useRef
   useEffect(() => {
     setIsClient(true);
-    const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
-    const workerCode = `importScripts('${stockfishUrl}');`;
-    const blob = new Blob([workerCode], { type: 'application/javascript' });
-    const localWorkerUrl = URL.createObjectURL(blob);
+    
+    // Solo crear el worker si no existe
+    if (!engine.current) {
+      const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
+      const workerCode = `importScripts('${stockfishUrl}');`;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const localWorkerUrl = URL.createObjectURL(blob);
 
-    const stockfishWorker = new Worker(localWorkerUrl);
-    engine.current = stockfishWorker;
+      const stockfishWorker = new Worker(localWorkerUrl);
+      engine.current = stockfishWorker;
 
-    stockfishWorker.onmessage = (event) => {
-      const message = event.data;
-      if (typeof message === 'string' && message.startsWith('bestmove')) {
-        const bestMove = message.split(' ')[1];
-        makeEngineMove(bestMove);
-      }
-    };
+      stockfishWorker.onmessage = (event) => {
+        const message = event.data;
+        if (typeof message === 'string' && message.startsWith('bestmove')) {
+          const bestMove = message.split(' ')[1];
+          makeEngineMove(bestMove);
+        }
+      };
+    }
 
     return () => {
-      stockfishWorker.terminate();
-      URL.revokeObjectURL(localWorkerUrl);
+      // Solo limpiar al desmontar el componente
+      if (engine.current) {
+        engine.current.terminate();
+        engine.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -245,12 +259,10 @@ export default function PlayPage() {
   function attemptMove(source: string, target: string, promotionPiece: string = 'q'): boolean {
     console.log('[attemptMove] Starting:', { source, target, promotionPiece, currentFen: game.fen() });
 
-    // CRÍTICO: Crear nueva instancia para evitar mutabilidad
-    const gameCopy = new Chess(game.fen());
+    // CRÍTICO: Hacer el movimiento en la instancia actual
     let move = null;
-
     try {
-      move = gameCopy.move({ from: source, to: target, promotion: promotionPiece });
+      move = game.move({ from: source, to: target, promotion: promotionPiece });
       console.log('[attemptMove] Move created:', move);
     } catch (error) {
       console.error('[attemptMove] Move failed:', error);
@@ -262,15 +274,15 @@ export default function PlayPage() {
       return false;
     }
 
-    // CRÍTICO: Crear nueva instancia para actualizar estado
-    const updatedGame = new Chess(gameCopy.fen());
-    const newFen = updatedGame.fen();
+    // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
+    const newGame = new Chess(game.fen());
+    const newFen = newGame.fen();
     console.log('[attemptMove] New FEN:', newFen);
 
     // Sons
-    if (updatedGame.isCheckmate()) {
+    if (newGame.isCheckmate()) {
       playSound('game_end');
-    } else if (updatedGame.isCheck()) {
+    } else if (newGame.isCheck()) {
       playSound('check');
     } else if (move.captured) {
       playSound('capture');
@@ -278,13 +290,13 @@ export default function PlayPage() {
       playSound('move');
     }
 
-    // Actualizar estado con nueva instancia
-    setGame(updatedGame);
+    // Actualizar estado con nueva instancia (fuerza re-render)
+    setGame(newGame);
     setFen(newFen);
-    setHistory(updatedGame.history());
+    setHistory(newGame.history());
     console.log('[attemptMove] State updated');
 
-    if (!checkGameStatus(updatedGame)) {
+    if (!checkGameStatus(newGame)) {
       setTimeout(() => { findBestMove(newFen); }, 200);
     }
     return true;
