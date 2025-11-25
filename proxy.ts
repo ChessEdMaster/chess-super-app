@@ -31,19 +31,18 @@ export async function proxy(request: NextRequest) {
     // Obtenir el rol de les metadades de l'usuari (injectat pel trigger SQL)
     const role = user?.app_metadata?.app_role
 
-    // 1. Protecció de Rutes d'Administració
+    // 1. Protecció de Rutes d'Administració (només SuperAdmin)
     if (request.nextUrl.pathname.startsWith('/admin')) {
+        // CRÍTICO: Comprovar que el rol té permís d'admin
         if (!hasPermission(role, 'admin.all')) {
+            console.log('[Middleware] Accés denegat a /admin. Rol:', role, 'User ID:', user?.id);
             return NextResponse.redirect(new URL('/', request.url))
         }
     }
 
     // 2. Protecció de Rutes de Clubs (Gestió)
-    if (request.nextUrl.pathname.startsWith('/clubs/manage')) {
-        if (!hasPermission(role, 'manage.club')) {
-            return NextResponse.redirect(new URL('/clubs', request.url))
-        }
-    }
+    // ELIMINAT: Deixem que el layout de clubs/manage faci la comprovació específica
+    // perquè la comprovació ha de ser per club (owner/admin), no per rol global.
 
     // 3. Protecció de l'Acadèmia
     if (request.nextUrl.pathname.startsWith('/academy')) {
