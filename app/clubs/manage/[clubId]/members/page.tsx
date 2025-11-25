@@ -69,7 +69,7 @@ export default function ClubMembersPage() {
                 </div>
                 <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
                     <UserCheck className="w-4 h-4 mr-2" />
-                    Convidar Membre
+                    INVITAR MEMBRE
                 </Button>
             </div>
 

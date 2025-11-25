@@ -57,6 +57,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
                 }
 
                 // 2. Verificar permisos
+                console.log('[Club ERP] Checking permissions for role:', member.role);
                 if (!['owner', 'admin'].includes(member.role)) {
                     console.error('[Club ERP] Access denied: Insufficient permissions', { role: member.role });
                     alert('No tens permisos suficients. Només el propietari i els administradors poden accedir.');
