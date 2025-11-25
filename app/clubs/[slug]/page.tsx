@@ -141,14 +141,28 @@ export default function ClubDetailPage() {
             });
 
             // Carregar membres
-            const { data: membersData } = await supabase
+
+
+            const { data: membersData, error: membersError } = await supabase
                 .from('club_members')
                 .select('*, profile:profiles(username, avatar_url)')
                 .eq('club_id', clubData.id)
                 .order('role', { ascending: false })
                 .order('joined_at', { ascending: true });
 
-            setMembers(membersData || []);
+            if (membersError) {
+                console.warn('Error loading members (join might have failed):', membersError);
+                // Fallback: carregar sense perfil si falla el join
+                if (!membersData) {
+                    const { data: rawMembers } = await supabase
+                        .from('club_members')
+                        .select('*')
+                        .eq('club_id', clubData.id);
+                    setMembers(rawMembers as any || []);
+                }
+            } else {
+                setMembers(membersData || []);
+            }
 
             // Comprovar si l'usuari és membre
             if (user) {
@@ -237,6 +251,13 @@ export default function ClubDetailPage() {
             loadClubData();
         } catch (error: any) {
             console.error('Error joining club:', error);
+            // Si l'error és de clau duplicada, vol dir que ja és membre.
+            // Ho tractem com un èxit i recarreguem.
+            if (error.code === '23505' || error.message?.includes('duplicate key')) {
+                setIsMember(true);
+                loadClubData();
+                return;
+            }
             alert(error.message || 'Error al unir-se al club');
         }
     };
@@ -428,33 +449,30 @@ export default function ClubDetailPage() {
                     <div className="flex gap-4 mb-6 border-b border-slate-800">
                         <button
                             onClick={() => setActiveTab('posts')}
-                            className={`px-4 py-2 font-medium transition ${
-                                activeTab === 'posts'
-                                    ? 'text-purple-400 border-b-2 border-purple-400'
-                                    : 'text-slate-400 hover:text-white'
-                            }`}
+                            className={`px-4 py-2 font-medium transition ${activeTab === 'posts'
+                                ? 'text-purple-400 border-b-2 border-purple-400'
+                                : 'text-slate-400 hover:text-white'
+                                }`}
                         >
                             <MessageSquare size={18} className="inline mr-2" />
                             Posts
                         </button>
                         <button
                             onClick={() => setActiveTab('members')}
-                            className={`px-4 py-2 font-medium transition ${
-                                activeTab === 'members'
-                                    ? 'text-purple-400 border-b-2 border-purple-400'
-                                    : 'text-slate-400 hover:text-white'
-                            }`}
+                            className={`px-4 py-2 font-medium transition ${activeTab === 'members'
+                                ? 'text-purple-400 border-b-2 border-purple-400'
+                                : 'text-slate-400 hover:text-white'
+                                }`}
                         >
                             <Users size={18} className="inline mr-2" />
                             Membres ({members.length})
                         </button>
                         <button
                             onClick={() => setActiveTab('events')}
-                            className={`px-4 py-2 font-medium transition ${
-                                activeTab === 'events'
-                                    ? 'text-purple-400 border-b-2 border-purple-400'
-                                    : 'text-slate-400 hover:text-white'
-                            }`}
+                            className={`px-4 py-2 font-medium transition ${activeTab === 'events'
+                                ? 'text-purple-400 border-b-2 border-purple-400'
+                                : 'text-slate-400 hover:text-white'
+                                }`}
                         >
                             <Calendar size={18} className="inline mr-2" />
                             Events ({events.length})
@@ -554,11 +572,10 @@ export default function ClubDetailPage() {
                                             <div className="flex items-center gap-6 pt-4 border-t border-slate-800">
                                                 <button
                                                     onClick={() => toggleLike(post.id, post.is_liked || false)}
-                                                    className={`flex items-center gap-2 transition ${
-                                                        post.is_liked
-                                                            ? 'text-red-400'
-                                                            : 'text-slate-400 hover:text-red-400'
-                                                    }`}
+                                                    className={`flex items-center gap-2 transition ${post.is_liked
+                                                        ? 'text-red-400'
+                                                        : 'text-slate-400 hover:text-red-400'
+                                                        }`}
                                                 >
                                                     <Heart
                                                         size={18}
