@@ -41,20 +41,35 @@ export default function ClubMembersPage() {
     }, [clubId]);
 
     const fetchMembers = async () => {
-        const { data, error } = await supabase
-            .from('club_members')
-            .select(`
-        *,
-        profiles:user_id (
-          username,
-          full_name,
-          avatar_url
-        )
-      `)
-            .eq('club_id', clubId);
+        try {
+            console.log('Fetching members for club:', clubId);
+            // Use explicit relationship syntax if possible, or rely on inference
+            // profiles:user_id(...) is the resource embedding syntax where 'profiles' is the table and 'user_id' is the FK column
+            // However, sometimes standard embedding profiles(...) works better if there's only one FK.
+            const { data, error } = await supabase
+                .from('club_members')
+                .select(`
+                    *,
+                    profiles (
+                        username,
+                        full_name,
+                        avatar_url
+                    )
+                `)
+                .eq('club_id', clubId);
 
-        if (data) setMembers(data as any);
-        setLoading(false);
+            if (error) {
+                console.error('Error fetching members:', error);
+                return;
+            }
+
+            console.log('Fetched members:', data);
+            if (data) setMembers(data as any);
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddShadowMember = async () => {
