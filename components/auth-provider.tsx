@@ -77,7 +77,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    setRole(null);
     router.push('/');
+    router.refresh();
   };
 
   const checkPermission = (permission: Permission): boolean => {

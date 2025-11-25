@@ -254,7 +254,7 @@ export default function OnlineGamePage() {
   }
 
   // 2. Gestionar Moviment
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+  function onDrop(sourceSquare: string, targetSquare: string): boolean {
     console.log('[Online onDrop] Called:', { sourceSquare, targetSquare, gameStatus: gameData?.status, currentFen: game.fen() });
 
     // Validacions bàsiques
@@ -381,7 +381,7 @@ export default function OnlineGamePage() {
       }
 
       // Attempt move (reuse onDrop logic essentially)
-      const moveResult = onDrop({ sourceSquare: moveFrom, targetSquare: square });
+      const moveResult = onDrop(moveFrom, square);
       if (moveResult) {
         setMoveFrom(null);
         setOptionSquares({});
@@ -535,7 +535,7 @@ export default function OnlineGamePage() {
             <Chessboard
               id={`online-game-${id}`}
               position={fen}
-              onPieceDrop={onDrop}
+              onPieceDrop={onDrop as any}
               boardOrientation={orientation}
               customDarkSquareStyle={{ backgroundColor: theme.dark }}
               customLightSquareStyle={{ backgroundColor: theme.light }}

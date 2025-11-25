@@ -453,14 +453,13 @@ export default function ClubDetailPage() {
                         {isMember ? (
                             <>
                                 {canManage && (
-                                    <Link
-                                        href={`/clubs/manage/${club.id}`}
+                                    <button
+                                        onClick={() => router.push(`/clubs/manage/${club.id}`)}
                                         className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition"
-                                        onClick={() => console.log('Navigating to manage club:', club.id)}
                                     >
                                         <Settings size={18} />
                                         Configuració
-                                    </Link>
+                                    </button>
                                 )}
                                 <button
                                     onClick={leaveClub}

@@ -62,7 +62,7 @@ export default function PlayPage() {
   // CRÍTICO: Solo inicializar una vez usando useRef
   useEffect(() => {
     setIsClient(true);
-    
+
     // Solo crear el worker si no existe
     if (!engine.current) {
       const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
@@ -138,7 +138,7 @@ export default function PlayPage() {
   };
 
   // Gestió de Moviments
-  function onDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }): boolean {
+  function onDrop(sourceSquare: string, targetSquare: string): boolean {
     // Debug: Log para identificar problemas
     console.log('[onDrop] Called:', { sourceSquare, targetSquare, isEngineThinking, isGameOver, currentFen: game.fen() });
 
@@ -430,7 +430,7 @@ export default function PlayPage() {
           <Chessboard
             id="PlayVsStockfish"
             position={fen}
-            onPieceDrop={onDrop}
+            onPieceDrop={onDrop as any}
             onSquareClick={onSquareClick}
             onSquareRightClick={() => {
               setMoveFrom(null);
