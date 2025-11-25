@@ -32,6 +32,7 @@ export async function proxy(request: NextRequest) {
     if (request.nextUrl.pathname.startsWith('/admin')) {
         console.log('[Middleware Debug] Request to /admin');
         console.log('[Middleware Debug] User found:', !!user);
+        console.log('[Middleware Debug] User ID:', user?.id);
         console.log('[Middleware Debug] App Metadata:', user?.app_metadata);
         console.log('[Middleware Debug] Role from metadata:', user?.app_metadata?.app_role);
     }
@@ -45,26 +46,70 @@ export async function proxy(request: NextRequest) {
         // Això és més segur i robust contra problemes de sincronització de JWT
         if (!role && user) {
             console.log('[Middleware] Role not in metadata, fetching from DB...');
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select(`
-                    role_id,
-                    app_roles ( name )
-                `)
-                .eq('id', user.id)
-                .single();
+            try {
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select(`
+                        role_id,
+                        app_roles!inner(name)
+                    `)
+                    .eq('id', user.id)
+                    .single();
 
-            // @ts-ignore
-            role = profile?.app_roles?.name;
-            console.log('[Middleware] Role fetched from DB:', role);
+                if (profileError) {
+                    console.error('[Middleware] Error fetching profile:', profileError);
+                } else {
+                    // @ts-ignore - app_roles és un array amb un objecte
+                    role = profile?.app_roles?.name;
+                    console.log('[Middleware] Role fetched from DB:', role);
+                }
+            } catch (error) {
+                console.error('[Middleware] Exception fetching role from DB:', error);
+            }
+        }
+
+        // Si encara no tenim rol, intentem una consulta alternativa
+        if (!role && user) {
+            console.log('[Middleware] Trying alternative role fetch...');
+            try {
+                const { data: roleData, error: roleError } = await supabase
+                    .from('profiles')
+                    .select('role_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!roleError && roleData?.role_id) {
+                    const { data: roleName, error: nameError } = await supabase
+                        .from('app_roles')
+                        .select('name')
+                        .eq('id', roleData.role_id)
+                        .single();
+
+                    if (!nameError && roleName) {
+                        role = roleName.name;
+                        console.log('[Middleware] Role fetched via alternative method:', role);
+                    }
+                }
+            } catch (error) {
+                console.error('[Middleware] Exception in alternative role fetch:', error);
+            }
         }
 
         // CRÍTICO: Comprovar que el rol té permís d'admin
         const allowed = hasPermission(role, 'admin.all');
 
+        console.log('[Middleware] Final check:', {
+            role,
+            allowed,
+            hasPermission: hasPermission(role, 'admin.all'),
+            roleType: typeof role
+        });
+
         if (!allowed) {
-            console.log('[Middleware] Accés denegat a /admin. Rol:', role, 'User ID:', user?.id);
+            console.log('[Middleware] ❌ Accés denegat a /admin. Rol:', role, 'User ID:', user?.id);
             return NextResponse.redirect(new URL('/', request.url))
+        } else {
+            console.log('[Middleware] ✅ Accés permès a /admin. Rol:', role);
         }
     }
 
