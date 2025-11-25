@@ -96,37 +96,45 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Targeta d'Usuari */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-xl">
-          <div className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-inner overflow-hidden">
-            {user.user_metadata?.avatar_url ? (
-              <Image
-                src={user.user_metadata.avatar_url}
-                alt="Avatar"
-                width={96}
-                height={96}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              user.email?.[0].toUpperCase()
-            )}
+        {/* Targeta d'Usuari Centrada */}
+        <div className="flex flex-col items-center justify-center mb-12 animate-fade-in-up">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
+            <div className="relative w-40 h-40 bg-slate-900 rounded-full p-1 flex items-center justify-center overflow-hidden border-4 border-slate-800 shadow-2xl">
+              {user.user_metadata?.avatar_url ? (
+                <Image
+                  src={user.user_metadata.avatar_url}
+                  alt="Avatar"
+                  width={160}
+                  height={160}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-5xl font-bold text-white">
+                  {user.email?.[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="absolute bottom-2 right-2 bg-slate-900 rounded-full p-2 border border-slate-700 text-amber-400 shadow-lg">
+              <Trophy size={20} fill="currentColor" />
+            </div>
           </div>
-          <div className="text-center md:text-left flex-1">
-            <h2 className="text-2xl font-bold text-white">{user.user_metadata?.full_name || 'Jugador'}</h2>
-            <p className="text-slate-400 mb-4">{user.email}</p>
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
-                <span className="block text-xs text-slate-500 uppercase font-bold">Partides</span>
-                <span className="text-xl font-bold text-white">{totalGames}</span>
-              </div>
-              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
-                <span className="block text-xs text-slate-500 uppercase font-bold">Victòries</span>
-                <span className="text-xl font-bold text-emerald-400">{wins}</span>
-              </div>
-              <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
-                <span className="block text-xs text-slate-500 uppercase font-bold">Ràting</span>
-                <span className="text-xl font-bold text-amber-400">1200</span>
-              </div>
+
+          <h2 className="text-3xl font-black text-white mt-6 mb-1">{user.user_metadata?.full_name || 'Jugador'}</h2>
+          <p className="text-slate-400 mb-6 font-medium">{user.email}</p>
+
+          <div className="flex gap-4">
+            <div className="bg-slate-900/80 border border-slate-800 px-6 py-3 rounded-2xl flex flex-col items-center min-w-[100px]">
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Partides</span>
+              <span className="text-2xl font-black text-white">{totalGames}</span>
+            </div>
+            <div className="bg-slate-900/80 border border-slate-800 px-6 py-3 rounded-2xl flex flex-col items-center min-w-[100px]">
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Victòries</span>
+              <span className="text-2xl font-black text-emerald-400">{wins}</span>
+            </div>
+            <div className="bg-slate-900/80 border border-slate-800 px-6 py-3 rounded-2xl flex flex-col items-center min-w-[100px]">
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Ràting</span>
+              <span className="text-2xl font-black text-amber-400">1200</span>
             </div>
           </div>
         </div>
