@@ -100,6 +100,13 @@ export default function ClubDetailPage() {
     const [newPostContent, setNewPostContent] = useState('');
     const [creatingPost, setCreatingPost] = useState(false);
 
+    // Event creation state
+    const [creatingEvent, setCreatingEvent] = useState(false);
+    const [newEventTitle, setNewEventTitle] = useState('');
+    const [newEventDescription, setNewEventDescription] = useState('');
+    const [newEventDate, setNewEventDate] = useState('');
+    const [newEventLocation, setNewEventLocation] = useState('');
+
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
@@ -233,6 +240,41 @@ export default function ClubDetailPage() {
         }
     };
 
+    const createEvent = async () => {
+        if (!user || !club || !newEventTitle.trim() || !newEventDate) return;
+
+        setCreatingEvent(true);
+        try {
+            const { error } = await supabase
+                .from('club_events')
+                .insert({
+                    club_id: club.id,
+                    organizer_id: user.id,
+                    title: newEventTitle.trim(),
+                    description: newEventDescription.trim() || null,
+                    start_date: new Date(newEventDate).toISOString(),
+                    location: newEventLocation.trim() || 'Online',
+                    event_type: 'tournament', // Default type
+                    is_active: true,
+                    participants_count: 0
+                });
+
+            if (error) throw error;
+
+            setNewEventTitle('');
+            setNewEventDescription('');
+            setNewEventDate('');
+            setNewEventLocation('');
+            loadEvents(club.id);
+            alert('Event creat correctament!');
+        } catch (error: any) {
+            console.error('Error creating event:', error);
+            alert(error.message || 'Error al crear l\'event');
+        } finally {
+            setCreatingEvent(false);
+        }
+    };
+
     const joinClub = async () => {
         if (!user || !club) return;
 
@@ -302,6 +344,7 @@ export default function ClubDetailPage() {
             if (error) throw error;
             setNewPostContent('');
             loadPosts(club.id);
+            // Optional: Add toast here
         } catch (error: any) {
             console.error('Error creating post:', error);
             alert(error.message || 'Error al crear el post');
@@ -410,10 +453,12 @@ export default function ClubDetailPage() {
                         {isMember ? (
                             <>
                                 {canManage && (
-                                    <button className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition">
-                                        <Settings size={18} />
-                                        Configuració
-                                    </button>
+                                    <Link href={`/clubs/manage/${club.id}`}>
+                                        <button className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition">
+                                            <Settings size={18} />
+                                            Configuració
+                                        </button>
+                                    </Link>
                                 )}
                                 <button
                                     onClick={leaveClub}
@@ -630,6 +675,59 @@ export default function ClubDetailPage() {
 
                         {activeTab === 'events' && (
                             <div className="space-y-4">
+                                {canManage && (
+                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                                        <h3 className="text-lg font-bold text-white mb-4">Crear Nou Event</h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">Títol</label>
+                                                <input
+                                                    type="text"
+                                                    value={newEventTitle}
+                                                    onChange={(e) => setNewEventTitle(e.target.value)}
+                                                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                                                    placeholder="Títol de l'event"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">Data i Hora</label>
+                                                <input
+                                                    type="datetime-local"
+                                                    value={newEventDate}
+                                                    onChange={(e) => setNewEventDate(e.target.value)}
+                                                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">Ubicació</label>
+                                                <input
+                                                    type="text"
+                                                    value={newEventLocation}
+                                                    onChange={(e) => setNewEventLocation(e.target.value)}
+                                                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                                                    placeholder="Ex: Online, Sala d'Actes..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">Descripció</label>
+                                                <textarea
+                                                    value={newEventDescription}
+                                                    onChange={(e) => setNewEventDescription(e.target.value)}
+                                                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white resize-none"
+                                                    rows={3}
+                                                    placeholder="Detalls de l'event..."
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={createEvent}
+                                                disabled={!newEventTitle || !newEventDate || creatingEvent}
+                                                className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-bold transition disabled:opacity-50"
+                                            >
+                                                {creatingEvent ? 'Creant...' : 'Crear Event'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 {events.length === 0 ? (
                                     <div className="text-center py-16 bg-slate-900 border border-slate-800 rounded-xl">
                                         <Calendar className="mx-auto text-slate-700 mb-4" size={64} />
