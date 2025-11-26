@@ -37,7 +37,7 @@ const ENGINE_DEPTH = 15; // Profunditat d'anàlisi (15 és ràpid i fort)
 export default function AnalysisPage() {
   // --- ESTAT DEL JOC AMB PGN TREE ---
   const [pgnTree, setPgnTree] = useState<PGNTree>(() => new PGNTree());
-  const [game, setGame] = useState(new Chess());
+  const [game, setGame] = useState(() => new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   const [isClient, setIsClient] = useState(false);
   const [createVariation, setCreateVariation] = useState(false);

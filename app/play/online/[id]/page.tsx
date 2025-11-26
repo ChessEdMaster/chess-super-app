@@ -26,7 +26,7 @@ export default function OnlineGamePage() {
   const router = useRouter();
 
   const [isClient, setIsClient] = useState(false);
-  const [game, setGame] = useState(new Chess());
+  const [game, setGame] = useState(() => new Chess());
 
   interface GameData {
     id: string;
