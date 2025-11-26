@@ -270,6 +270,7 @@ export default function PlayPage() {
             </div>
           )}
           <Chessboard 
+            id="PlayVsStockfish"
             position={fen}
             onPieceDrop={onDrop}
             boardOrientation="white"
