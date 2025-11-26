@@ -80,7 +80,7 @@ export default function SmartChessboard({
                 // Personalització visual per fer-ho "Super App"
                 customDarkSquareStyle={{ backgroundColor: '#779954' }}
                 customLightSquareStyle={{ backgroundColor: '#e9edcc' }}
-                animationDuration={200}
+                animationDurationInMs={200}
             />
         </div>
     );
