@@ -10,7 +10,7 @@ import { playSound } from '@/lib/sounds';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 
-// Import dinàmic per evitar errors de SSR
+// Import dinàmic per evitar errors de SSR (Server Side Rendering)
 const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
   ssr: false,
   loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
@@ -22,10 +22,12 @@ export default function PlayPage() {
   const { boardTheme } = useSettings();
   const theme = BOARD_THEMES[boardTheme];
 
-  // 1. REF per a la lògica del joc (no provoca re-renders)
+  // 1. REF: Manté la lògica del joc. No provoca re-renders.
+  // Això és crucial perquè 'chess.js' mantingui l'estat intern correctament.
   const game = useRef(new Chess());
 
-  // 2. ESTAT només per a la visualització (FEN)
+  // 2. STATE: Només per a la visualització (FEN string).
+  // Inicialitzem amb el FEN de la ref.
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   
   const [moveStatus, setMoveStatus] = useState("El teu torn (Blanques)");
@@ -34,18 +36,37 @@ export default function PlayPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Assegurar que la ref i l'estat estan sincronitzats al muntar
+    // Sincronització inicial
     setFen(game.current.fen());
   }, []);
 
-  // 🔥 FIX CRÍTIC: La signatura de la funció ha d'acceptar un OBJECTE
-  function onDrop(args: { sourceSquare: string, targetSquare: string | null }): boolean {
-    const { sourceSquare, targetSquare } = args;
+  /**
+   * Funció onDrop blindada per a qualsevol versió de react-chessboard.
+   * Gestiona tant si rep (source, target) com si rep ({sourceSquare, targetSquare}).
+   */
+  function onDrop(arg1: any, arg2?: any): boolean {
+    // Si la màquina pensa, bloquegem
+    if (isEngineThinking) return false;
 
-    // Validacions
-    if (isEngineThinking || !targetSquare) return false;
+    let sourceSquare: string;
+    let targetSquare: string | null;
 
-    // 1. Treballem amb una còpia
+    // A. Detecció d'arguments (Versió Nova v5 vs Vella)
+    if (typeof arg1 === 'object' && arg1 !== null && 'sourceSquare' in arg1) {
+       // Cas v5: onDrop({ sourceSquare, targetSquare })
+       sourceSquare = arg1.sourceSquare;
+       targetSquare = arg1.targetSquare;
+    } else {
+       // Cas v4 o estàndard: onDrop(source, target)
+       sourceSquare = arg1;
+       targetSquare = arg2;
+    }
+
+    // Validació bàsica
+    if (!sourceSquare || !targetSquare) return false;
+
+    // 1. Creem una CÒPIA del joc per provar el moviment
+    // (Important: usar game.current.fen() per tenir l'últim estat)
     const gameCopy = new Chess(game.current.fen());
     let move = null;
 
@@ -53,36 +74,48 @@ export default function PlayPage() {
       move = gameCopy.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q', // Simplificació: sempre reina
+        promotion: 'q', // Simplificació: sempre coronem dama per evitar popups ara mateix
       });
     } catch (error) {
+       // Moviment il·legal
        return false;
     }
 
     // 2. Si el moviment és vàlid
     if (move) {
-      // Actualitzem la lògica
+      // A. Actualitzem la REFERÈNCIA (Lògica)
       game.current = gameCopy; 
-      // Actualitzem la vista
+      
+      // B. Actualitzem l'ESTAT (Visual)
+      // Això dispara el re-render de React
       setFen(gameCopy.fen());
 
-      // Sons i estats
-      if (gameCopy.isCheckmate()) {
-        playSound('game_end');
-        setMoveStatus("Escac i mat!");
-      } else if (gameCopy.isCheck()) {
-        playSound('check');
-        setMoveStatus("Escac!");
-      } else if (move.captured) {
-        playSound('capture');
-      } else {
-        playSound('move');
-      }
+      // C. Feedback (Sons i Text)
+      updateGameStatus(gameCopy, move);
       
+      // D. Retornem TRUE perquè la peça es quedi al lloc
       return true;
     }
 
+    // Si arribem aquí, el moviment no és vàlid -> Snapback
     return false;
+  }
+
+  // Helper per actualitzar textos i sons
+  function updateGameStatus(gameInstance: Chess, move: any) {
+    if (gameInstance.isCheckmate()) {
+      playSound('game_end');
+      setMoveStatus("🏆 FINAL: Escac i mat!");
+    } else if (gameInstance.isCheck()) {
+      playSound('check');
+      setMoveStatus("⚠️ ATENCIÓ: Escac!");
+    } else if (move.captured) {
+      playSound('capture');
+      setMoveStatus("El teu torn");
+    } else {
+      playSound('move');
+      setMoveStatus("El teu torn");
+    }
   }
 
   function resetGame() {
@@ -93,34 +126,59 @@ export default function PlayPage() {
     playSound('game_start');
   }
 
-  if (loading || !isClient) return <div className="p-10 text-white flex items-center"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
+  // Renderitzat condicional de càrrega
+  if (loading || !isClient) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+        <Loader2 className="animate-spin mr-2" /> Carregant tauler...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 font-sans">
       <div className="w-full max-w-4xl flex flex-col md:flex-row gap-8 items-center justify-center">
 
+        {/* CONTENIDOR DEL TAULER */}
         <div className="relative w-full max-w-[500px] aspect-square shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
           <Chessboard
-            id="BasicBoard"
+            id="PlayVsCPU"
             position={fen} 
             onPieceDrop={onDrop}
             boardOrientation="white"
+            // Estils
             customDarkSquareStyle={{ backgroundColor: theme.dark }}
             customLightSquareStyle={{ backgroundColor: theme.light }}
             animationDurationInMs={200}
+            // Opcions extra per millorar UX
+            arePiecesDraggable={!isEngineThinking} 
           />
         </div>
 
+        {/* PANELL LATERAL */}
         <div className="w-full md:w-64 flex flex-col gap-4 text-white">
-          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-            <h2 className="font-bold flex items-center gap-2"><Cpu size={18} /> Estat</h2>
-            <p className="mt-2 text-sm text-slate-300">{moveStatus}</p>
+          
+          {/* Caixa d'Estat */}
+          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+            <h2 className="font-bold flex items-center gap-2 text-amber-400 mb-2">
+              <Cpu size={18} /> Estat del Joc
+            </h2>
+            <p className="text-sm text-slate-200 font-medium">{moveStatus}</p>
           </div>
-          <button onClick={resetGame} className="bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white">
+
+          {/* Botons d'Acció */}
+          <button 
+            onClick={resetGame} 
+            className="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white transition shadow-lg shadow-indigo-900/20"
+          >
             <RefreshCw size={18} /> Nova Partida
           </button>
-          <button onClick={() => router.push('/')} className="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-slate-300">
-            <ArrowLeft size={18} /> Tornar
+          
+          <button 
+            onClick={() => router.push('/')} 
+            className="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-slate-300 transition border border-slate-700 hover:border-slate-600"
+          >
+            <ArrowLeft size={18} /> Tornar al Menú
           </button>
         </div>
 
