@@ -24,7 +24,12 @@ export default function SmartChessboard({
     const [fen, setFen] = useState(initialFen);
 
     // 2. CORRECCIÓ DE L'ERROR DE MOVIMENT (Chess.js v1 vs React)
-    const onDrop = useCallback((sourceSquare: string, targetSquare: string) => {
+    // Adaptem la signatura a la que espera react-chessboard (objecte amb propietats)
+    const onDrop = useCallback((args: { sourceSquare: string, targetSquare: string | null }) => {
+        const { sourceSquare, targetSquare } = args;
+
+        if (!targetSquare) return false;
+
         try {
             // Important: Treballem sobre una còpia per no mutar l'estat directament
             // això ajuda a React a detectar els canvis.
