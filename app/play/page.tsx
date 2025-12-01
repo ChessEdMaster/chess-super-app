@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
 import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword } from 'lucide-react';
 import SmartChessboard from '@/components/smart-chessboard';
@@ -23,8 +23,6 @@ type GameState = 'idle' | 'searching' | 'playing' | 'finished';
 type BotDifficulty = 'easy' | 'medium' | 'hard';
 
 export default function PlayPage() {
-  const supabase = createClientComponentClient();
-
   // Game State
   const [gameState, setGameState] = useState<GameState>('idle');
   const [gameMode, setGameMode] = useState<GameMode>('blitz');
@@ -55,7 +53,7 @@ export default function PlayPage() {
       }
     };
     fetchProfile();
-  }, [supabase]);
+  }, []);
 
   // 2. Initialize Stockfish
   useEffect(() => {

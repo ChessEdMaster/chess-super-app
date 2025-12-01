@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Trophy, Users, PlayCircle, Lock, Gem, Coins, Star, Swords, Zap, Timer, Turtle } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import WelcomePage from './welcome/page';
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const supabase = createClientComponentClient();
   const [profile, setProfile] = useState<any>(null);
   const [progress, setProgress] = useState<any[]>([]);
   const [seasonId, setSeasonId] = useState<string | null>(null);
