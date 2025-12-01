@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.4.2",
     "@stripe/stripe-js": "^8.5.2",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.84.0",
+    "@types/three": "^0.181.0",
     "chess.js": "^1.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -27,6 +30,7 @@
     "react-hot-toast": "^2.6.0",
     "stripe": "^20.0.0",
     "tailwind-merge": "^3.4.0",
+    "three": "^0.181.2",
     "use-sound": "^5.0.0",
     "zustand": "^5.0.8"
   },

@@ -1,26 +1,52 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trophy, Users, PlayCircle, Lock, Gem, Coins, Star, Swords, LogOut } from 'lucide-react';
+import { Trophy, Users, PlayCircle, Lock, Gem, Coins, Star, Swords, Zap, Timer, Turtle } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import WelcomePage from './welcome/page';
 
 export default function Home() {
-  const { user, role, loading } = useAuth();
-  const router = useRouter();
-  const isSuperAdmin = role === 'SuperAdmin';
+  const { user, loading } = useAuth();
+  const supabase = createClientComponentClient();
+  const [profile, setProfile] = useState<any>(null);
+  const [progress, setProgress] = useState<any[]>([]);
+  const [seasonId, setSeasonId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading) {
+    const fetchData = async () => {
       if (user) {
-        if (!isSuperAdmin) {
-          router.push('/profile');
+        // 1. Fetch Profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        setProfile(profileData);
+
+        // 2. Fetch Active Season
+        const { data: seasonData } = await supabase
+          .from('league_seasons')
+          .select('id')
+          .eq('active', true)
+          .single();
+
+        if (seasonData) {
+          setSeasonId(seasonData.id);
+          // 3. Fetch Progress
+          const { data: progressData } = await supabase
+            .from('league_progress')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('season_id', seasonData.id);
+          setProgress(progressData || []);
         }
       }
-    }
-  }, [loading, user, isSuperAdmin, router]);
+    };
+    if (!loading) fetchData();
+  }, [user, loading, supabase]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">Carregant...</div>;
@@ -30,21 +56,17 @@ export default function Home() {
     return <WelcomePage />;
   }
 
-  // If not superadmin, we show a locked screen briefly before redirect (or if redirect fails/is slow)
-  if (!isSuperAdmin) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-          <Lock size={64} className="text-slate-500 mb-4" />
-          <h2 className="text-2xl font-bold text-slate-300 mb-2">Zona de Batalla Bloquejada</h2>
-          <p className="text-slate-400 mb-6">Accés restringit al teu perfil.</p>
-          <Link href="/profile" className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
-            Anar al Perfil
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const getModeStats = (mode: string) => {
+    const prog = progress.find(p => p.mode === mode);
+    const elo = profile ? profile[`elo_${mode}`] : 1200;
+    const points = prog ? prog.seasonal_points : 0;
+    const qualified = prog ? prog.is_qualified : false;
+    return { elo, points, qualified };
+  };
+
+  const bulletStats = getModeStats('bullet');
+  const blitzStats = getModeStats('blitz');
+  const rapidStats = getModeStats('rapid');
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-32 relative overflow-hidden">
@@ -59,10 +81,7 @@ export default function Home() {
           <div className="bg-blue-500 p-1 rounded-full">
             <Star size={12} className="text-white" fill="white" />
           </div>
-          <span className="font-bold text-sm text-blue-200">Nivell 12</span>
-          <div className="w-16 h-2 bg-slate-800 rounded-full ml-2 overflow-hidden">
-            <div className="h-full bg-blue-500 w-3/4" />
-          </div>
+          <span className="font-bold text-sm text-blue-200">Temporada {seasonId || '...'}</span>
         </div>
 
         <div className="flex gap-3">
@@ -70,31 +89,98 @@ export default function Home() {
             <Coins size={16} className="text-amber-400" fill="#fbbf24" />
             <span className="font-bold text-sm text-amber-100">2,450</span>
           </div>
-          <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700 rounded-full px-3 py-1.5 shadow-lg">
-            <Gem size={16} className="text-emerald-400" fill="#34d399" />
-            <span className="font-bold text-sm text-emerald-100">150</span>
-          </div>
         </div>
       </div>
 
       {/* Main Lobby Content */}
-      <main className="flex flex-col items-center justify-center mt-8 relative z-10 px-4">
+      <main className="flex flex-col items-center justify-center mt-8 relative z-10 px-4 w-full max-w-4xl mx-auto">
 
-        {/* Rank Badge */}
-        <div className="mb-6 flex flex-col items-center animate-fade-in-up">
-          <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl rotate-3 flex items-center justify-center shadow-2xl shadow-indigo-500/30 border-4 border-slate-800 relative group cursor-pointer hover:scale-105 transition-transform duration-300">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=300&q=80')] bg-cover opacity-50 mix-blend-overlay rounded-2xl"></div>
-            <Trophy size={64} className="text-white drop-shadow-md relative z-10" />
-            <div className="absolute -bottom-4 bg-slate-900 text-indigo-400 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/50 uppercase tracking-wider">
-              Mestre Tàctic
+        {/* Seasonal Progress Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-8">
+          {/* Bullet */}
+          <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-indigo-500/50 transition-all">
+            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Zap size={64} />
             </div>
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="text-yellow-400" size={20} />
+              <h3 className="font-bold text-slate-300">Bullet</h3>
+            </div>
+            {bulletStats.qualified ? (
+              <div>
+                <div className="text-2xl font-black text-white">{bulletStats.elo}</div>
+                <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Classificat (Pro)</div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <span>Punts de Lliga</span>
+                  <span>{bulletStats.points} / 1000</span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-yellow-500 transition-all duration-500" style={{ width: `${Math.min(100, (bulletStats.points / 1000) * 100)}%` }} />
+                </div>
+              </div>
+            )}
           </div>
-          <h1 className="text-3xl font-black text-white mt-8 tracking-tight">GRANDMASTER</h1>
-          <p className="text-slate-400 font-medium">Divisió Diamant III</p>
+
+          {/* Blitz */}
+          <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-indigo-500/50 transition-all">
+            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Timer size={64} />
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <Timer className="text-blue-400" size={20} />
+              <h3 className="font-bold text-slate-300">Blitz</h3>
+            </div>
+            {blitzStats.qualified ? (
+              <div>
+                <div className="text-2xl font-black text-white">{blitzStats.elo}</div>
+                <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Classificat (Pro)</div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <span>Punts de Lliga</span>
+                  <span>{blitzStats.points} / 1000</span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${Math.min(100, (blitzStats.points / 1000) * 100)}%` }} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Rapid */}
+          <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-indigo-500/50 transition-all">
+            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Turtle size={64} />
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <Turtle className="text-green-400" size={20} />
+              <h3 className="font-bold text-slate-300">Rapid</h3>
+            </div>
+            {rapidStats.qualified ? (
+              <div>
+                <div className="text-2xl font-black text-white">{rapidStats.elo}</div>
+                <div className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Classificat (Pro)</div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <span>Punts de Lliga</span>
+                  <span>{rapidStats.points} / 1000</span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${Math.min(100, (rapidStats.points / 1000) * 100)}%` }} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Play Button */}
-        <div className="mt-8 w-full max-w-xs">
+        <div className="mt-4 w-full max-w-xs">
           <Link href="/play">
             <button className="w-full group relative bg-gradient-to-b from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-900 font-black text-xl py-6 rounded-2xl shadow-[0_10px_0_rgb(180,83,9)] hover:shadow-[0_6px_0_rgb(180,83,9)] active:shadow-[0_2px_0_rgb(180,83,9)] active:translate-y-2 transition-all duration-150 flex items-center justify-center gap-3 uppercase tracking-wider border-t border-amber-200">
               <Swords className="w-8 h-8 group-hover:rotate-12 transition-transform" />
