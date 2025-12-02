@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Users, Trophy } from 'lucide-react';
+import { Users, Trophy } from 'lucide-react';
 
 interface ExplorerMove {
     uci: string;
@@ -103,7 +103,7 @@ export function OpeningExplorer({ fen, onSelectMove }: OpeningExplorerProps) {
                 </table>
                 {moves.length === 0 && !loading && (
                     <div className="p-6 text-center text-slate-500 text-xs">
-                        No s'han trobat partides en aquesta posició a la base de dades.
+                        No s&apos;han trobat partides en aquesta posició a la base de dades.
                     </div>
                 )}
             </div>

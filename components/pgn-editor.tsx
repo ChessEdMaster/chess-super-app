@@ -12,12 +12,10 @@ import {
     Copy,
     FileText,
     GitBranch,
-    Plus,
-    Settings,
     Check,
 } from 'lucide-react';
 import { PGNTree } from '@/lib/pgn-tree';
-import { PGNParser, PGNOptimizer } from '@/lib/pgn-parser';
+import { PGNParser } from '@/lib/pgn-parser';
 import type { MoveNode, Evaluation, NAGSymbol } from '@/lib/pgn-types';
 import { VariationTree, MoveList } from './variation-tree';
 import { AnnotationPanel } from './annotation-panel';
@@ -35,12 +33,11 @@ export function PGNEditor({
     tree,
     onTreeChange,
     onPositionChange,
-    currentMove,
     autoAnnotate = false,
     engineEval,
 }: PGNEditorProps) {
     const [viewMode, setViewMode] = useState<'tree' | 'linear'>('linear');
-    const [showAnnotationPanel, setShowAnnotationPanel] = useState(true);
+    const [showAnnotationPanel] = useState(true);
     const [copySuccess, setCopySuccess] = useState(false);
 
     const game = tree.getGame();
@@ -55,7 +52,7 @@ export function PGNEditor({
             newTree.setEvaluation(engineEval);
             onTreeChange(newTree);
         }
-    }, [engineEval, currentNode?.id, autoAnnotate, tree, onTreeChange]);
+    }, [engineEval, currentNode, autoAnnotate, tree, onTreeChange]);
 
     // Handle node selection
     const handleSelectNode = (node: MoveNode | null) => {
@@ -98,8 +95,9 @@ export function PGNEditor({
             tree.setEvaluation(evaluation);
         } else {
             // Clear evaluation
-            if (currentNode) {
-                currentNode.annotation.evaluation = undefined;
+            const node = tree.getCurrentNode();
+            if (node) {
+                node.annotation.evaluation = undefined;
             }
         }
         onTreeChange(tree);

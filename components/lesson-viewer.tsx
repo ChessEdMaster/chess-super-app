@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Chess } from 'chess.js';
+import { Chess, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import {
     ChevronLeft,
@@ -99,14 +99,14 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                 playSound('illegal');
                 return false;
             }
-        } catch (error) {
+        } catch {
             return false;
         }
     };
 
     function getMoveOptions(square: string) {
         const moves = game.moves({
-            square: square as any,
+            square: square as Square,
             verbose: true,
         });
         if (moves.length === 0) {
@@ -116,8 +116,8 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
 
         const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
         moves.map((move) => {
-            const targetPiece = game.get(move.to as any);
-            const sourcePiece = game.get(square as any);
+            const targetPiece = game.get(move.to as Square);
+            const sourcePiece = game.get(square as Square);
             const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
 
             newSquares[move.to] = {
@@ -156,7 +156,7 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
             }
 
             // If move failed, check if we clicked on another piece of our own to select it instead
-            const clickedPiece = game.get(square as any);
+            const clickedPiece = game.get(square as Square);
             if (clickedPiece && clickedPiece.color === game.turn()) {
                 setMoveFrom(square);
                 getMoveOptions(square);
@@ -168,7 +168,7 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
             setOptionSquares({});
         } else {
             // No piece selected, try to select
-            const piece = game.get(square as any);
+            const piece = game.get(square as Square);
             if (piece && piece.color === game.turn()) {
                 setMoveFrom(square);
                 getMoveOptions(square);
@@ -290,7 +290,7 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                         {showHint && (
                             <div className="mt-3 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
                                 <p className="text-sm text-indigo-200">
-                                    Busca moviments que segueixin la instrucció. Pensa en la seguretat del teu rei i l'activitat de les peces.
+                                    Busca moviments que segueixin la instrucció. Pensa en la seguretat del teu rei i l&apos;activitat de les peces.
                                 </p>
                             </div>
                         )}

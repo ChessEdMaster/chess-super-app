@@ -23,11 +23,20 @@ export default function SmartChessboard({
     // Estat per forçar el re-renderitzat visual quan l'estat intern canvia
     const [fen, setFen] = useState(initialFen);
 
-    // 2. CORRECCIÓ DE L'ERROR DE MOVIMENT (Chess.js v1 vs React)
-    // Adaptem la signatura a la que espera react-chessboard (objecte amb propietats)
-    const onDrop = useCallback((args: { sourceSquare: string, targetSquare: string | null }) => {
-        const { sourceSquare, targetSquare } = args;
+    // Sincronitzar si initialFen canvia des de fora (ex: reset o undo)
+    useEffect(() => {
+        try {
+            const newGame = new Chess(initialFen);
+            setGame(newGame);
+            setFen(initialFen);
+        } catch (e) {
+            console.error("Invalid FEN:", initialFen);
+        }
+    }, [initialFen]);
 
+    // 2. CORRECCIÓ DE L'ERROR DE MOVIMENT (Chess.js v1 vs React)
+    // Adaptem la signatura a la que espera react-chessboard
+    const onDrop = useCallback((sourceSquare: string, targetSquare: string, piece: string) => {
         if (!targetSquare) return false;
 
         try {
@@ -53,9 +62,8 @@ export default function SmartChessboard({
 
                 return true; // Retornar true diu a react-chessboard que deixi la peça a la nova casella
             }
-        } catch (error) {
+        } catch {
             // Silenciem l'error de "moviment il·legal" per evitar que l'app peti
-            // Opcionalment pots fer un console.log per depurar
             return false; // Retornar false fa que la peça torni a la seva casella original
         }
         return false;
@@ -75,7 +83,7 @@ export default function SmartChessboard({
             <Chessboard
                 id="SmartBoard"
                 position={fen}
-                onPieceDrop={onDrop}
+                onPieceDrop={onDrop as any}
                 boardOrientation={boardOrientation}
                 // Personalització visual per fer-ho "Super App"
                 customDarkSquareStyle={{ backgroundColor: '#779954' }}

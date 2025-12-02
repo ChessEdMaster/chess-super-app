@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Chess } from 'chess.js';
+import { Chess, Square } from 'chess.js';
 import {
     CheckCircle,
     XCircle,
@@ -46,7 +46,8 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     const [moveIndex, setMoveIndex] = useState(0);
     const [attempts, setAttempts] = useState(0);
     const [hintsUsed, setHintsUsed] = useState(0);
-    const [startTime] = useState(Date.now());
+    const [startTime] = useState(() => Date.now());
+    const [elapsedTime, setElapsedTime] = useState(0);
     const [isSolved, setIsSolved] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const [showHint, setShowHint] = useState(false);
@@ -59,6 +60,17 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     const theme = BOARD_THEMES[boardTheme];
 
     const currentTurn = game.turn() === 'w' ? 'white' : 'black';
+
+    // Timer effect
+    useEffect(() => {
+        if (isSolved) return;
+
+        const interval = setInterval(() => {
+            setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [startTime, isSolved]);
 
     // CRÍTICO: Resetear completamente cuando cambia el exercise
     useEffect(() => {
@@ -81,6 +93,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             setIsSolved(false);
             setFeedback(null);
             setShowHint(false);
+            setElapsedTime(0);
         } catch (error) {
             console.error('Error inicializando puzzle con FEN:', exercise.fen, error);
         }
@@ -100,7 +113,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                 to: targetSquare,
                 promotion: 'q'
             });
-        } catch (error) {
+        } catch {
             return false;
         }
 
@@ -122,7 +135,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             } else {
                 setFeedback({
                     type: 'success',
-                    message: '✓ Correcte! Continua...'
+                    message: '✅ Correcte! Continua...'
                 });
 
                 setTimeout(() => {
@@ -135,7 +148,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             // Moviment Incorrecte
             setFeedback({
                 type: 'error',
-                message: '✗ Aquest no és el moviment correcte. Torna-ho a intentar!'
+                message: '❌ Aquest no és el moviment correcte. Torna-ho a intentar!'
             });
             playSound('illegal');
             return false;
@@ -144,7 +157,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
     function getMoveOptions(square: string) {
         const moves = game.moves({
-            square: square as any,
+            square: square as Square,
             verbose: true,
         });
         if (moves.length === 0) {
@@ -154,8 +167,8 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
         const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
         moves.map((move) => {
-            const targetPiece = game.get(move.to as any);
-            const sourcePiece = game.get(square as any);
+            const targetPiece = game.get(move.to as Square);
+            const sourcePiece = game.get(square as Square);
             const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
 
             newSquares[move.to] = {
@@ -194,7 +207,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             }
 
             // If move failed, check if we clicked on another piece of our own to select it instead
-            const clickedPiece = game.get(square as any);
+            const clickedPiece = game.get(square as Square);
             if (clickedPiece && clickedPiece.color === game.turn()) {
                 setMoveFrom(square);
                 getMoveOptions(square);
@@ -206,7 +219,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             setOptionSquares({});
         } else {
             // No piece selected, try to select
-            const piece = game.get(square as any);
+            const piece = game.get(square as Square);
             if (piece && piece.color === game.turn()) {
                 setMoveFrom(square);
                 getMoveOptions(square);
@@ -335,7 +348,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                             <div>
                                 <div className="text-xs text-slate-400">Temps</div>
                                 <div className="text-lg font-bold text-white">
-                                    {Math.floor((Date.now() - startTime) / 1000)}s
+                                    {elapsedTime}s
                                 </div>
                             </div>
                         </div>
@@ -477,7 +490,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                                 Puzzle Resolt!
                             </h3>
                             <div className="text-sm text-slate-300 space-y-1">
-                                <div>Temps: {Math.floor((Date.now() - startTime) / 1000)}s</div>
+                                <div>Temps: {elapsedTime}s</div>
                                 <div>Intents: {attempts}</div>
                                 <div>Pistes usades: {hintsUsed}</div>
                             </div>

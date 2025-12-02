@@ -43,7 +43,7 @@ function Pieces({ fen }: { fen: string }) {
     const game = useMemo(() => new Chess(fen), [fen]);
     const board = game.board();
 
-    const pieces = [];
+    const pieces: { type: string; color: string; x: number; z: number; key: string }[] = [];
     board.forEach((row, rowIndex) => {
         row.forEach((square, colIndex) => {
             if (square) {

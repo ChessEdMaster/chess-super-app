@@ -7,11 +7,19 @@ import { Send, MessageSquare } from 'lucide-react';
 interface ChatBoxProps {
     gameId: string;
     userId: string;
-    username: string;
 }
 
-export function ChatBox({ gameId, userId, username }: ChatBoxProps) {
-    const [messages, setMessages] = useState<any[]>([]);
+interface Message {
+    id: string;
+    game_id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
+    profiles?: { username: string } | null;
+}
+
+export function ChatBox({ gameId, userId }: ChatBoxProps) {
+    const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -42,11 +50,11 @@ export function ChatBox({ gameId, userId, username }: ChatBoxProps) {
                                 .select('username')
                                 .eq('id', msg.user_id)
                                 .single();
-                            
+
                             if (profileError) {
                                 console.warn('[ChatBox] Error fetching profile for user:', msg.user_id, profileError);
                             }
-                            
+
                             return {
                                 ...msg,
                                 profiles: profile ? { username: profile.username } : null
@@ -73,7 +81,7 @@ export function ChatBox({ gameId, userId, username }: ChatBoxProps) {
         const channel = supabase
             .channel(`chat_${gameId}`)
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${gameId}` }, async (payload) => {
-                const newMsg = payload.new;
+                const newMsg = payload.new as Message;
                 // Necessitem el username, que no ve al payload directe
                 const { data: profile } = await supabase.from('profiles').select('username').eq('id', newMsg.user_id).single();
                 setMessages((prev) => [...prev, { ...newMsg, profiles: profile }]);

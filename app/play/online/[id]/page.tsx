@@ -620,7 +620,7 @@ export default function OnlineGamePage() {
           </div>
 
           {/* Xat */}
-          <ChatBox gameId={id as string} userId={user.id} username={user.user_metadata?.full_name || 'Jo'} />
+          <ChatBox gameId={id as string} userId={user.id} />
 
           {/* Tu */}
           <div className="bg-slate-800 p-3 rounded-xl flex items-center gap-3 border border-indigo-500/30 shadow-lg shadow-indigo-900/20">

@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare, TrendingUp, Palette, Plus, Trash2 } from 'lucide-react';
-import type { MoveNode, Evaluation, Comment } from '@/lib/pgn-types';
+import type { MoveNode, Evaluation } from '@/lib/pgn-types';
 import { NAGSelector, NAGDisplay } from './nag-selector';
 
 interface AnnotationPanelProps {
@@ -90,8 +90,8 @@ export function AnnotationPanel({
                 <button
                     onClick={() => setActiveTab('comments')}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition flex items-center justify-center gap-2 ${activeTab === 'comments'
-                            ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                         }`}
                 >
                     <MessageSquare size={16} />
@@ -100,8 +100,8 @@ export function AnnotationPanel({
                 <button
                     onClick={() => setActiveTab('symbols')}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition flex items-center justify-center gap-2 ${activeTab === 'symbols'
-                            ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                         }`}
                 >
                     <Palette size={16} />
@@ -110,8 +110,8 @@ export function AnnotationPanel({
                 <button
                     onClick={() => setActiveTab('evaluation')}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition flex items-center justify-center gap-2 ${activeTab === 'evaluation'
-                            ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                         }`}
                 >
                     <TrendingUp size={16} />
@@ -211,8 +211,8 @@ export function AnnotationPanel({
                                     <button
                                         onClick={() => setEvalType('cp')}
                                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${evalType === 'cp'
-                                                ? 'bg-indigo-600 text-white'
-                                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                             }`}
                                     >
                                         Centipawns
@@ -220,8 +220,8 @@ export function AnnotationPanel({
                                     <button
                                         onClick={() => setEvalType('mate')}
                                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${evalType === 'mate'
-                                                ? 'bg-indigo-600 text-white'
-                                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                             }`}
                                     >
                                         Mate

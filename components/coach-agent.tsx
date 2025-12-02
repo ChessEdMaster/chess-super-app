@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Brain, TrendingDown, AlertCircle, CheckCircle, Lightbulb } from 'lucide-react';
 
 interface CoachAgentProps {
@@ -11,14 +11,12 @@ interface CoachAgentProps {
 }
 
 export function CoachAgent({ evaluation, previousEval, currentMove, turn }: CoachAgentProps) {
-    const [message, setMessage] = useState<string>('');
-    const [severity, setSeverity] = useState<'good' | 'neutral' | 'mistake' | 'blunder'>('neutral');
-
-    useEffect(() => {
+    const { message, severity } = useMemo(() => {
         if (!evaluation || !previousEval || !currentMove) {
-            setMessage("Fes un moviment per començar l'anàlisi...");
-            setSeverity('neutral');
-            return;
+            return {
+                message: "Fes un moviment per començar l'anàlisi...",
+                severity: 'neutral' as const
+            };
         }
 
         // Calcular diferència d'avaluació (des del punt de vista del jugador que acaba de moure)
@@ -33,17 +31,25 @@ export function CoachAgent({ evaluation, previousEval, currentMove, turn }: Coac
 
         // Classificar el moviment
         if (evalDrop < -50) {
-            setMessage(`💎 Excel·lent! Has guanyat ${Math.abs(evalDrop / 100).toFixed(1)} punts d'avantatge.`);
-            setSeverity('good');
+            return {
+                message: `💎 Excel·lent! Has guanyat ${Math.abs(evalDrop / 100).toFixed(1)} punts d'avantatge.`,
+                severity: 'good' as const
+            };
         } else if (evalDrop < 50) {
-            setMessage(`✓ Moviment correcte. La posició es manté equilibrada.`);
-            setSeverity('neutral');
+            return {
+                message: `✅ Moviment correcte. La posició es manté equilibrada.`,
+                severity: 'neutral' as const
+            };
         } else if (evalDrop < 150) {
-            setMessage(`⚠️ Petit error. Has perdut ${(evalDrop / 100).toFixed(1)} punts. Revisa les alternatives.`);
-            setSeverity('mistake');
+            return {
+                message: `⚠️ Petit error. Has perdut ${(evalDrop / 100).toFixed(1)} punts. Revisa les alternatives.`,
+                severity: 'mistake' as const
+            };
         } else {
-            setMessage(`❌ Blunder! Has perdut ${(evalDrop / 100).toFixed(1)} punts. Això pot costar la partida.`);
-            setSeverity('blunder');
+            return {
+                message: `❌ Blunder! Has perdut ${(evalDrop / 100).toFixed(1)} punts. Això pot costar la partida.`,
+                severity: 'blunder' as const
+            };
         }
     }, [evaluation, previousEval, currentMove, turn]);
 

@@ -24,7 +24,7 @@ export function MoveHistory({ history }: MoveHistoryProps) {
             </div>
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 font-mono text-xs sm:text-sm scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
                 <div className="grid grid-cols-[30px_1fr_1fr] gap-y-1">
-                    {history.reduce((rows: any[], move, index) => {
+                    {history.reduce<[string, string, string?][]>((rows, move, index) => {
                         if (index % 2 === 0) {
                             rows.push([`${(index / 2) + 1}.`, move]);
                         } else {

@@ -33,7 +33,7 @@ export default function PlayPage() {
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState(game.fen());
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
-  const [winner, setWinner] = useState<'white' | 'black' | 'draw' | null>(null);
+  const [winner, setWinner] = useState<'white' | 'black' | 'draw' | 'win' | 'loss' | null>(null);
 
   // Bot Logic
   const engine = useRef<Worker | null>(null);
@@ -145,14 +145,14 @@ export default function PlayPage() {
     return false;
   }, [game]);
 
-  const onUserMove = (newFen: string) => {
+  const onUserMove = async (newFen: string) => {
     // SmartChessboard calls this after a successful move
     // We need to sync our local game instance
     const gameCopy = new Chess(newFen);
     setGame(gameCopy);
     setFen(newFen);
 
-    if (checkGameOver(gameCopy)) return;
+    if (await checkGameOver(gameCopy)) return;
 
     // Trigger Bot Move
     if (gameState === 'playing' && !isBotThinking) {

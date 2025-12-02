@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Trophy, Lock, Unlock } from 'lucide-react';
-import { UserAchievement, AcademyAchievement } from '@/lib/academy-types';
+import { UserAchievement, AcademyAchievement, AchievementRequirement } from '@/lib/academy-types';
 
 interface AchievementBadgeProps {
     achievement: AcademyAchievement;
@@ -86,7 +86,7 @@ export function AchievementBadge({
     );
 }
 
-function getRequirementText(requirement: any): string {
+function getRequirementText(requirement: AchievementRequirement): string {
     switch (requirement.type) {
         case 'lessons_completed':
             return `Completa ${requirement.count} lliçons`;
