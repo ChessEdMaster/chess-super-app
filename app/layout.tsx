@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
-import { BottomNav } from "@/components/game-layout/bottom-nav";
+import { MobileLayout } from "@/components/layout/mobile-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ChessHub - Super App d'Escacs",
-  description: "Juga, competeix i millora el teu nivell.",
+  title: "Chess Royale",
+  description: "Battle, Collect, Evolve.",
 };
 
 export default function RootLayout({
@@ -25,15 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ca">
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-200`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white`}
       >
         <AuthProvider>
-          <main className="pb-28">
+          <MobileLayout>
             {children}
-          </main>
-          <BottomNav />
+          </MobileLayout>
         </AuthProvider>
       </body>
     </html>
