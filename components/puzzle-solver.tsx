@@ -18,7 +18,7 @@ import { BOARD_THEMES } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
 
 // CRÍTICO: Dynamic import para evitar problemas de SSR
-const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
+const ChessScene = dynamic(() => import('@/components/3d/ChessScene'), {
     ssr: false,
     loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
 });
@@ -311,26 +311,11 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
                 <div className="flex-1">
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
-                        <Chessboard
-                            id={`puzzle-${exercise.id}`}
+                        <ChessScene
                             key={exercise.id} // CRÍTICO: Força re-render quan canvia l'exercici
-                            position={fen}
-                            onPieceDrop={({ sourceSquare, targetSquare }) => {
-                                if (!targetSquare) {
-                                    return false;
-                                }
-                                const result = handleMove(sourceSquare, targetSquare);
-                                return result === true;
-                            }}
-                            boardOrientation={currentTurn}
-                            customDarkSquareStyle={{ backgroundColor: theme.dark }}
-                            customLightSquareStyle={{ backgroundColor: theme.light }}
-                            arePiecesDraggable={!isSolved}
+                            fen={fen}
+                            orientation={currentTurn}
                             onSquareClick={onSquareClick}
-                            onSquareRightClick={() => {
-                                setMoveFrom(null);
-                                setOptionSquares({});
-                            }}
                             customSquareStyles={optionSquares}
                         />
                     </div>

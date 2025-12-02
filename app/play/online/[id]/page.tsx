@@ -20,13 +20,19 @@ const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Ches
   loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
 });
 
+import { useChessEngine } from '@/hooks/use-chess-engine';
+
+// ... imports
+
 export default function OnlineGamePage() {
   const { id } = useParams();
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [isClient, setIsClient] = useState(false);
-  const [game, setGame] = useState(() => new Chess());
+
+  // Use Hook for Chess Logic
+  const { fen, makeMove, setGameFromFen, game } = useChessEngine();
 
   interface GameData {
     id: string;
@@ -44,7 +50,7 @@ export default function OnlineGamePage() {
   }
 
   const [gameData, setGameData] = useState<GameData | null>(null);
-  const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+  // fen is now managed by hook
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [status, setStatus] = useState('Carregant...');
   const [players, setPlayers] = useState({ white: '...', black: '...' });
@@ -182,10 +188,8 @@ export default function OnlineGamePage() {
 
       // Sincronitzar tauler
       const initialFen = finalGameData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-      const newGame = new Chess(initialFen);
-      setGame(newGame);
-      setFen(initialFen);
-      updateStatus(newGame, finalGameData);
+      setGameFromFen(initialFen);
+      updateStatus(new Chess(initialFen), finalGameData); // Use a temp instance for status check if needed, or game ref if updated
 
       // D. Subscriure's a canvis (REALTIME)
       const channel = supabase
@@ -215,15 +219,16 @@ export default function OnlineGamePage() {
           const incomeGame = new Chess(newData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 
           // Detectar si hi ha hagut moviment per fer so
-          if (incomeGame.fen() !== game.fen()) {
+          // Note: game.fen() might be stale if we don't use the ref, but here we are inside the callback.
+          // Ideally we compare with current state.
+          if (incomeGame.fen() !== fen) { // Compare with 'fen' state from hook
             if (incomeGame.isCheckmate()) playSound('game_end');
             else if (incomeGame.isCheck()) playSound('check');
             else if (incomeGame.history({ verbose: true }).pop()?.captured) playSound('capture');
             else playSound('move');
           }
 
-          setGame(incomeGame);
-          setFen(newData.fen || incomeGame.fen());
+          setGameFromFen(newData.fen || incomeGame.fen());
           setGameData(newData as GameData);
           setDrawOffer(newData.draw_offer_by); // Sincronitzar oferta de taules
 
@@ -236,7 +241,7 @@ export default function OnlineGamePage() {
 
     fetchAndSubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user, router]);
+  }, [id, user, router, setGameFromFen]); // Added setGameFromFen
 
   // Helper per l'estat
   function updateStatus(chessInstance: Chess, dbData: any) {
@@ -255,7 +260,7 @@ export default function OnlineGamePage() {
 
   // 2. Gestionar Moviment
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
-    console.log('[Online onDrop] Called:', { sourceSquare, targetSquare, gameStatus: gameData?.status, currentFen: game.fen() });
+    console.log('[Online onDrop] Called:', { sourceSquare, targetSquare, gameStatus: gameData?.status, currentFen: fen });
 
     // Validacions bàsiques
     if (!targetSquare) {
@@ -279,37 +284,25 @@ export default function OnlineGamePage() {
       return false; // No és el teu torn
     }
 
-    // CRÍTICO: Hacer el movimiento en la instancia actual
-    let move = null;
-    try {
-      move = game.move({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: 'q',
-      });
-      console.log('[Online onDrop] Move created:', move);
-    } catch (e) {
-      console.error('[Online onDrop] Move failed:', e);
-      return false;
-    }
+    // CRÍTICO: Hacer el movimiento en la instancia actual usando el hook
+    const move = makeMove({
+      from: sourceSquare,
+      to: targetSquare,
+      promotion: 'q',
+    });
 
     if (!move) {
-      console.log('[Online onDrop] Move is null');
+      console.error('[Online onDrop] Move failed or null');
       return false;
     }
 
-    // CRÍTICO: LA CLAU MÀGICA - Crear nueva instancia con el FEN resultante para forzar re-render
-    const newGame = new Chess(game.fen());
-    const newFen = newGame.fen();
+    const newFen = game.fen();
     console.log('[Online onDrop] New FEN:', newFen);
 
-    setGame(newGame);
-    setFen(newFen);
-
     // Sons locals (optimistic)
-    if (newGame.isCheckmate()) {
+    if (game.isCheckmate()) {
       playSound('game_end');
-    } else if (newGame.isCheck()) {
+    } else if (game.isCheck()) {
       playSound('check');
     } else if (move.captured) {
       playSound('capture');
@@ -320,7 +313,7 @@ export default function OnlineGamePage() {
     // Enviar movimiento a la base de datos (async, no bloquea el return)
     supabase.from('games').update({
       fen: newFen,
-      pgn: newGame.pgn(),
+      pgn: game.pgn(),
     }).eq('id', id).then(({ error }) => {
       if (error) {
         console.error('[Online onDrop] Error actualizando partida:', error);

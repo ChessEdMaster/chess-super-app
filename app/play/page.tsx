@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Chess } from 'chess.js';
+import { Chess, Square } from 'chess.js';
 import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword } from 'lucide-react';
 import SmartChessboard from '@/components/smart-chessboard';
 import ChessScene from '@/components/3d/ChessScene';
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
+import { useChessEngine } from '@/hooks/use-chess-engine';
 
 type GameMode = 'bullet' | 'blitz' | 'rapid';
 type GameState = 'idle' | 'searching' | 'playing' | 'finished';
@@ -30,11 +31,14 @@ export default function PlayPage() {
   const [showBotModal, setShowBotModal] = useState(false);
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
-  // Chess Logic
-  const [game, setGame] = useState(new Chess());
-  const [fen, setFen] = useState(game.fen());
+  // Chess Logic - Use Hook
+  const { fen, makeMove: engineMakeMove, setGameFromFen, game, resetGame } = useChessEngine();
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [winner, setWinner] = useState<'white' | 'black' | 'draw' | 'win' | 'loss' | null>(null);
+
+  // Click to move state for 3D board
+  const [moveFrom, setMoveFrom] = useState<Square | null>(null);
+  const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; borderRadius?: string }>>({});
 
   // Bot Logic
   const engine = useRef<Worker | null>(null);
@@ -116,8 +120,7 @@ export default function PlayPage() {
     setGameState('searching');
     setSearchTimer(0);
     setWinner(null);
-    setGame(new Chess());
-    setFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    resetGame();
   };
 
   const startBotGame = (difficulty: BotDifficulty) => {
@@ -125,34 +128,109 @@ export default function PlayPage() {
     setBotDifficulty(difficulty);
     setGameState('playing');
     setOrientation('white'); // User plays white vs Bot for now
-    setGame(new Chess());
-    setFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    resetGame();
     toast.success(`Partida contra Bot (${difficulty}) iniciada!`);
   };
 
   const makeMove = useCallback((from: string, to: string, promotion?: string) => {
-    const gameCopy = new Chess(game.fen());
-    try {
-      const result = gameCopy.move({ from, to, promotion: promotion || 'q' });
-      if (result) {
-        setGame(gameCopy);
-        setFen(gameCopy.fen());
-        checkGameOver(gameCopy);
-        return true;
+    const result = engineMakeMove({ from, to, promotion: promotion || 'q' });
+    if (result) {
+      checkGameOver(game);
+
+      // Trigger Bot Move if playing vs Bot
+      if (gameState === 'playing' && !isBotThinking) {
+        if (!game.isGameOver()) {
+          setIsBotThinking(true);
+          const depth = botDifficulty === 'easy' ? 1 : botDifficulty === 'medium' ? 5 : 12;
+          setTimeout(() => {
+            engine.current?.postMessage(`position fen ${game.fen()}`);
+            engine.current?.postMessage(`go depth ${depth}`);
+          }, 500);
+        }
       }
-    } catch (e) {
-      return false;
+      return true;
     }
     return false;
-  }, [game]);
+  }, [engineMakeMove, game, gameState, isBotThinking, botDifficulty]);
+
+  function getMoveOptions(square: Square) {
+    const moves = game.moves({
+      square,
+      verbose: true,
+    });
+    if (moves.length === 0) {
+      setOptionSquares({});
+      return false;
+    }
+
+    const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
+    moves.forEach((move) => {
+      const targetPiece = game.get(move.to as Square);
+      const sourcePiece = game.get(square);
+      const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
+
+      newSquares[move.to] = {
+        background: isCapture
+          ? 'radial-gradient(circle, rgba(255,0,0,.5) 25%, transparent 25%)'
+          : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
+        borderRadius: '50%',
+      };
+    });
+    newSquares[square] = {
+      background: 'rgba(255, 255, 0, 0.4)',
+    };
+    setOptionSquares(newSquares);
+    return true;
+  }
+
+  function onSquareClick(square: string) {
+    const sq = square as Square;
+
+    // If we have a moveFrom, try to move to the clicked square
+    if (moveFrom) {
+      // If clicked on the same square, deselect
+      if (moveFrom === sq) {
+        setMoveFrom(null);
+        setOptionSquares({});
+        return;
+      }
+
+      // Attempt move
+      const moveResult = makeMove(moveFrom, sq);
+      if (moveResult) {
+        setMoveFrom(null);
+        setOptionSquares({});
+        return;
+      }
+
+      // If move failed, check if we clicked on another piece of our own to select it instead
+      const clickedPiece = game.get(sq);
+      if (clickedPiece && clickedPiece.color === game.turn()) {
+        setMoveFrom(sq);
+        getMoveOptions(sq);
+        return;
+      }
+
+      // Otherwise, just deselect
+      setMoveFrom(null);
+      setOptionSquares({});
+    } else {
+      // No piece selected, try to select
+      const piece = game.get(sq);
+      if (piece && piece.color === game.turn()) {
+        setMoveFrom(sq);
+        getMoveOptions(sq);
+      }
+    }
+  }
 
   const onUserMove = async (newFen: string) => {
     // SmartChessboard calls this after a successful move
     // We need to sync our local game instance
-    const gameCopy = new Chess(newFen);
-    setGame(gameCopy);
-    setFen(newFen);
+    setGameFromFen(newFen);
 
+    // Check game over is async, but we can check sync first
+    const gameCopy = new Chess(newFen); // Helper for check
     if (await checkGameOver(gameCopy)) return;
 
     // Trigger Bot Move
@@ -370,6 +448,8 @@ export default function PlayPage() {
               <ChessScene
                 fen={fen}
                 orientation={orientation}
+                onSquareClick={onSquareClick}
+                customSquareStyles={optionSquares}
               />
             ) : (
               <div className="w-full max-w-[600px] aspect-square">

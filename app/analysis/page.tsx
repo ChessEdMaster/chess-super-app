@@ -538,6 +538,8 @@ export default function AnalysisPage() {
                 <ChessScene
                   fen={fen}
                   orientation="white"
+                  onSquareClick={onSquareClick}
+                  customSquareStyles={optionSquares}
                 />
               </div>
             ) : (

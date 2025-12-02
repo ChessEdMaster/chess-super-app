@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
+import { useChessEngine } from '@/hooks/use-chess-engine';
 
 interface SmartChessboardProps {
     initialFen?: string;
@@ -32,58 +33,37 @@ export default function SmartChessboard({
     onPieceDrop
 }: SmartChessboardProps) {
 
-    // 1. SETUP SEGUR: Utilitzem una funció d'inicialització per evitar
-    // que el Strict Mode de React 19 creï dues instàncies del joc.
-    const [game, setGame] = useState(() => new Chess(initialFen));
-
-    // Estat per forçar el re-renderitzat visual quan l'estat intern canvia
-    const [fen, setFen] = useState(initialFen);
+    // 1. SETUP SEGUR: Use custom hook to handle React 19 immutability
+    const { fen, makeMove, setGameFromFen, game } = useChessEngine(initialFen);
 
     // Sincronitzar si initialFen canvia des de fora (ex: reset o undo)
     useEffect(() => {
-        try {
-            const newGame = new Chess(initialFen);
-            setGame(newGame);
-            setFen(initialFen);
-        } catch (e) {
-            console.error("Invalid FEN:", initialFen);
+        if (initialFen && initialFen !== fen) {
+            setGameFromFen(initialFen);
         }
-    }, [initialFen]);
+    }, [initialFen, setGameFromFen]); // Removed 'fen' from deps to avoid loops, though logic handles it
 
     // 2. CORRECCIÓ DE L'ERROR DE MOVIMENT (Chess.js v1 vs React)
     // Adaptem la signatura a la que espera react-chessboard
     const internalOnDrop = useCallback((sourceSquare: string, targetSquare: string, piece: string) => {
         if (!targetSquare) return false;
 
-        try {
-            // Important: Treballem sobre una còpia per no mutar l'estat directament
-            // això ajuda a React a detectar els canvis.
-            const gameCopy = new Chess(game.fen());
+        // Use the hook's makeMove which handles mutation and state update
+        const move = makeMove({
+            from: sourceSquare,
+            to: targetSquare,
+            promotion: 'q', // Per defecte promocionem a Dama per simplificar
+        });
 
-            // A la versió v1 de chess.js, .move() llança una excepció si el moviment és il·legal
-            // en lloc de retornar null. Per això necessitem el bloc try/catch.
-            const move = gameCopy.move({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: 'q', // Per defecte promocionem a Dama per simplificar
-            });
+        // Si arribem aquí, el moviment és legal
+        if (move) {
+            // Notifiquem al pare si cal (per guardar a DB, etc)
+            if (onMove) onMove(game.fen());
 
-            // Si arribem aquí, el moviment és legal
-            if (move) {
-                setGame(gameCopy);
-                setFen(gameCopy.fen());
-
-                // Notifiquem al pare si cal (per guardar a DB, etc)
-                if (onMove) onMove(gameCopy.fen());
-
-                return true; // Retornar true diu a react-chessboard que deixi la peça a la nova casella
-            }
-        } catch {
-            // Silenciem l'error de "moviment il·legal" per evitar que l'app peti
-            return false; // Retornar false fa que la peça torni a la seva casella original
+            return true; // Retornar true diu a react-chessboard que deixi la peça a la nova casella
         }
         return false;
-    }, [game, onMove]);
+    }, [makeMove, game, onMove]);
 
     // 3. PROTECCIÓ CONTRA HIDRATACIÓ (Hydration Mismatch)
     // Ens assegurem que el component només es mostri quan el client està llest

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo, useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Stage, useCursor, Float, Text } from '@react-three/drei';
+import React, { useMemo, useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Stage, useCursor } from '@react-three/drei';
 import { Chess } from 'chess.js';
 import * as THREE from 'three';
 
@@ -223,12 +223,13 @@ const Square = ({ x, z, isBlack, id, onClick, highlight }: any) => {
             onPointerOut={() => setHover(false)}
             receiveShadow
         >
-            <planeGeometry args={[1, 1]} />
+            {/* Use BoxGeometry for thickness to avoid Z-fighting */}
+            <boxGeometry args={[1, 1, 0.1]} />
             <primitive object={material} attach="material" />
 
-            {/* Hover effect overlay */}
+            {/* Hover effect overlay - Raised higher */}
             {hovered && (
-                <mesh position={[0, 0, 0.01]}>
+                <mesh position={[0, 0, 0.06]}>
                     <planeGeometry args={[1, 1]} />
                     <meshBasicMaterial color="white" transparent opacity={0.2} />
                 </mesh>
@@ -244,25 +245,9 @@ const Board = ({ onSquareClick, customSquareStyles }: any) => {
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 const isBlack = (row + col) % 2 === 1;
-                // Map 3D coords (0,0 center) to Chess coords
-                // 3D: x from -3.5 to 3.5, z from -3.5 to 3.5
-                // Chess: a1 is col 0, row 7 (in array) but row 0 in rank.
-                // Let's align: x -> col, z -> row
-                // If orientation is white:
-                // a1 -> x=-3.5, z=3.5 (bottom left)
-                // But standard 3D usually has z-up or z-down.
-                // Let's assume standard view: White at +Z or -Z?
-                // Usually White at +Z looking towards -Z.
-
-                // Let's stick to:
-                // x: -3.5 (a) to 3.5 (h)
-                // z: 3.5 (1) to -3.5 (8)  <-- This matches standard board layout where rank 1 is at bottom
-
                 const x = col - 3.5;
-                const z = 3.5 - row; // Row 0 (Rank 1) -> z=3.5. Row 7 (Rank 8) -> z=-3.5
-
+                const z = 3.5 - row;
                 const squareId = `${files[col]}${row + 1}`;
-
                 sq.push({ x, z, isBlack, id: squareId });
             }
         }
@@ -289,8 +274,6 @@ const Board = ({ onSquareClick, customSquareStyles }: any) => {
                     highlight={customSquareStyles?.[s.id]}
                 />
             ))}
-
-            {/* Coordinates (Optional, can add Text later) */}
         </group>
     );
 };
@@ -303,14 +286,8 @@ const Pieces = ({ fen }: { fen: string }) => {
     board.forEach((row, rowIndex) => {
         row.forEach((square, colIndex) => {
             if (square) {
-                // Map array indices to 3D coords
-                // rowIndex 0 = Rank 8 (Top) -> z = -3.5
-                // rowIndex 7 = Rank 1 (Bottom) -> z = 3.5
-                // colIndex 0 = File a (Left) -> x = -3.5
-
                 const x = colIndex - 3.5;
                 const z = rowIndex - 3.5;
-
                 pieces.push({
                     type: square.type,
                     color: square.color,
@@ -336,6 +313,10 @@ const Pieces = ({ fen }: { fen: string }) => {
     );
 };
 
+import ClientOnly from '@/components/ClientOnly';
+
+// ...
+
 export default function ChessScene({
     fen,
     orientation = 'white',
@@ -343,31 +324,33 @@ export default function ChessScene({
     customSquareStyles
 }: ChessSceneProps) {
     return (
-        <div className="w-full h-full bg-slate-900 rounded-xl overflow-hidden shadow-2xl">
-            <Canvas shadows camera={{ position: [0, 8, 6], fov: 45 }}>
-                <color attach="background" args={['#1a1a1a']} />
+        <ClientOnly>
+            <div className="w-full h-full bg-slate-900 rounded-xl overflow-hidden shadow-2xl">
+                <Canvas shadows camera={{ position: [0, 8, 6], fov: 45 }}>
+                    <color attach="background" args={['#1a1a1a']} />
 
-                {/* Lighting */}
-                <ambientLight intensity={0.4} />
-                <pointLight position={[10, 10, 10]} intensity={1} castShadow />
-                <pointLight position={[-10, 10, -10]} intensity={0.5} />
-                <spotLight position={[0, 15, 0]} angle={0.5} penumbra={1} intensity={1} castShadow shadow-bias={-0.0001} />
+                    {/* Lighting */}
+                    <ambientLight intensity={0.4} />
+                    <pointLight position={[10, 10, 10]} intensity={1} castShadow />
+                    <pointLight position={[-10, 10, -10]} intensity={0.5} />
+                    <spotLight position={[0, 15, 0]} angle={0.5} penumbra={1} intensity={1} castShadow shadow-bias={-0.0001} />
 
-                <Stage environment="city" intensity={0.5} adjustCamera={false}>
-                    <group rotation={[0, orientation === 'black' ? Math.PI : 0, 0]}>
-                        <Board onSquareClick={onSquareClick} customSquareStyles={customSquareStyles} />
-                        <Pieces fen={fen} />
-                    </group>
-                </Stage>
+                    <Stage environment="city" intensity={0.5} adjustCamera={false} shadows={false}>
+                        <group rotation={[0, orientation === 'black' ? Math.PI : 0, 0]}>
+                            <Board onSquareClick={onSquareClick} customSquareStyles={customSquareStyles} />
+                            <Pieces fen={fen} />
+                        </group>
+                    </Stage>
 
-                <OrbitControls
-                    makeDefault
-                    minPolarAngle={0}
-                    maxPolarAngle={Math.PI / 2.2}
-                    maxDistance={15}
-                    minDistance={5}
-                />
-            </Canvas>
-        </div>
+                    <OrbitControls
+                        makeDefault
+                        minPolarAngle={0}
+                        maxPolarAngle={Math.PI / 2.2}
+                        maxDistance={15}
+                        minDistance={5}
+                    />
+                </Canvas>
+            </div>
+        </ClientOnly>
     );
 }
