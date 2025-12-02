@@ -190,12 +190,13 @@ export default function AnalysisPage() {
 
   // --- LÒGICA DEL JOC ---
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
-    console.log('[Analysis onDrop] Called:', { sourceSquare, targetSquare, currentFen: game.fen() });
+    console.log('[Analysis onDrop] Called:', { sourceSquare, targetSquare, currentFen: fen });
 
     if (!targetSquare) return false;
 
     // CRÍTICO: "Copy before Move" pattern
-    const gameCopy = new Chess(game.fen());
+    // Use 'fen' state as source of truth to avoid stale 'game' state issues
+    const gameCopy = new Chess(fen);
     let move = null;
 
     try {
@@ -205,6 +206,7 @@ export default function AnalysisPage() {
         promotion: 'q',
       });
     } catch (error) {
+      console.error('[Analysis onDrop] Move failed:', error);
       return false;
     }
 
@@ -520,7 +522,7 @@ export default function AnalysisPage() {
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6 mt-4 h-[85vh]">
 
         {/* 1. TAULER CENTRAL */}
-        <div className="flex-1 flex flex-col items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800 p-4 shadow-2xl relative">
+        <div className="flex-1 flex flex-col items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800 p-4 shadow-2xl relative overflow-hidden">
           {/* Barra d'Avaluació Flotant */}
           <div className={`absolute top-6 left-6 z-10 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border flex items-center gap-2 ${(evaluation?.value || 0) > 0
             ? 'bg-slate-100 text-slate-900 border-slate-300'
@@ -530,27 +532,7 @@ export default function AnalysisPage() {
             <span>{getEvalText()}</span>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="absolute top-6 right-6 z-10 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">
-            <Button
-              variant={viewMode === '2d' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('2d')}
-              className={`h-7 px-2 text-xs ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
-            >
-              <LayoutGrid size={14} className="mr-1" /> 2D
-            </Button>
-            <Button
-              variant={viewMode === '3d' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('3d')}
-              className={`h-7 px-2 text-xs ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
-            >
-              <Box size={14} className="mr-1" /> 3D
-            </Button>
-          </div>
-
-          <div className="w-full max-w-[600px] aspect-square relative z-0">
+          <div className="w-full h-full max-h-[600px] aspect-square relative z-0 flex items-center justify-center">
             {viewMode === '3d' ? (
               <div className="w-full h-full rounded-lg overflow-hidden border-4 border-slate-700">
                 <ChessScene
@@ -643,13 +625,30 @@ export default function AnalysisPage() {
           {activeTab === 'analysis' ? (
             <>
               {/* Barra Eines */}
-              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex gap-2">
+              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2">
                 <button
                   onClick={resetBoard}
                   className="flex-1 bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition text-white"
                 >
                   <RotateCcw size={16} /> Reset
                 </button>
+
+                {/* View Mode Toggles */}
+                <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+                  <button
+                    onClick={() => setViewMode('2d')}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 ${viewMode === '2d' ? 'bg-slate-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <LayoutGrid size={14} /> 2D
+                  </button>
+                  <button
+                    onClick={() => setViewMode('3d')}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 ${viewMode === '3d' ? 'bg-slate-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <Box size={14} /> 3D
+                  </button>
+                </div>
+
                 {createVariation && (
                   <div className="flex-1 bg-amber-500/20 border border-amber-500/50 p-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-amber-300">
                     <GitBranch size={16} /> Mode Variació

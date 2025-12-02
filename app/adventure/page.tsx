@@ -22,6 +22,30 @@ export default function AdventurePage() {
                 </div>
 
                 <div className="space-y-12 max-w-2xl mx-auto">
+                    {/* Daily Exercises - Always Available */}
+                    <div className="relative group">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+                        <div className="relative bg-slate-900 border border-slate-700 rounded-xl p-6 flex items-center gap-6 hover:border-emerald-500/50 transition-colors cursor-pointer">
+                            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center border-4 border-emerald-500 shadow-lg shadow-emerald-500/20">
+                                <Swords size={32} className="text-emerald-500" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-xl font-bold text-white mb-1">Exercicis Diaris</h3>
+                                <p className="text-slate-400 text-sm mb-3">Resol puzles tàctics de la base de dades de Lichess.</p>
+                                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    <span className="flex items-center gap-1 text-emerald-400"><Star size={12} /> Infinit</span>
+                                    <span>•</span>
+                                    <span>Recompensa: ELO Tàctic</span>
+                                </div>
+                            </div>
+                            <div className="hidden sm:block">
+                                <a href="/academy/exercises" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-bold transition inline-block">
+                                    Entrenar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Level 1 - Unlocked */}
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
