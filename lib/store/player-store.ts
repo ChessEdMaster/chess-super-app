@@ -30,7 +30,63 @@ export const usePlayerStore = create<PlayerState>((set) => ({
             SPEED: 10,
         },
     },
-    cards: [], // We can populate this later
+    cards: [
+        {
+            id: 'card-1',
+            title: 'Knight Fork',
+            rarity: 'COMMON',
+            category: 'AGGRESSION',
+            level: 1,
+            cardsOwned: 5,
+            cardsRequired: 10,
+            description: 'Attacks two pieces simultaneously with a Knight.',
+            minigameId: 'puzzle-fork'
+        },
+        {
+            id: 'card-2',
+            title: 'Back Rank Mate',
+            rarity: 'RARE',
+            category: 'KNOWLEDGE',
+            level: 3,
+            cardsOwned: 2,
+            cardsRequired: 20,
+            description: 'Checkmate on the back rank when the king is trapped by its own pawns.',
+            minigameId: 'puzzle-backrank'
+        },
+        {
+            id: 'card-3',
+            title: 'Greek Gift',
+            rarity: 'EPIC',
+            category: 'AGGRESSION',
+            level: 1,
+            cardsOwned: 1,
+            cardsRequired: 5,
+            description: 'Sacrifice a bishop on h7/h2 to expose the enemy king.',
+            minigameId: 'puzzle-greek'
+        },
+        {
+            id: 'card-4',
+            title: 'Solid Pawn Structure',
+            rarity: 'COMMON',
+            category: 'SOLIDITY',
+            level: 5,
+            cardsOwned: 45,
+            cardsRequired: 50,
+            description: 'Maintain a strong pawn chain to deny enemy entry.',
+            minigameId: 'puzzle-pawns'
+        },
+        {
+            id: 'card-5',
+            title: 'Time Management',
+            rarity: 'LEGENDARY',
+            category: 'SPEED',
+            level: 1,
+            cardsOwned: 0,
+            cardsRequired: 2,
+            description: 'Play faster in critical moments.',
+            minigameId: 'puzzle-speed'
+        }
+    ],
     chests: [
         { id: 'c1', type: 'WOODEN', unlockTime: 3600, status: 'LOCKED' },
         null,

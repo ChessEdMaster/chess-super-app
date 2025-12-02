@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { Canvas, useLoader } from '@react-three/fiber';
-import { OrthographicCamera, useCursor, Text } from '@react-three/drei';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { Canvas, useLoader, useFrame } from '@react-three/fiber';
+import { OrthographicCamera, useCursor, Text, Instance, Instances } from '@react-three/drei';
 import { Chess } from 'chess.js';
 import * as THREE from 'three';
 import ClientOnly from '@/components/ClientOnly';
@@ -43,9 +43,45 @@ interface Piece2DProps {
 
 interface Board2DProps {
     onSquareClick: (id: string) => void;
+
     customSquareStyles?: Record<string, React.CSSProperties>;
     orientation: 'white' | 'black';
 }
+
+// --- PARTICLES SYSTEM ---
+const Particle = ({ position, color }: { position: [number, number, number], color: string }) => {
+    const ref = useRef<any>(null);
+    const [speed] = useState(() => Math.random() * 0.2 + 0.1);
+    const [offset] = useState<[number, number]>(() => [(Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2]);
+
+    useFrame((state, delta) => {
+        if (ref.current) {
+            ref.current.position.y += speed * delta * 5;
+            ref.current.position.x += offset[0] * delta;
+            ref.current.position.z += offset[1] * delta;
+            const scale = Math.max(0, ref.current.scale.x - delta);
+            ref.current.scale.set(scale, scale, scale);
+        }
+    });
+
+    return <Instance ref={ref} position={position} color={color} />;
+};
+
+const CaptureParticles = ({ triggers }: { triggers: { x: number, z: number, color: string, id: number }[] }) => {
+    return (
+        <Instances range={1000}>
+            <boxGeometry args={[0.1, 0.1, 0.1]} />
+            <meshBasicMaterial />
+            {triggers.map((t) => (
+                <group key={t.id}>
+                    {Array.from({ length: 10 }).map((_, i) => (
+                        <Particle key={i} position={[t.x, 0.5, t.z]} color={t.color} />
+                    ))}
+                </group>
+            ))}
+        </Instances>
+    );
+};
 
 // --- COMPONENTS ---
 
@@ -171,12 +207,6 @@ const Board2D = ({ onSquareClick, customSquareStyles, orientation }: Board2DProp
 
     return (
         <group>
-            {/* DEBUG MESH - REMOVE IF VISIBLE */}
-            <mesh position={[0, 0, 0]}>
-                <boxGeometry args={[0.5, 0.5, 0.5]} />
-                <meshBasicMaterial color="red" wireframe />
-            </mesh>
-
             {squares.map((s) => (
                 <Square2D
                     key={s.id}
@@ -190,9 +220,10 @@ const Board2D = ({ onSquareClick, customSquareStyles, orientation }: Board2DProp
     );
 };
 
-const Pieces2D = ({ fen, orientation }: { fen: string, orientation: string }) => {
+const Pieces2D = ({ fen, orientation, onCapture }: { fen: string, orientation: string, onCapture: (x: number, z: number, color: string) => void }) => {
     const game = useMemo(() => new Chess(fen), [fen]);
     const board = game.board();
+    const prevPiecesRef = useRef<any[]>([]);
 
     const pieces: any[] = [];
     board.forEach((row, rowIndex) => {
@@ -212,11 +243,32 @@ const Pieces2D = ({ fen, orientation }: { fen: string, orientation: string }) =>
                     color: square.color,
                     x,
                     z,
-                    key: `${rowIndex}-${colIndex}`
+                    key: `${rowIndex}-${colIndex}`,
+                    square: square.square
                 });
             }
         });
     });
+
+    // Detect Captures
+    useEffect(() => {
+        const prevPieces = prevPiecesRef.current;
+        if (prevPieces.length > 0) {
+            // Find pieces that were present but are now gone (captured)
+            // Note: This is a simple heuristic. In a real move, a piece moves to a square occupied by another.
+            // So we look for a square that had a piece, and now has a DIFFERENT piece (capture) or NO piece (en passant/movement).
+            // Actually, simpler: if a piece of color X was at square S, and now piece of color Y is at square S, it's a capture.
+
+            prevPieces.forEach(prevP => {
+                const currentP = pieces.find(p => p.x === prevP.x && p.z === prevP.z);
+                if (currentP && currentP.color !== prevP.color) {
+                    // CAPTURE DETECTED at (x, z)
+                    onCapture(prevP.x, prevP.z, prevP.color === 'w' ? '#ffffff' : '#000000');
+                }
+            });
+        }
+        prevPiecesRef.current = pieces;
+    }, [pieces, onCapture]);
 
     return (
         <group>
@@ -238,6 +290,12 @@ export default function Chessboard2D({
     onSquareClick = () => { },
     customSquareStyles
 }: Chessboard2DProps) {
+    const [particleTriggers, setParticleTriggers] = useState<{ x: number, z: number, color: string, id: number }[]>([]);
+
+    const handleCapture = (x: number, z: number, color: string) => {
+        setParticleTriggers(prev => [...prev, { x, z, color, id: Date.now() }]);
+    };
+
     return (
         <ClientOnly>
             <div className="w-full h-full bg-[#303030] rounded-lg overflow-hidden shadow-xl border-4 border-slate-700 relative" style={{ minHeight: '300px' }}>
@@ -259,8 +317,9 @@ export default function Chessboard2D({
                             orientation={orientation}
                         />
                         <React.Suspense fallback={null}>
-                            <Pieces2D fen={fen} orientation={orientation} />
+                            <Pieces2D fen={fen} orientation={orientation} onCapture={handleCapture} />
                         </React.Suspense>
+                        <CaptureParticles triggers={particleTriggers} />
                     </group>
                 </Canvas>
             </div>
