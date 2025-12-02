@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Chess, Square } from 'chess.js';
 import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword } from 'lucide-react';
-import SmartChessboard from '@/components/smart-chessboard';
+import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -452,11 +452,12 @@ export default function PlayPage() {
                 customSquareStyles={optionSquares}
               />
             ) : (
-              <div className="w-full max-w-[600px] aspect-square">
-                <SmartChessboard
-                  initialFen={fen}
-                  onMove={onUserMove}
-                  boardOrientation={orientation}
+              <div className="w-full h-full">
+                <Chessboard2D
+                  fen={fen}
+                  onSquareClick={onSquareClick}
+                  customSquareStyles={optionSquares}
+                  orientation={orientation}
                 />
               </div>
             )}

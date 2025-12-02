@@ -26,7 +26,7 @@ import { BOARD_THEMES } from '@/lib/themes';
 import { PGNTree } from '@/lib/pgn-tree';
 import { PGNParser } from '@/lib/pgn-parser';
 import type { Evaluation } from '@/lib/pgn-types';
-import SmartChessboard from '@/components/smart-chessboard';
+import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
 import { Button } from '@/components/ui/button';
 
@@ -543,21 +543,14 @@ export default function AnalysisPage() {
                 />
               </div>
             ) : (
-              <SmartChessboard
-                initialFen={fen}
-                onPieceDrop={onDrop}
-                boardOrientation="white"
-                animationDurationInMs={200}
-                customDarkSquareStyle={{ backgroundColor: theme.dark }}
-                customLightSquareStyle={{ backgroundColor: theme.light }}
-                customArrows={customArrows}
-                onSquareClick={onSquareClick}
-                onSquareRightClick={() => {
-                  setMoveFrom(null);
-                  setOptionSquares({});
-                }}
-                customSquareStyles={optionSquares}
-              />
+              <div className="w-full h-full">
+                <Chessboard2D
+                  fen={fen}
+                  orientation="white"
+                  onSquareClick={onSquareClick}
+                  customSquareStyles={optionSquares}
+                />
+              </div>
             )}
           </div>
 

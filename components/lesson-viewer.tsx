@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Chess, Square } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
+import Chessboard2D from '@/components/2d/Chessboard2D';
 import {
     ChevronLeft,
     ChevronRight,
@@ -217,22 +217,10 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
 
                 <div className="flex-1">
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
-                        <Chessboard
-                            id={`lesson-${currentStepIndex}`}
-                            position={fen}
-                            onPieceDrop={({ sourceSquare, targetSquare }) => {
-                                if (!targetSquare) return false;
-                                return handleMove(sourceSquare, targetSquare);
-                            }}
-                            boardOrientation="white"
-                            customDarkSquareStyle={{ backgroundColor: theme.dark }}
-                            customLightSquareStyle={{ backgroundColor: theme.light }}
-                            arePiecesDraggable={!isCompleted}
+                        <Chessboard2D
+                            fen={fen}
+                            orientation="white"
                             onSquareClick={onSquareClick}
-                            onSquareRightClick={() => {
-                                setMoveFrom(null);
-                                setOptionSquares({});
-                            }}
                             customSquareStyles={optionSquares}
                         />
                     </div>

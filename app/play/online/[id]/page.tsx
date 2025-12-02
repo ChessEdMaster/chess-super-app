@@ -14,11 +14,7 @@ import { playSound } from '@/lib/sounds';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 
-// CRÍTICO: Dynamic import para evitar problemas de SSR
-const Chessboard = dynamic(() => import('react-chessboard').then(mod => mod.Chessboard), {
-  ssr: false,
-  loading: () => <div className="w-full h-full bg-slate-800 animate-pulse rounded-lg" />
-});
+import Chessboard2D from '@/components/2d/Chessboard2D';
 
 import { useChessEngine } from '@/hooks/use-chess-engine';
 
@@ -525,20 +521,10 @@ export default function OnlineGamePage() {
           />
 
           <div className="relative w-full aspect-square shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
-            <Chessboard
-              id={`online-game-${id}`}
-              position={fen}
-              onPieceDrop={onDrop as any}
-              boardOrientation={orientation}
-              customDarkSquareStyle={{ backgroundColor: theme.dark }}
-              customLightSquareStyle={{ backgroundColor: theme.light }}
-              animationDurationInMs={200}
-              arePiecesDraggable={gameData?.status === 'active' && !game.isGameOver()}
+            <Chessboard2D
+              fen={fen}
+              orientation={orientation}
               onSquareClick={onSquareClick}
-              onSquareRightClick={() => {
-                setMoveFrom(null);
-                setOptionSquares({});
-              }}
               customSquareStyles={optionSquares}
             />
           </div>
