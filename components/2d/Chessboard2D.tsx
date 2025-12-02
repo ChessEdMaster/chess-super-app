@@ -104,9 +104,28 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
 };
 
 const Piece2D = ({ type, color, position }: any) => {
-    const texture = useLoader(THREE.TextureLoader, getPieceUrl(type, color));
+    const [textureUrl, setTextureUrl] = useState(getPieceUrl(type, color));
+    const [error, setError] = useState(false);
+
+    // If texture fails, we show a fallback geometry
+    const texture = useLoader(THREE.TextureLoader, textureUrl, (loader) => {
+        // Optional: loader configuration
+    }, undefined, (err) => {
+        console.error("Error loading texture:", textureUrl, err);
+        setError(true);
+    });
+
+    if (error) {
+        return (
+            <mesh position={position} rotation={[0, 0, 0]}>
+                <cylinderGeometry args={[0.3, 0.3, 0.1, 32]} />
+                <meshBasicMaterial color={color === 'w' ? 'white' : 'black'} />
+            </mesh>
+        );
+    }
+
     // Ensure vibrant colors
-    texture.colorSpace = THREE.SRGBColorSpace;
+    if (texture) texture.colorSpace = THREE.SRGBColorSpace;
 
     return (
         <mesh position={position} rotation={[-Math.PI / 2, 0, 0]}>
@@ -146,6 +165,12 @@ const Board2D = ({ onSquareClick, customSquareStyles, orientation }: any) => {
 
     return (
         <group>
+            {/* DEBUG MESH - REMOVE IF VISIBLE */}
+            <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[0.5, 0.5, 0.5]} />
+                <meshBasicMaterial color="red" wireframe />
+            </mesh>
+
             {squares.map((s) => (
                 <Square2D
                     key={s.id}
@@ -209,14 +234,14 @@ export default function Chessboard2D({
 }: Chessboard2DProps) {
     return (
         <ClientOnly>
-            <div className="w-full h-full bg-[#303030] rounded-lg overflow-hidden shadow-xl border-4 border-slate-700 relative">
-                <Canvas>
+            <div className="w-full h-full bg-[#303030] rounded-lg overflow-hidden shadow-xl border-4 border-slate-700 relative" style={{ minHeight: '300px' }}>
+                <Canvas style={{ width: '100%', height: '100%', display: 'block' }}>
                     <OrthographicCamera
                         makeDefault
-                        position={[0, 10, 0]}
-                        zoom={60}
+                        position={[0, 100, 0]}
+                        zoom={40}
                         near={0.1}
-                        far={100}
+                        far={1000}
                     />
 
                     <color attach="background" args={['#303030']} />
