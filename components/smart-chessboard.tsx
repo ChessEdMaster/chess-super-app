@@ -8,12 +8,28 @@ interface SmartChessboardProps {
     initialFen?: string;
     onMove?: (fen: string) => void;
     boardOrientation?: 'white' | 'black';
+    customArrows?: [string, string, string][];
+    customSquareStyles?: Record<string, React.CSSProperties>;
+    onSquareClick?: (square: string) => void;
+    onSquareRightClick?: (square: string) => void;
+    customDarkSquareStyle?: React.CSSProperties;
+    customLightSquareStyle?: React.CSSProperties;
+    animationDurationInMs?: number;
+    onPieceDrop?: (sourceSquare: string, targetSquare: string, piece: string) => boolean;
 }
 
 export default function SmartChessboard({
     initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     onMove,
-    boardOrientation = 'white'
+    boardOrientation = 'white',
+    customArrows,
+    customSquareStyles,
+    onSquareClick,
+    onSquareRightClick,
+    customDarkSquareStyle,
+    customLightSquareStyle,
+    animationDurationInMs = 200,
+    onPieceDrop
 }: SmartChessboardProps) {
 
     // 1. SETUP SEGUR: Utilitzem una funció d'inicialització per evitar
@@ -36,7 +52,7 @@ export default function SmartChessboard({
 
     // 2. CORRECCIÓ DE L'ERROR DE MOVIMENT (Chess.js v1 vs React)
     // Adaptem la signatura a la que espera react-chessboard
-    const onDrop = useCallback((sourceSquare: string, targetSquare: string, piece: string) => {
+    const internalOnDrop = useCallback((sourceSquare: string, targetSquare: string, piece: string) => {
         if (!targetSquare) return false;
 
         try {
@@ -83,12 +99,16 @@ export default function SmartChessboard({
             <Chessboard
                 id="SmartBoard"
                 position={fen}
-                onPieceDrop={onDrop as any}
+                onPieceDrop={(onPieceDrop as any) || (internalOnDrop as any)}
                 boardOrientation={boardOrientation}
                 // Personalització visual per fer-ho "Super App"
-                customDarkSquareStyle={{ backgroundColor: '#779954' }}
-                customLightSquareStyle={{ backgroundColor: '#e9edcc' }}
-                animationDurationInMs={200}
+                customDarkSquareStyle={customDarkSquareStyle || { backgroundColor: '#779954' }}
+                customLightSquareStyle={customLightSquareStyle || { backgroundColor: '#e9edcc' }}
+                animationDurationInMs={animationDurationInMs}
+                customArrows={customArrows}
+                customSquareStyles={customSquareStyles}
+                onSquareClick={onSquareClick}
+                onSquareRightClick={onSquareRightClick}
             />
         </div>
     );
