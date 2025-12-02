@@ -6,10 +6,21 @@ import { ConceptCard } from '@/components/cards/concept-card';
 import { ConceptCard as IConceptCard } from '@/types/rpg';
 import { X, ArrowUpCircle, Pickaxe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PuzzleMiner } from '@/components/cards/puzzle-miner';
 
 export default function CardsPage() {
-    const { cards, profile } = usePlayerStore();
+    const { cards, profile, addCardCopy } = usePlayerStore();
     const [selectedCard, setSelectedCard] = useState<IConceptCard | null>(null);
+    const [isMining, setIsMining] = useState(false);
+
+    const handleMineComplete = (success: boolean) => {
+        if (success && selectedCard) {
+            addCardCopy(selectedCard.id, 1);
+            alert("Mining Successful! +1 Card Copy");
+        }
+        setIsMining(false);
+        setSelectedCard(null);
+    };
 
     return (
         <div className="h-full w-full bg-zinc-950 p-4 overflow-y-auto pb-32">
@@ -30,7 +41,7 @@ export default function CardsPage() {
 
             {/* Card Detail Modal */}
             <AnimatePresence>
-                {selectedCard && (
+                {selectedCard && !isMining && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
@@ -79,7 +90,10 @@ export default function CardsPage() {
                                             <span className="text-xs bg-black/20 px-1.5 py-0.5 rounded ml-1">500g</span>
                                         </button>
                                     ) : (
-                                        <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wide shadow-[0_4px_0_rgb(29,78,216)] active:translate-y-1 active:shadow-none transition-all">
+                                        <button
+                                            onClick={() => setIsMining(true)}
+                                            className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wide shadow-[0_4px_0_rgb(29,78,216)] active:translate-y-1 active:shadow-none transition-all"
+                                        >
                                             <Pickaxe size={20} />
                                             Mine Cards
                                         </button>
@@ -90,6 +104,15 @@ export default function CardsPage() {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Puzzle Miner Overlay */}
+            {isMining && selectedCard && (
+                <PuzzleMiner
+                    puzzleId={selectedCard.minigameId}
+                    onComplete={handleMineComplete}
+                    onClose={() => setIsMining(false)}
+                />
+            )}
         </div>
     );
 }

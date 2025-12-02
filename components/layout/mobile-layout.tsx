@@ -16,11 +16,10 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     const pathname = usePathname();
 
     const tabs = [
-        { name: 'Shop', icon: ShoppingBag, href: '/shop' },
-        { name: 'Cards', icon: Layers, href: '/cards' },
         { name: 'Battle', icon: Swords, href: '/' },
+        { name: 'Cards', icon: Layers, href: '/cards' },
+        { name: 'Improve', icon: Trophy, href: '/improve' },
         { name: 'Social', icon: Users, href: '/social' },
-        { name: 'Events', icon: Trophy, href: '/events' },
     ];
 
     return (

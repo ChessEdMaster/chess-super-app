@@ -10,6 +10,7 @@ interface PlayerState {
     addGold: (amount: number) => void;
     addGems: (amount: number) => void;
     addXp: (amount: number) => void;
+    addCardCopy: (cardId: string, amount?: number) => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
@@ -111,5 +112,12 @@ export const usePlayerStore = create<PlayerState>((set) => ({
             ...state.profile,
             xp: state.profile.xp + amount
         }
+    })),
+    addCardCopy: (cardId, amount = 1) => set((state) => ({
+        cards: state.cards.map(card =>
+            card.id === cardId
+                ? { ...card, cardsOwned: card.cardsOwned + amount }
+                : card
+        )
     })),
 }));
