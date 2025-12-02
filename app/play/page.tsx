@@ -28,6 +28,7 @@ export default function PlayPage() {
   const [gameMode, setGameMode] = useState<GameMode>('blitz');
   const [searchTimer, setSearchTimer] = useState(0);
   const [showBotModal, setShowBotModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
   // Chess Logic
   const [game, setGame] = useState(new Chess());
@@ -342,12 +343,43 @@ export default function PlayPage() {
 
         {/* Center: Chessboard */}
         <div className="col-span-1 lg:col-span-2 flex justify-center items-start relative">
-          {/* 3D Scene Container */}
-          <div className="w-full h-[600px] relative z-0">
-            <ChessScene
-              fen={fen}
-              orientation={orientation}
-            />
+
+          {/* View Mode Toggle */}
+          <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">
+            <Button
+              variant={viewMode === '2d' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('2d')}
+              className={`h-8 px-3 ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+            >
+              2D
+            </Button>
+            <Button
+              variant={viewMode === '3d' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('3d')}
+              className={`h-8 px-3 ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+            >
+              3D
+            </Button>
+          </div>
+
+          {/* Board Container */}
+          <div className="w-full h-[600px] relative z-0 flex items-center justify-center bg-slate-900/50 rounded-xl border border-white/5 overflow-hidden">
+            {viewMode === '3d' ? (
+              <ChessScene
+                fen={fen}
+                orientation={orientation}
+              />
+            ) : (
+              <div className="w-full max-w-[600px] aspect-square">
+                <SmartChessboard
+                  initialFen={fen}
+                  onMove={onUserMove}
+                  boardOrientation={orientation}
+                />
+              </div>
+            )}
           </div>
 
           {/* Game Over Overlay */}
