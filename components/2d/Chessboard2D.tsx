@@ -285,28 +285,18 @@ const Pieces2D = ({ fen, orientation, onCapture }: { fen: string, orientation: s
 };
 
 const ResponsiveCamera = () => {
-    const { viewport } = useThree();
-    // Board is 8x8. We want to fit 8 units in the smallest dimension.
-    // Orthographic camera zoom is "pixels per unit" usually, but in R3F default Orthographic camera:
-    // The view size is controlled by the camera's left/right/top/bottom.
-    // If we use makeDefault, R3F handles aspect ratio.
-    // We want to ensure the board (width 8, height 8) is visible.
-
-    // Actually, simpler approach:
-    // Use a fixed zoom but scale the group? No.
-    // Use Drei's Bounds?
-    // Let's just use a manual calculation.
-
-    // If we use standard OrthographicCamera from THREE:
-    // zoom = canvas_height / ortho_height
-    // We want ortho_height to be at least 9 (8 + margin).
+    const { size } = useThree();
+    // Board is 8x8 units centered at 0,0.
+    // We want to fit roughly 9 units (8 + margin) into the smallest dimension of the canvas.
+    // Using size (pixels) instead of viewport (units) avoids the feedback loop.
+    const zoom = Math.min(size.width, size.height) / 9;
 
     return (
         <OrthographicCamera
             makeDefault
             position={[0, 10, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
-            zoom={Math.min(viewport.width, viewport.height) * 45} // Approximate heuristic
+            zoom={zoom}
             near={0.1}
             far={1000}
         />
