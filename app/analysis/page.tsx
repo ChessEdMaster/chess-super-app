@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Chess } from 'chess.js';
+import { Chess, Square } from 'chess.js';
 import {
   ChevronLeft,
   ChevronRight,
@@ -167,15 +167,15 @@ export default function AnalysisPage() {
   }
 
   function getMoveOptions(square: string) {
-    const moves = game.moves({ square: square as any, verbose: true });
+    const moves = game.moves({ square: square as Square, verbose: true });
     if (moves.length === 0) {
       setOptionSquares({});
       return false;
     }
     const newSquares: Record<string, { background: string; borderRadius?: string }> = {};
     moves.forEach((move) => {
-      const targetPiece = game.get(move.to as any);
-      const sourcePiece = game.get(square as any);
+      const targetPiece = game.get(move.to as Square);
+      const sourcePiece = game.get(square as Square);
       const isCapture = targetPiece && sourcePiece && targetPiece.color !== sourcePiece.color;
       newSquares[move.to] = {
         background: isCapture ? 'radial-gradient(circle, rgba(255,0,0,.5) 25%, transparent 25%)' : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
@@ -194,13 +194,14 @@ export default function AnalysisPage() {
         setOptionSquares({});
         return;
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const moveResult = onDrop(moveFrom, square);
       if (moveResult) {
         setMoveFrom(null);
         setOptionSquares({});
         return;
       }
-      const clickedPiece = game.get(square as any);
+      const clickedPiece = game.get(square as Square);
       if (clickedPiece && clickedPiece.color === game.turn()) {
         setMoveFrom(square);
         getMoveOptions(square);
@@ -209,7 +210,7 @@ export default function AnalysisPage() {
       setMoveFrom(null);
       setOptionSquares({});
     } else {
-      const piece = game.get(square as any);
+      const piece = game.get(square as Square);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
         getMoveOptions(square);

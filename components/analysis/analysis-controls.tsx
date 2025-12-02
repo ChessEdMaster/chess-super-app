@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Switch } from '@/components/ui/switch';
+
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Cpu, Layers } from 'lucide-react';
+import { Play, Pause, Cpu } from 'lucide-react';
 
 interface AnalysisControlsProps {
     isAnalyzing: boolean;

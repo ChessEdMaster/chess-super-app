@@ -23,9 +23,33 @@ interface Chessboard2DProps {
     lastMove?: [string, string];
 }
 
+interface Square2DProps {
+    x: number;
+    z: number;
+    isBlack: boolean;
+    id: string;
+    onClick: (id: string) => void;
+    highlight?: { background: string };
+    showCoords?: boolean;
+    isBottomRank?: boolean;
+    isLeftFile?: boolean;
+}
+
+interface Piece2DProps {
+    type: string;
+    color: string;
+    position: [number, number, number];
+}
+
+interface Board2DProps {
+    onSquareClick: (id: string) => void;
+    customSquareStyles?: Record<string, React.CSSProperties>;
+    orientation: 'white' | 'black';
+}
+
 // --- COMPONENTS ---
 
-const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomRank, isLeftFile }: any) => {
+const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomRank, isLeftFile }: Square2DProps) => {
     const [hovered, setHover] = useState(false);
     useCursor(hovered);
 
@@ -103,29 +127,11 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
     );
 };
 
-const Piece2D = ({ type, color, position }: any) => {
-    const [textureUrl, setTextureUrl] = useState(getPieceUrl(type, color));
-    const [error, setError] = useState(false);
-
-    // If texture fails, we show a fallback geometry
-    const texture = useLoader(THREE.TextureLoader, textureUrl, (loader) => {
-        // Optional: loader configuration
-    }, undefined, (err) => {
-        console.error("Error loading texture:", textureUrl, err);
-        setError(true);
-    });
-
-    if (error) {
-        return (
-            <mesh position={position} rotation={[0, 0, 0]}>
-                <cylinderGeometry args={[0.3, 0.3, 0.1, 32]} />
-                <meshBasicMaterial color={color === 'w' ? 'white' : 'black'} />
-            </mesh>
-        );
-    }
-
+const Piece2D = ({ type, color, position }: Piece2DProps) => {
+    const texture = useLoader(THREE.TextureLoader, getPieceUrl(type, color)) as THREE.Texture;
     // Ensure vibrant colors
-    if (texture) texture.colorSpace = THREE.SRGBColorSpace;
+    // @ts-ignore
+    texture.colorSpace = THREE.SRGBColorSpace;
 
     return (
         <mesh position={position} rotation={[-Math.PI / 2, 0, 0]}>
@@ -135,7 +141,7 @@ const Piece2D = ({ type, color, position }: any) => {
     );
 };
 
-const Board2D = ({ onSquareClick, customSquareStyles, orientation }: any) => {
+const Board2D = ({ onSquareClick, customSquareStyles, orientation }: Board2DProps) => {
     const squares = useMemo(() => {
         const sq = [];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -229,7 +235,7 @@ const Pieces2D = ({ fen, orientation }: { fen: string, orientation: string }) =>
 export default function Chessboard2D({
     fen,
     orientation = 'white',
-    onSquareClick,
+    onSquareClick = () => { },
     customSquareStyles
 }: Chessboard2DProps) {
     return (
