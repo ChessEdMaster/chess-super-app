@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Canvas, useLoader, useFrame } from '@react-three/fiber';
+import { Canvas, useLoader, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera, useCursor, Text, Instance, Instances } from '@react-three/drei';
 import { Chess } from 'chess.js';
 import * as THREE from 'three';
-import ClientOnly from '@/components/ClientOnly';
+import dynamic from 'next/dynamic';
 
 // --- ASSETS ---
 const PIECE_THEME_URL = "https://images.chesscomfiles.com/chess-themes/pieces/neo/150";
@@ -284,12 +284,44 @@ const Pieces2D = ({ fen, orientation, onCapture }: { fen: string, orientation: s
     );
 };
 
-export default function Chessboard2D({
+const ResponsiveCamera = () => {
+    const { viewport } = useThree();
+    // Board is 8x8. We want to fit 8 units in the smallest dimension.
+    // Orthographic camera zoom is "pixels per unit" usually, but in R3F default Orthographic camera:
+    // The view size is controlled by the camera's left/right/top/bottom.
+    // If we use makeDefault, R3F handles aspect ratio.
+    // We want to ensure the board (width 8, height 8) is visible.
+
+    // Actually, simpler approach:
+    // Use a fixed zoom but scale the group? No.
+    // Use Drei's Bounds?
+    // Let's just use a manual calculation.
+
+    // If we use standard OrthographicCamera from THREE:
+    // zoom = canvas_height / ortho_height
+    // We want ortho_height to be at least 9 (8 + margin).
+
+    return (
+        <OrthographicCamera
+            makeDefault
+            position={[0, 10, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            zoom={Math.min(viewport.width, viewport.height) * 45} // Approximate heuristic
+            near={0.1}
+            far={1000}
+        />
+    );
+};
+
+// ... (rest of imports)
+
+// WRAPPER FOR DYNAMIC IMPORT
+const Chessboard2DContent = ({
     fen,
     orientation = 'white',
     onSquareClick = () => { },
     customSquareStyles
-}: Chessboard2DProps) {
+}: Chessboard2DProps) => {
     const [particleTriggers, setParticleTriggers] = useState<{ x: number, z: number, color: string, id: number }[]>([]);
 
     const handleCapture = (x: number, z: number, color: string) => {
@@ -297,32 +329,25 @@ export default function Chessboard2D({
     };
 
     return (
-        <ClientOnly>
-            <div className="w-full h-full bg-[#303030] rounded-lg overflow-hidden shadow-xl border-4 border-slate-700 relative" style={{ minHeight: '300px' }}>
-                <Canvas style={{ width: '100%', height: '100%', display: 'block' }}>
-                    <OrthographicCamera
-                        makeDefault
-                        position={[0, 100, 0]}
-                        zoom={40}
-                        near={0.1}
-                        far={1000}
+        <div className="w-full h-full bg-[#303030] relative">
+            <Canvas>
+                <ResponsiveCamera />
+                <color attach="background" args={['#303030']} />
+                <group>
+                    <Board2D
+                        onSquareClick={onSquareClick}
+                        customSquareStyles={customSquareStyles}
+                        orientation={orientation}
                     />
-
-                    <color attach="background" args={['#303030']} />
-
-                    <group>
-                        <Board2D
-                            onSquareClick={onSquareClick}
-                            customSquareStyles={customSquareStyles}
-                            orientation={orientation}
-                        />
-                        <React.Suspense fallback={null}>
-                            <Pieces2D fen={fen} orientation={orientation} onCapture={handleCapture} />
-                        </React.Suspense>
-                        <CaptureParticles triggers={particleTriggers} />
-                    </group>
-                </Canvas>
-            </div>
-        </ClientOnly>
+                    <React.Suspense fallback={null}>
+                        <Pieces2D fen={fen} orientation={orientation} onCapture={handleCapture} />
+                    </React.Suspense>
+                    <CaptureParticles triggers={particleTriggers} />
+                </group>
+            </Canvas>
+        </div>
     );
-}
+};
+
+export default dynamic(() => Promise.resolve(Chessboard2DContent), { ssr: false });
+

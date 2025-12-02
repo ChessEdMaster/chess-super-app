@@ -495,22 +495,22 @@ export default function OnlineGamePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center p-4">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center p-2">
 
       {/* Header Simplificat */}
-      <div className="w-full max-w-6xl flex justify-between items-center mb-6">
-        <div className="bg-slate-900 px-4 py-2 rounded-full border border-slate-800 flex items-center gap-2 text-slate-300 text-sm">
+      <div className="w-full max-w-6xl flex justify-between items-center mb-4">
+        <div className="bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800 flex items-center gap-2 text-slate-300 text-xs">
           <span>ID: {id?.toString().slice(0, 8)}...</span>
-          <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="hover:text-white"><Copy size={14} /></button>
+          <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="hover:text-white"><Copy size={12} /></button>
         </div>
-        <div className="text-white font-bold text-xl">{status}</div>
-        <div className="w-[150px]"></div> {/* Spacer */}
+        <div className="text-white font-bold text-sm">{status}</div>
+        <div className="w-[100px]"></div> {/* Spacer */}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl justify-center items-start">
+      <div className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl justify-center items-start">
 
         {/* COLUMNA ESQUERRA: Tauler i Rellotges */}
-        <div className="flex flex-col gap-4 w-full max-w-[600px]">
+        <div className="flex flex-col gap-3 w-full max-w-[600px]">
 
           <ChessClock
             whiteTime={gameData.white_time || 600}
@@ -520,7 +520,7 @@ export default function OnlineGamePage() {
             onTimeout={handleTimeout}
           />
 
-          <div className="relative w-full aspect-square shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
+          <div className="relative w-full aspect-square shadow-2xl rounded-lg overflow-hidden border-2 border-slate-800 bg-slate-900">
             <Chessboard2D
               fen={fen}
               orientation={orientation}
@@ -530,28 +530,28 @@ export default function OnlineGamePage() {
           </div>
 
           {/* Controls */}
-          <div className="grid grid-cols-2 gap-4">
-            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 hover:border-red-500/50 disabled:opacity-50">
-              <Flag size={18} /> Rendir-se
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 hover:border-red-500/50 disabled:opacity-50 text-xs">
+              <Flag size={16} /> Rendir-se
             </button>
 
             {/* Botó Taules Dinàmic */}
             {drawOffer && drawOffer !== orientation ? (
               <div className="flex gap-2">
-                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition animate-pulse">
-                  <Handshake size={18} /> Acceptar
+                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs">
+                  <Handshake size={16} /> Acceptar
                 </button>
-                <button onClick={handleDeclineDraw} className="w-12 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl flex items-center justify-center transition border border-slate-700">
-                  <X size={18} />
+                <button onClick={handleDeclineDraw} className="w-10 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl flex items-center justify-center transition border border-slate-700">
+                  <X size={16} />
                 </button>
               </div>
             ) : (
               <button
                 onClick={handleOfferDraw}
                 disabled={gameData.status !== 'active' || drawOffer === orientation}
-                className={`bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50 ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
+                className={`bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50 text-xs ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
               >
-                <Handshake size={18} /> {drawOffer === orientation ? 'Oferta enviada...' : 'Oferir Taules'}
+                <Handshake size={16} /> {drawOffer === orientation ? 'Oferta enviada...' : 'Oferir Taules'}
               </button>
             )}
           </div>
@@ -559,18 +559,18 @@ export default function OnlineGamePage() {
           {/* MODAL GAME OVER */}
           {gameData.status === 'finished' && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-              <div className="bg-slate-900 border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transform scale-100 animate-in fade-in zoom-in duration-300">
-                <h2 className="text-3xl font-bold text-white mb-2">Partida Finalitzada</h2>
-                <p className="text-xl text-amber-400 font-bold mb-6">{status.replace('Partida Finalitzada: ', '')}</p>
+              <div className="bg-slate-900 border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center transform scale-100 animate-in fade-in zoom-in duration-300">
+                <h2 className="text-2xl font-bold text-white mb-1">Partida Finalitzada</h2>
+                <p className="text-lg text-amber-400 font-bold mb-4">{status.replace('Partida Finalitzada: ', '')}</p>
 
-                <div className="flex flex-col gap-3">
-                  <button onClick={handleRematch} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/50">
-                    <RotateCw size={20} /> Revenja
+                <div className="flex flex-col gap-2">
+                  <button onClick={handleRematch} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/50 text-sm">
+                    <RotateCw size={18} /> Revenja
                   </button>
-                  <button onClick={goToAnalysis} className="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700">
-                    <Search size={20} /> Analitzar Partida
+                  <button onClick={goToAnalysis} className="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 text-sm">
+                    <Search size={18} /> Analitzar Partida
                   </button>
-                  <button onClick={() => router.push('/lobby')} className="w-full text-slate-400 hover:text-white py-2 text-sm transition">
+                  <button onClick={() => router.push('/lobby')} className="w-full text-slate-400 hover:text-white py-2 text-xs transition">
                     Tornar al Lobby
                   </button>
                 </div>
@@ -580,21 +580,21 @@ export default function OnlineGamePage() {
         </div>
 
         {/* COLUMNA DRETA: Info, Xat, Historial */}
-        <div className="w-full lg:w-96 flex flex-col gap-4 h-[700px]">
+        <div className="w-full lg:w-80 flex flex-col gap-3 h-[600px]">
 
           {/* Oponent */}
-          <div className="bg-slate-800 p-3 rounded-xl flex items-center gap-3 border border-slate-700 opacity-90">
-            <div className="w-10 h-10 bg-red-500 rounded flex items-center justify-center text-white font-bold shadow-inner">
+          <div className="bg-slate-800 p-2.5 rounded-xl flex items-center gap-3 border border-slate-700 opacity-90">
+            <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white font-bold shadow-inner text-xs">
               {orientation === 'white' ? 'B' : 'W'}
             </div>
             <div>
-              <p className="font-bold text-white">{orientation === 'white' ? players.black : players.white}</p>
-              <p className="text-xs text-slate-400">Oponent</p>
+              <p className="font-bold text-white text-sm">{orientation === 'white' ? players.black : players.white}</p>
+              <p className="text-[10px] text-slate-400">Oponent</p>
             </div>
           </div>
 
           {/* Historial */}
-          <div className="flex-1 min-h-[200px]">
+          <div className="flex-1 min-h-[150px]">
             <MoveHistory history={game.history()} />
           </div>
 
@@ -602,13 +602,13 @@ export default function OnlineGamePage() {
           <ChatBox gameId={id as string} userId={user.id} />
 
           {/* Tu */}
-          <div className="bg-slate-800 p-3 rounded-xl flex items-center gap-3 border border-indigo-500/30 shadow-lg shadow-indigo-900/20">
-            <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center text-white font-bold shadow-inner">
+          <div className="bg-slate-800 p-2.5 rounded-xl flex items-center gap-3 border border-indigo-500/30 shadow-lg shadow-indigo-900/20">
+            <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold shadow-inner text-xs">
               {orientation === 'white' ? 'W' : 'B'}
             </div>
             <div>
-              <p className="font-bold text-white">{orientation === 'white' ? players.white : players.black} (Tu)</p>
-              <p className="text-xs text-emerald-400">En línia</p>
+              <p className="font-bold text-white text-sm">{orientation === 'white' ? players.white : players.black} (Tu)</p>
+              <p className="text-[10px] text-emerald-400">En línia</p>
             </div>
           </div>
 

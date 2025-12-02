@@ -25,15 +25,15 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     return (
         <div className="h-dvh w-full flex flex-col bg-zinc-950 text-white overflow-hidden">
             {/* Top Bar */}
-            <header className="h-16 px-4 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md border-b border-white/10 z-50 shrink-0">
+            <header className="h-14 px-4 flex items-center justify-between bg-zinc-900/80 backdrop-blur-md border-b border-white/5 z-50 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center border-2 border-white shadow-lg relative">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center border border-white shadow-lg relative">
                         {/* Placeholder Avatar */}
-                        <span className="text-xs font-bold">{profile.level}</span>
+                        <span className="text-[10px] font-bold">{profile.level}</span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-bold text-zinc-100">{profile.username}</span>
-                        <div className="h-2 w-24 bg-zinc-800 rounded-full overflow-hidden">
+                        <span className="text-xs font-bold text-zinc-100">{profile.username}</span>
+                        <div className="h-1.5 w-20 bg-zinc-800 rounded-full overflow-hidden mt-0.5">
                             <div
                                 className="h-full bg-blue-500"
                                 style={{ width: `${(profile.xp / 1000) * 100}%` }}
@@ -42,14 +42,14 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                        <div className="w-4 h-4 rounded-full bg-yellow-400" />
-                        <span className="text-sm font-bold text-yellow-400">{profile.currencies.gold}</span>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 bg-zinc-800/50 px-2 py-1 rounded-full border border-white/5">
+                        <div className="w-3 h-3 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
+                        <span className="text-xs font-bold text-yellow-100">{profile.currencies.gold}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <div className="w-4 h-4 rounded-full bg-green-400" />
-                        <span className="text-sm font-bold text-green-400">{profile.currencies.gems}</span>
+                    <div className="flex items-center gap-1 bg-zinc-800/50 px-2 py-1 rounded-full border border-white/5">
+                        <div className="w-3 h-3 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+                        <span className="text-xs font-bold text-green-100">{profile.currencies.gems}</span>
                     </div>
                 </div>
             </header>
@@ -60,7 +60,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
             </main>
 
             {/* Bottom Navigation */}
-            <nav className="h-20 bg-zinc-900 border-t border-white/10 flex items-center justify-around z-50 pb-2 shrink-0">
+            <nav className="h-16 bg-zinc-900/90 backdrop-blur-lg border-t border-white/5 flex items-center justify-around z-50 pb-safe shrink-0">
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href;
                     return (
@@ -68,12 +68,14 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                             key={tab.name}
                             href={tab.href}
                             className={cn(
-                                "flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all active:scale-95",
-                                isActive ? "bg-white/10 text-blue-400" : "text-zinc-500 hover:text-zinc-300"
+                                "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all active:scale-95",
+                                isActive ? "text-blue-400" : "text-zinc-500 hover:text-zinc-300"
                             )}
                         >
-                            <tab.icon className={cn("w-6 h-6", isActive && "fill-current")} />
-                            <span className="text-[10px] font-bold uppercase tracking-wide">{tab.name}</span>
+                            <div className={cn("p-1.5 rounded-lg transition-colors", isActive && "bg-blue-500/10")}>
+                                <tab.icon className={cn("w-5 h-5", isActive && "fill-current")} />
+                            </div>
+                            <span className={cn("text-[10px] font-bold uppercase tracking-wide transition-colors", isActive ? "text-blue-400" : "text-zinc-600")}>{tab.name}</span>
                         </Link>
                     );
                 })}

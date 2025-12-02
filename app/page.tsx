@@ -60,14 +60,14 @@ export default function HomePage() {
                 key={league.id}
                 onClick={() => setSelectedLeague(league.id)}
                 className={cn(
-                  "px-4 py-2 rounded-full flex items-center gap-2 transition-all",
+                  "px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all",
                   selectedLeague === league.id
                     ? "bg-zinc-800 text-white shadow-md"
                     : "text-zinc-500 hover:text-zinc-300"
                 )}
               >
-                <league.icon size={16} className={selectedLeague === league.id ? league.color : "currentColor"} />
-                <span className={cn("text-xs font-bold uppercase", selectedLeague !== league.id && "hidden sm:inline")}>
+                <league.icon size={14} className={selectedLeague === league.id ? league.color : "currentColor"} />
+                <span className={cn("text-[10px] font-bold uppercase", selectedLeague !== league.id && "hidden sm:inline")}>
                   {league.label}
                 </span>
               </button>
@@ -80,7 +80,7 @@ export default function HomePage() {
 
         {/* Battle Button Area */}
         <div className="flex flex-col items-center gap-2 py-4 pointer-events-auto">
-          <div className="text-white/80 text-xs font-bold uppercase tracking-widest drop-shadow-md">
+          <div className="text-white/80 text-[10px] font-bold uppercase tracking-widest drop-shadow-md">
             {selectedLeague} Arena
           </div>
           <Link href={`/play/online?mode=${selectedLeague}`}>
@@ -95,30 +95,30 @@ export default function HomePage() {
                 repeat: Infinity,
                 repeatType: "loop"
               }}
-              className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-3xl px-12 py-6 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-3"
+              className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2"
             >
-              <Swords size={32} />
+              <Swords size={24} />
               Battle
             </motion.button>
           </Link>
         </div>
 
         {/* Chest Slots */}
-        <div className="h-32 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 flex items-end justify-center gap-3 pointer-events-auto">
+        <div className="h-24 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 flex items-end justify-center gap-2 pointer-events-auto">
           {chests.map((chest, index) => (
             <div
               key={index}
-              className="w-1/4 h-24 bg-zinc-800/80 backdrop-blur-sm rounded-lg border-2 border-zinc-700 flex flex-col items-center justify-center relative overflow-hidden"
+              className="w-1/4 h-16 bg-zinc-800/80 backdrop-blur-sm rounded-lg border border-zinc-700 flex flex-col items-center justify-center relative overflow-hidden"
             >
               {chest ? (
                 <>
-                  <div className="text-2xl">📦</div>
-                  <span className="text-[10px] font-bold text-yellow-500 uppercase mt-1">{chest.type}</span>
-                  <span className="text-[10px] text-zinc-400">{Math.floor(chest.unlockTime / 60)}m</span>
+                  <div className="text-lg">📦</div>
+                  <span className="text-[8px] font-bold text-yellow-500 uppercase mt-0.5">{chest.type}</span>
+                  <span className="text-[8px] text-zinc-400">{Math.floor(chest.unlockTime / 60)}m</span>
                 </>
               ) : (
                 <div className="text-zinc-600 flex flex-col items-center">
-                  <span className="text-xs font-bold uppercase tracking-widest opacity-50">Empty</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Empty</span>
                 </div>
               )}
             </div>

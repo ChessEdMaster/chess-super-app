@@ -37,24 +37,24 @@ export default function ImprovePage() {
     ];
 
     return (
-        <div className="h-full w-full bg-zinc-950 p-4 overflow-y-auto pb-32">
-            <h1 className="text-2xl font-black text-white mb-6 uppercase tracking-wider italic">
+        <div className="h-full w-full bg-zinc-950 p-3 overflow-y-auto pb-24">
+            <h1 className="text-xl font-black text-white mb-4 uppercase tracking-wider italic">
                 Improve
             </h1>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
                 {tools.map((tool) => (
                     <Link
                         key={tool.name}
                         href={tool.href}
-                        className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4 hover:bg-zinc-800 transition-colors group"
+                        className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors group"
                     >
-                        <div className={`w-12 h-12 rounded-xl ${tool.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                            <tool.icon size={24} />
+                        <div className={`w-10 h-10 rounded-lg ${tool.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                            <tool.icon size={20} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-white text-lg">{tool.name}</h3>
-                            <p className="text-zinc-400 text-sm">{tool.description}</p>
+                            <h3 className="font-bold text-white text-sm">{tool.name}</h3>
+                            <p className="text-zinc-400 text-xs">{tool.description}</p>
                         </div>
                     </Link>
                 ))}
