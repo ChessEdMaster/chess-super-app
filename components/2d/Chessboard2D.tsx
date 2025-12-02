@@ -29,7 +29,7 @@ interface Square2DProps {
     isBlack: boolean;
     id: string;
     onClick: (id: string) => void;
-    highlight?: { background: string };
+    highlight?: React.CSSProperties;
     showCoords?: boolean;
     isBottomRank?: boolean;
     isLeftFile?: boolean;
@@ -61,7 +61,7 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
     // Highlight handling
     let color = baseColor;
 
-    if (highlight) {
+    if (highlight && typeof highlight.background === 'string') {
         if (highlight.background.includes('rgba(255, 255, 0')) {
             // Selected: Yellowish tint
             color = '#f5f682';
@@ -85,7 +85,7 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
             </mesh>
 
             {/* Move Hint Dot */}
-            {highlight?.background?.includes('radial-gradient') && (
+            {highlight?.background && typeof highlight.background === 'string' && highlight.background.includes('radial-gradient') && (
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
                     <circleGeometry args={[0.15, 32]} />
                     <meshBasicMaterial color="rgba(0,0,0,0.2)" transparent opacity={0.5} />
@@ -93,7 +93,7 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
             )}
 
             {/* Capture Hint Ring */}
-            {highlight?.background?.includes('radial-gradient') && highlight.background.includes('255,0,0') && (
+            {highlight?.background && typeof highlight.background === 'string' && highlight.background.includes('radial-gradient') && highlight.background.includes('255,0,0') && (
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
                     <ringGeometry args={[0.35, 0.45, 32]} />
                     <meshBasicMaterial color="rgba(0,0,0,0.2)" transparent opacity={0.5} />
