@@ -282,145 +282,148 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 min-h-screen flex flex-col items-center gap-8">
+    <div className="h-dvh w-full bg-slate-950 flex flex-col overflow-hidden">
 
-      {/* Header & Stats */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl flex items-center justify-center gap-3">
-          <Sword className="h-10 w-10 text-amber-500" />
+      {/* Header - Compact */}
+      <header className="flex-none py-4 px-6 border-b border-white/10 bg-slate-900/50 backdrop-blur-md flex items-center justify-between z-20">
+        <h1 className="text-2xl font-bold tracking-tighter flex items-center gap-2 text-white">
+          <Sword className="h-6 w-6 text-amber-500" />
           Arena Competitiva
         </h1>
         {userProfile && (
-          <div className="flex justify-center gap-4 text-sm">
-            <div className="bg-slate-100 px-3 py-1 rounded-full border">
-              Bullet: <strong>{userProfile.elo_bullet || 1200}</strong>
+          <div className="flex gap-3 text-xs text-slate-400">
+            <div className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+              Bullet: <strong className="text-white">{userProfile.elo_bullet || 1200}</strong>
             </div>
-            <div className="bg-slate-100 px-3 py-1 rounded-full border">
-              Blitz: <strong>{userProfile.elo_blitz || 1200}</strong>
+            <div className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+              Blitz: <strong className="text-white">{userProfile.elo_blitz || 1200}</strong>
             </div>
-            <div className="bg-slate-100 px-3 py-1 rounded-full border">
-              Rapid: <strong>{userProfile.elo_rapid || 1200}</strong>
+            <div className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+              Rapid: <strong className="text-white">{userProfile.elo_rapid || 1200}</strong>
             </div>
           </div>
         )}
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full max-w-6xl">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
 
-        {/* Left Panel: Controls */}
-        <div className="space-y-4 z-10">
-          <Card className="p-6 bg-white/10 backdrop-blur-md border-white/20 shadow-xl text-white">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-white">
-              <Trophy className="h-5 w-5 text-amber-400" />
-              Selecciona Ritme
-            </h3>
+        {/* Left Sidebar: Controls */}
+        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/10 bg-slate-900/30 overflow-y-auto z-10">
+          <div className="space-y-4">
+            <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
+              <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
+                <Trophy className="h-4 w-4 text-amber-400" />
+                Ritme de Joc
+              </h3>
 
-            <div className="grid grid-cols-1 gap-3">
-              <Button
-                variant={gameMode === 'bullet' ? 'default' : 'outline'}
-                className={`justify-between h-auto py-4 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                onClick={() => setGameMode('bullet')}
-                disabled={gameState === 'playing' || gameState === 'searching'}
-              >
-                <span className="flex items-center gap-2">🚀 Bullet</span>
-                <span className="text-xs opacity-70">1+0</span>
-              </Button>
-              <Button
-                variant={gameMode === 'blitz' ? 'default' : 'outline'}
-                className={`justify-between h-auto py-4 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                onClick={() => setGameMode('blitz')}
-                disabled={gameState === 'playing' || gameState === 'searching'}
-              >
-                <span className="flex items-center gap-2">⚡ Blitz</span>
-                <span className="text-xs opacity-70">3+2</span>
-              </Button>
-              <Button
-                variant={gameMode === 'rapid' ? 'default' : 'outline'}
-                className={`justify-between h-auto py-4 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                onClick={() => setGameMode('rapid')}
-                disabled={gameState === 'playing' || gameState === 'searching'}
-              >
-                <span className="flex items-center gap-2">🐢 Rapid</span>
-                <span className="text-xs opacity-70">10+0</span>
-              </Button>
-            </div>
-
-            <div className="mt-6">
-              {gameState === 'idle' || gameState === 'finished' ? (
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                 <Button
-                  className="w-full text-lg font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
-                  onClick={() => startSearch(gameMode)}
+                  variant={gameMode === 'bullet' ? 'default' : 'outline'}
+                  className={`justify-between h-auto py-3 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  onClick={() => setGameMode('bullet')}
+                  disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  Jugar Partida
+                  <span className="flex items-center gap-2 text-sm">🚀 Bullet</span>
+                  <span className="text-[10px] opacity-70">1+0</span>
                 </Button>
-              ) : gameState === 'searching' ? (
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Cercant oponent...
-                  </div>
-                  <div className="text-3xl font-mono font-bold text-white">
-                    00:{searchTimer.toString().padStart(2, '0')}
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20">
-                    Cancel·lar
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="text-sm text-slate-300 mb-1">Partida en curs</div>
-                  <div className="font-bold text-emerald-400 flex items-center justify-center gap-2">
-                    <Sword className="h-4 w-4" /> VS Bot ({botDifficulty})
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="mt-4 w-full bg-red-600/80 hover:bg-red-600"
-                    onClick={() => {
-                      setGameState('finished');
-                      setWinner('loss'); // Resign
-                    }}
-                  >
-                    Rendir-se
-                  </Button>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Game Info Card */}
-          {gameState === 'playing' && (
-            <Card className="p-4 bg-black/40 backdrop-blur-md text-white border-white/10">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-8 w-8 p-1.5 bg-white/10 rounded-lg" />
-                  <div>
-                    <div className="font-bold">Stockfish</div>
-                    <div className="text-xs text-slate-400">Nivell {botDifficulty}</div>
-                  </div>
-                </div>
-                {isBotThinking && <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />}
+                <Button
+                  variant={gameMode === 'blitz' ? 'default' : 'outline'}
+                  className={`justify-between h-auto py-3 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  onClick={() => setGameMode('blitz')}
+                  disabled={gameState === 'playing' || gameState === 'searching'}
+                >
+                  <span className="flex items-center gap-2 text-sm">⚡ Blitz</span>
+                  <span className="text-[10px] opacity-70">3+2</span>
+                </Button>
+                <Button
+                  variant={gameMode === 'rapid' ? 'default' : 'outline'}
+                  className={`justify-between h-auto py-3 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  onClick={() => setGameMode('rapid')}
+                  disabled={gameState === 'playing' || gameState === 'searching'}
+                >
+                  <span className="flex items-center gap-2 text-sm">🐢 Rapid</span>
+                  <span className="text-[10px] opacity-70">10+0</span>
+                </Button>
               </div>
 
-              <div className="h-px bg-white/10 my-2" />
+              <div className="mt-4">
+                {gameState === 'idle' || gameState === 'finished' ? (
+                  <Button
+                    className="w-full font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
+                    onClick={() => startSearch(gameMode)}
+                  >
+                    Jugar Partida
+                  </Button>
+                ) : gameState === 'searching' ? (
+                  <div className="flex flex-col items-center gap-2 py-2 bg-black/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cercant...
+                    </div>
+                    <div className="text-2xl font-mono font-bold text-white">
+                      00:{searchTimer.toString().padStart(2, '0')}
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 text-xs">
+                      Cancel·lar
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-2">
+                    <div className="text-xs text-slate-400 mb-1">Partida en curs</div>
+                    <div className="font-bold text-emerald-400 flex items-center justify-center gap-2 text-sm">
+                      <Sword className="h-3 w-3" /> VS Bot ({botDifficulty})
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="mt-3 w-full bg-red-600/80 hover:bg-red-600"
+                      onClick={() => {
+                        setGameState('finished');
+                        setWinner('loss'); // Resign
+                      }}
+                    >
+                      Rendir-se
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
 
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-2">
-                  <User className="h-8 w-8 p-1.5 bg-emerald-600 rounded-lg" />
-                  <div>
-                    <div className="font-bold">Tu</div>
-                    <div className="text-xs text-slate-400">
-                      {userProfile ? userProfile[`elo_${gameMode}`] : '...'}
+            {/* Game Info Card */}
+            {gameState === 'playing' && (
+              <Card className="p-4 bg-black/40 backdrop-blur-md text-white border-white/10">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <Bot className="h-8 w-8 p-1.5 bg-white/10 rounded-lg" />
+                    <div>
+                      <div className="font-bold text-sm">Stockfish</div>
+                      <div className="text-[10px] text-slate-400">Nivell {botDifficulty}</div>
+                    </div>
+                  </div>
+                  {isBotThinking && <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />}
+                </div>
+
+                <div className="h-px bg-white/10 my-2" />
+
+                <div className="flex justify-between items-center mt-3">
+                  <div className="flex items-center gap-2">
+                    <User className="h-8 w-8 p-1.5 bg-emerald-600 rounded-lg" />
+                    <div>
+                      <div className="font-bold text-sm">Tu</div>
+                      <div className="text-[10px] text-slate-400">
+                        {userProfile ? userProfile[`elo_${gameMode}`] : '...'}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          )}
+              </Card>
+            )}
+          </div>
         </div>
 
-        {/* Center: Chessboard */}
-        <div className="col-span-1 lg:col-span-2 flex justify-center items-start relative">
+        {/* Center: Chessboard Area */}
+        <div className="flex-1 flex items-center justify-center bg-slate-950 relative p-4 overflow-hidden">
 
           {/* View Mode Toggle */}
           <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">
@@ -428,7 +431,7 @@ export default function PlayPage() {
               variant={viewMode === '2d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('2d')}
-              className={`h-8 px-3 ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+              className={`h-7 px-3 text-xs ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
             >
               2D
             </Button>
@@ -436,14 +439,14 @@ export default function PlayPage() {
               variant={viewMode === '3d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('3d')}
-              className={`h-8 px-3 ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+              className={`h-7 px-3 text-xs ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
             >
               3D
             </Button>
           </div>
 
-          {/* Board Container */}
-          <div className="w-full h-[600px] relative z-0 flex items-center justify-center bg-slate-900/50 rounded-xl border border-white/5 overflow-hidden">
+          {/* Board Container - Responsive Aspect Ratio */}
+          <div className="w-full max-w-[80vh] aspect-square relative z-0 shadow-2xl rounded-xl overflow-hidden border border-white/5">
             {viewMode === '3d' ? (
               <ChessScene
                 fen={fen}
@@ -465,17 +468,17 @@ export default function PlayPage() {
 
           {/* Game Over Overlay */}
           {gameState === 'finished' && winner && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-              <div className="bg-black/80 backdrop-blur-md rounded-xl flex flex-col items-center justify-center text-white p-8 text-center animate-in fade-in zoom-in duration-300 border border-white/10 pointer-events-auto shadow-2xl">
-                <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center text-white p-8 text-center animate-in fade-in zoom-in duration-300 border border-white/10 shadow-2xl max-w-sm w-full mx-4">
+                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
                   {winner === 'win' ? '🏆 Victòria!' : winner === 'loss' ? '💀 Derrota' : '🤝 Taules'}
                 </h2>
-                <p className="text-slate-300 mb-8 text-lg">
+                <p className="text-slate-300 mb-6 text-sm">
                   {winner === 'win' ? 'Has guanyat punts de lliga!' : 'Segueix practicant per millorar.'}
                 </p>
                 <Button
                   size="lg"
-                  className="bg-white text-black hover:bg-slate-200 font-bold text-lg px-8 py-6 rounded-full"
+                  className="w-full bg-white text-black hover:bg-slate-200 font-bold rounded-xl"
                   onClick={() => setGameState('idle')}
                 >
                   Tornar a jugar

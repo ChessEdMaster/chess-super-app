@@ -31,8 +31,8 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
 
     const position: [number, number, number] = [x, 0, z];
 
-    // Colors
-    const baseColor = isBlack ? '#779954' : '#e9edcc'; // Classic Green/Cream
+    // Colors - Classic Wood/Green Theme
+    const baseColor = isBlack ? '#769656' : '#eeeed2';
 
     // Highlight handling
     let color = baseColor;
@@ -82,7 +82,7 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
                     position={[0.35, 0.01, 0.35]}
                     rotation={[-Math.PI / 2, 0, 0]}
                     fontSize={0.2}
-                    color={isBlack ? '#e9edcc' : '#779954'}
+                    color={isBlack ? '#eeeed2' : '#769656'}
                     fontWeight="bold"
                 >
                     {id.charAt(0)}
@@ -93,7 +93,7 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
                     position={[-0.35, 0.01, -0.35]}
                     rotation={[-Math.PI / 2, 0, 0]}
                     fontSize={0.2}
-                    color={isBlack ? '#e9edcc' : '#779954'}
+                    color={isBlack ? '#eeeed2' : '#769656'}
                     fontWeight="bold"
                 >
                     {id.charAt(1)}
@@ -105,11 +105,13 @@ const Square2D = ({ x, z, isBlack, id, onClick, highlight, showCoords, isBottomR
 
 const Piece2D = ({ type, color, position }: any) => {
     const texture = useLoader(THREE.TextureLoader, getPieceUrl(type, color));
+    // Ensure vibrant colors
+    texture.colorSpace = THREE.SRGBColorSpace;
 
     return (
         <mesh position={position} rotation={[-Math.PI / 2, 0, 0]}>
             <planeGeometry args={[0.9, 0.9]} />
-            <meshBasicMaterial map={texture} transparent />
+            <meshBasicMaterial map={texture} transparent toneMapped={false} />
         </mesh>
     );
 };
@@ -207,17 +209,17 @@ export default function Chessboard2D({
 }: Chessboard2DProps) {
     return (
         <ClientOnly>
-            <div className="w-full h-full bg-slate-800 rounded-lg overflow-hidden shadow-xl border-4 border-slate-700">
+            <div className="w-full h-full bg-[#303030] rounded-lg overflow-hidden shadow-xl border-4 border-slate-700 relative">
                 <Canvas>
                     <OrthographicCamera
                         makeDefault
                         position={[0, 10, 0]}
-                        zoom={45}
+                        zoom={60}
                         near={0.1}
                         far={100}
                     />
 
-                    <color attach="background" args={['#333']} />
+                    <color attach="background" args={['#303030']} />
 
                     <group>
                         <Board2D
@@ -225,7 +227,9 @@ export default function Chessboard2D({
                             customSquareStyles={customSquareStyles}
                             orientation={orientation}
                         />
-                        <Pieces2D fen={fen} orientation={orientation} />
+                        <React.Suspense fallback={null}>
+                            <Pieces2D fen={fen} orientation={orientation} />
+                        </React.Suspense>
                     </group>
                 </Canvas>
             </div>
