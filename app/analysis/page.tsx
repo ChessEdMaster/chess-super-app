@@ -305,10 +305,10 @@ export default function AnalysisPage() {
       </div>
 
       {/* RIGHT: ANALYSIS PANEL */}
-      <div className="flex flex-col border-l border-zinc-800 bg-zinc-900 h-full overflow-hidden">
+      <div className="flex flex-col border-l border-zinc-800 bg-zinc-900 h-full overflow-hidden relative">
 
         {/* Header */}
-        <div className="flex-none p-4 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur z-10 flex justify-between items-center">
+        <div className="flex-none p-4 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur z-10 flex justify-between items-center shrink-0">
           <h2 className="font-bold text-lg flex items-center gap-2">
             <LayoutGrid size={18} className="text-emerald-500" />
             Laboratori
@@ -319,8 +319,8 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-0">
+        {/* Scrollable Content - Hide Scrollbar */}
+        <div className="flex-1 overflow-y-auto p-0 scrollbar-hide">
           {activeTab === 'analysis' ? (
             <div className="flex flex-col min-h-full">
               <div className="p-4 space-y-4 flex-1">
@@ -358,7 +358,7 @@ export default function AnalysisPage() {
         </div>
 
         {/* Fixed Footer Controls */}
-        <div className="flex-none z-20">
+        <div className="flex-none z-20 bg-zinc-900 border-t border-zinc-800">
           <AnalysisControls
             isAnalyzing={isAnalyzing}
             setIsAnalyzing={setIsAnalyzing}

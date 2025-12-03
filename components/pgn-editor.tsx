@@ -193,56 +193,53 @@ export function PGNEditor({
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-2 flex items-center justify-between gap-2">
                 {/* View Mode Toggle */}
-                <div className="flex gap-2">
+                <div className="flex bg-slate-800 rounded-lg p-1">
                     <button
                         onClick={() => setViewMode('linear')}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${viewMode === 'linear'
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        className={`p-2 rounded-md transition ${viewMode === 'linear'
+                            ? 'bg-indigo-600 text-white shadow-lg'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-700'
                             }`}
+                        title="Linear View"
                     >
-                        <FileText size={16} />
-                        Linear
+                        <FileText size={18} />
                     </button>
                     <button
                         onClick={() => setViewMode('tree')}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${viewMode === 'tree'
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        className={`p-2 rounded-md transition ${viewMode === 'tree'
+                            ? 'bg-indigo-600 text-white shadow-lg'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-700'
                             }`}
+                        title="Tree View"
                     >
-                        <GitBranch size={16} />
-                        Tree
+                        <GitBranch size={18} />
                     </button>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                     <button
                         onClick={handleImportPGN}
-                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium transition flex items-center gap-2 text-white"
+                        className="p-2 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-lg transition text-slate-400"
                         title="Import PGN"
                     >
-                        <Upload size={16} />
-                        Import
+                        <Upload size={18} />
                     </button>
                     <button
                         onClick={handleCopyPGN}
-                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium transition flex items-center gap-2 text-white"
+                        className="p-2 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-lg transition text-slate-400 relative"
                         title="Copy PGN"
                     >
-                        {copySuccess ? <Check size={16} /> : <Copy size={16} />}
-                        {copySuccess ? 'Copied!' : 'Copy'}
+                        {copySuccess ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
                     </button>
                     <button
                         onClick={handleExportPGN}
-                        className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium transition flex items-center gap-2 text-white"
+                        className="p-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition text-white shadow-lg shadow-indigo-900/20"
                         title="Export PGN"
                     >
-                        <Download size={16} />
-                        Export
+                        <Download size={18} />
                     </button>
                 </div>
             </div>

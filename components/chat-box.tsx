@@ -113,40 +113,48 @@ export function ChatBox({ gameId, userId }: ChatBoxProps) {
     };
 
     return (
-        <div className="flex flex-col h-[300px] bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-            <div className="p-3 bg-slate-800 border-b border-slate-700 font-bold text-slate-300 text-sm flex items-center gap-2">
-                <MessageSquare size={16} /> Xat de la Partida
+        <div className="flex flex-col h-full bg-slate-900 rounded-lg border border-slate-800 overflow-hidden">
+            <div className="p-2 bg-slate-800 border-b border-slate-700 font-bold text-slate-300 text-xs flex items-center gap-2">
+                <MessageSquare size={14} /> Xat de la Partida
             </div>
 
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin scrollbar-thumb-slate-700">
-                {messages.length === 0 && <p className="text-slate-600 text-xs text-center italic mt-10">Digues hola al teu rival! 👋</p>}
-                {messages.map((msg) => {
-                    const isMe = msg.user_id === userId;
-                    return (
-                        <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                            <div className={`max-w-[85%] px-3 py-2 rounded-lg text-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 rounded-bl-none'}`}>
-                                {msg.content}
-                            </div>
-                            <span className="text-[10px] text-slate-500 mt-1 px-1">
-                                {isMe ? 'Tu' : msg.profiles?.username || 'Rival'}
-                            </span>
-                        </div>
-                    );
-                })}
-            </div>
+            {gameId.startsWith('bot-') ? (
+                <div className="flex-1 flex items-center justify-center text-slate-600 text-xs italic p-4 text-center">
+                    El xat no està disponible contra bots.
+                </div>
+            ) : (
+                <>
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin scrollbar-thumb-slate-700">
+                        {messages.length === 0 && <p className="text-slate-600 text-xs text-center italic mt-4">Digues hola al teu rival! 👋</p>}
+                        {messages.map((msg) => {
+                            const isMe = msg.user_id === userId;
+                            return (
+                                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <div className={`max-w-[90%] px-2 py-1.5 rounded-lg text-xs ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 rounded-bl-none'}`}>
+                                        {msg.content}
+                                    </div>
+                                    <span className="text-[9px] text-slate-500 mt-0.5 px-1">
+                                        {isMe ? 'Tu' : msg.profiles?.username || 'Rival'}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
 
-            <form onSubmit={sendMessage} className="p-2 bg-slate-800 border-t border-slate-700 flex gap-2">
-                <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Escriu un missatge..."
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition"
-                />
-                <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-lg transition">
-                    <Send size={18} />
-                </button>
-            </form>
+                    <form onSubmit={sendMessage} className="p-2 bg-slate-800 border-t border-slate-700 flex gap-2">
+                        <input
+                            type="text"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder="Missatge..."
+                            className="flex-1 bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition"
+                        />
+                        <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded-md transition">
+                            <Send size={14} />
+                        </button>
+                    </form>
+                </>
+            )}
         </div>
     );
 }
