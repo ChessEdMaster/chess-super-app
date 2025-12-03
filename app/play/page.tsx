@@ -18,6 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { useChessEngine } from '@/hooks/use-chess-engine';
+import { useArenaStore } from '@/lib/store/arena-store';
+import { ArenaCard } from '@/components/arena/arena-card';
+import { ArenaPath } from '@/components/arena/arena-path';
+import { ArenaVariant } from '@/types/arena';
 
 type GameMode = 'bullet' | 'blitz' | 'rapid';
 type GameState = 'idle' | 'searching' | 'playing' | 'finished';
@@ -26,8 +30,13 @@ type BotDifficulty = 'easy' | 'medium' | 'hard';
 export default function PlayPage() {
   // Game State
   const [gameState, setGameState] = useState<GameState>('idle');
+
+  // Arena State
+  const { progress, fetchArenaProgress, claimChest, recordGatekeeperDefeat, updateCups } = useArenaStore();
+  const [selectedArena, setSelectedArena] = useState<ArenaVariant | null>(null);
   const [gameMode, setGameMode] = useState<GameMode>('blitz');
   const [searchTimer, setSearchTimer] = useState(0);
+  const [isGatekeeperMatch, setIsGatekeeperMatch] = useState<number | null>(null);
   const [showBotModal, setShowBotModal] = useState(false);
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
@@ -55,10 +64,11 @@ export default function PlayPage() {
       if (user) {
         const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
         setUserProfile(data);
+        fetchArenaProgress(user.id);
       }
     };
     fetchProfile();
-  }, []);
+  }, [fetchArenaProgress]);
 
   // 2. Initialize Stockfish
   useEffect(() => {
@@ -275,6 +285,25 @@ export default function PlayPage() {
           const { data: newProfile } = await supabase.from('profiles').select('*').eq('id', userProfile.id).single();
           if (newProfile) setUserProfile(newProfile);
         }
+
+        // Update Arena Cups
+        let cupChange = 0;
+        if (result === 'win') cupChange = 20;
+        else if (result === 'loss') cupChange = -10;
+        else cupChange = 5;
+
+        // Handle Gatekeeper Victory
+        if (isGatekeeperMatch && result === 'win') {
+          await recordGatekeeperDefeat(userProfile.id, gameMode as ArenaVariant, isGatekeeperMatch);
+          setIsGatekeeperMatch(null);
+          toast.success("Gatekeeper derrotat! El camí està obert.");
+        } else if (isGatekeeperMatch && result !== 'win') {
+          setIsGatekeeperMatch(null);
+          toast.error("Has fallat contra el Gatekeeper. Torna-ho a intentar!");
+        }
+
+        await updateCups(userProfile.id, gameMode as ArenaVariant, cupChange);
+        toast.info(`Arena: ${cupChange > 0 ? '+' : ''}${cupChange} Copes`);
       }
       return true;
     }
@@ -311,111 +340,95 @@ export default function PlayPage() {
         {/* Left Sidebar: Controls */}
         <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/10 bg-slate-900/30 overflow-y-auto z-10">
           <div className="space-y-4">
-            <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
-              <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
-                <Trophy className="h-4 w-4 text-amber-400" />
-                Ritme de Joc
-              </h3>
-
-              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
-                <Button
-                  variant={gameMode === 'bullet' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                  onClick={() => setGameMode('bullet')}
-                  disabled={gameState === 'playing' || gameState === 'searching'}
-                >
-                  <span className="flex items-center gap-2 text-sm">🚀 Bullet</span>
-                  <span className="text-[10px] opacity-70">1+0</span>
-                </Button>
-                <Button
-                  variant={gameMode === 'blitz' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                  onClick={() => setGameMode('blitz')}
-                  disabled={gameState === 'playing' || gameState === 'searching'}
-                >
-                  <span className="flex items-center gap-2 text-sm">⚡ Blitz</span>
-                  <span className="text-[10px] opacity-70">3+2</span>
-                </Button>
-                <Button
-                  variant={gameMode === 'rapid' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                  onClick={() => setGameMode('rapid')}
-                  disabled={gameState === 'playing' || gameState === 'searching'}
-                >
-                  <span className="flex items-center gap-2 text-sm">🐢 Rapid</span>
-                  <span className="text-[10px] opacity-70">10+0</span>
-                </Button>
+            {gameState === 'idle' && (
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm mb-2 flex items-center gap-2 text-slate-300 uppercase tracking-wider px-1">
+                  <Trophy className="h-4 w-4 text-amber-400" />
+                  Arenas
+                </h3>
+                <ArenaCard variant="bullet" progress={progress.bullet} onClick={() => setSelectedArena('bullet')} />
+                <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
+                <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
               </div>
+            )}
 
-              <div className="mt-4">
-                {gameState === 'idle' || gameState === 'finished' ? (
+            {gameState !== 'idle' && (
+              <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
+                <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
+                  <Trophy className="h-4 w-4 text-amber-400" />
+                  Ritme de Joc
+                </h3>
+
+                <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                   <Button
-                    className="w-full font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
-                    onClick={() => startSearch(gameMode)}
+                    variant={gameMode === 'bullet' ? 'default' : 'outline'}
+                    className={`justify-between h-auto py-3 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                    onClick={() => setGameMode('bullet')}
+                    disabled={gameState === 'playing' || gameState === 'searching'}
                   >
-                    Jugar Partida
+                    <span className="flex items-center gap-2 text-sm">🚀 Bullet</span>
+                    <span className="text-[10px] opacity-70">1+0</span>
                   </Button>
-                ) : gameState === 'searching' ? (
-                  <div className="flex flex-col items-center gap-2 py-2 bg-black/20 rounded-lg">
-                    <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse text-sm">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Cercant...
-                    </div>
-                    <div className="text-2xl font-mono font-bold text-white">
-                      00:{searchTimer.toString().padStart(2, '0')}
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 text-xs">
-                      Cancel·lar
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center py-2">
-                    <div className="text-xs text-slate-400 mb-1">Partida en curs</div>
-                    <div className="font-bold text-emerald-400 flex items-center justify-center gap-2 text-sm">
-                      <Sword className="h-3 w-3" /> VS Bot ({botDifficulty})
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="mt-3 w-full bg-red-600/80 hover:bg-red-600"
-                      onClick={() => {
-                        setGameState('finished');
-                        setWinner('loss'); // Resign
-                      }}
-                    >
-                      Rendir-se
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* Game Info Card */}
-            {gameState === 'playing' && (
-              <Card className="p-4 bg-black/40 backdrop-blur-md text-white border-white/10">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2">
-                    <Bot className="h-8 w-8 p-1.5 bg-white/10 rounded-lg" />
-                    <div>
-                      <div className="font-bold text-sm">Stockfish</div>
-                      <div className="text-[10px] text-slate-400">Nivell {botDifficulty}</div>
-                    </div>
-                  </div>
-                  {isBotThinking && <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />}
+                  <Button
+                    variant={gameMode === 'blitz' ? 'default' : 'outline'}
+                    className={`justify-between h-auto py-3 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                    onClick={() => setGameMode('blitz')}
+                    disabled={gameState === 'playing' || gameState === 'searching'}
+                  >
+                    <span className="flex items-center gap-2 text-sm">⚡ Blitz</span>
+                    <span className="text-[10px] opacity-70">3+2</span>
+                  </Button>
+                  <Button
+                    variant={gameMode === 'rapid' ? 'default' : 'outline'}
+                    className={`justify-between h-auto py-3 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                    onClick={() => setGameMode('rapid')}
+                    disabled={gameState === 'playing' || gameState === 'searching'}
+                  >
+                    <span className="flex items-center gap-2 text-sm">🐢 Rapid</span>
+                    <span className="text-[10px] opacity-70">10+0</span>
+                  </Button>
                 </div>
 
-                <div className="h-px bg-white/10 my-2" />
-
-                <div className="flex justify-between items-center mt-3">
-                  <div className="flex items-center gap-2">
-                    <User className="h-8 w-8 p-1.5 bg-emerald-600 rounded-lg" />
-                    <div>
-                      <div className="font-bold text-sm">Tu</div>
-                      <div className="text-[10px] text-slate-400">
-                        {userProfile ? userProfile[`elo_${gameMode}`] : '...'}
+                <div className="mt-4">
+                  {gameState === 'idle' || gameState === 'finished' ? (
+                    <Button
+                      className="w-full font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
+                      onClick={() => startSearch(gameMode)}
+                    >
+                      Jugar Partida
+                    </Button>
+                  ) : gameState === 'searching' ? (
+                    <div className="flex flex-col items-center gap-2 py-2 bg-black/20 rounded-lg">
+                      <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse text-sm">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cercant...
                       </div>
+                      <div className="text-2xl font-mono font-bold text-white">
+                        00:{searchTimer.toString().padStart(2, '0')}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 text-xs">
+                        Cancel·lar
+                      </Button>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="text-center py-2">
+                      <div className="text-xs text-slate-400 mb-1">Partida en curs</div>
+                      <div className="font-bold text-emerald-400 flex items-center justify-center gap-2 text-sm">
+                        <Sword className="h-3 w-3" /> VS Bot ({botDifficulty})
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="mt-3 w-full bg-red-600/80 hover:bg-red-600"
+                        onClick={() => {
+                          setGameState('finished');
+                          setWinner('loss'); // Resign
+                        }}
+                      >
+                        Rendir-se
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </Card>
             )}
@@ -488,6 +501,36 @@ export default function PlayPage() {
           )}
         </div>
       </div>
+
+      {/* Arena Path Dialog */}
+      <Dialog open={!!selectedArena} onOpenChange={(open) => !open && setSelectedArena(null)}>
+        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-slate-950 border-slate-800 text-white overflow-hidden">
+          <DialogHeader className="p-4 border-b border-slate-800 bg-slate-900">
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              {selectedArena === 'bullet' ? 'Bullet Arena' : selectedArena === 'blitz' ? 'Blitz Arena' : 'Rapid Arena'}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Camí cap a la glòria (0 - 1000 Copes)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 bg-slate-950">
+            {selectedArena && progress[selectedArena] && (
+              <ArenaPath
+                progress={progress[selectedArena]!}
+                onClaimChest={(chestId) => userProfile && claimChest(userProfile.id, selectedArena, chestId)}
+                onPlayGatekeeper={(tier) => {
+                  setSelectedArena(null);
+                  setIsGatekeeperMatch(tier);
+                  startBotGame('hard'); // Gatekeeper is hard bot for now
+                  toast.info(`Desafiant al Gatekeeper del Tier ${tier}!`);
+                }}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Bot Proposal Modal */}
       <Dialog open={showBotModal} onOpenChange={setShowBotModal}>

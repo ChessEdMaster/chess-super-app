@@ -28,7 +28,7 @@ export interface ConceptCard {
 
 export interface Chest {
     id: string;
-    type: 'WOODEN' | 'SILVER' | 'GOLDEN' | 'MAGIC';
+    type: 'WOODEN' | 'SILVER' | 'GOLDEN' | 'MAGIC' | 'LEGENDARY';
     unlockTime: number; // Seconds
     status: 'LOCKED' | 'UNLOCKING' | 'READY';
 }
