@@ -356,9 +356,17 @@ export default function OnlineGamePage() {
               playSound(botMove.captured ? 'capture' : 'move');
               if (game.isCheckmate()) playSound('game_end');
               else if (game.isCheck()) playSound('check');
+
+              // Check for game over after bot move
+              if (game.isGameOver()) {
+                handleBotGameOver(game);
+              }
             }
           }
         }, 500);
+      } else {
+        // Check for game over after user move (if user checkmated bot)
+        handleBotGameOver(game);
       }
     }
 
@@ -536,12 +544,36 @@ export default function OnlineGamePage() {
     );
   }
 
+  // Helper to handle game over locally for bots
+  const handleBotGameOver = (chess: Chess) => {
+    let result = '';
+    if (chess.isCheckmate()) {
+      result = chess.turn() === 'w' ? '0-1' : '1-0'; // If white turn and checkmate, black wins
+    } else if (chess.isDraw()) {
+      result = '1/2-1/2';
+    }
+
+    if (result) {
+      setGameData(prev => prev ? ({
+        ...prev,
+        status: 'finished',
+        result: result
+      }) : null);
+
+      const statusText = result === '1/2-1/2' ? "Partida Finalitzada: Taules" :
+        result === '1-0' ? "Partida Finalitzada: Guanyen Blanques" :
+          "Partida Finalitzada: Guanyen Negres";
+      setStatus(statusText);
+      playSound('game_end');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center p-2">
+    <div className="h-dvh w-full bg-slate-950 flex flex-col items-center overflow-hidden">
 
       {/* Header Simplificat */}
-      <div className="w-full max-w-6xl flex justify-between items-center mb-4">
-        <div className="bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800 flex items-center gap-2 text-slate-300 text-xs">
+      <div className="w-full shrink-0 h-12 flex justify-between items-center px-4 border-b border-slate-800 bg-slate-900/50">
+        <div className="flex items-center gap-2 text-slate-400 text-xs">
           <span>ID: {id?.toString().slice(0, 8)}...</span>
           <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="hover:text-white"><Copy size={12} /></button>
         </div>
@@ -549,10 +581,10 @@ export default function OnlineGamePage() {
         <div className="w-[100px]"></div> {/* Spacer */}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl justify-center items-start">
+      <div className="flex-1 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-4 p-2 lg:p-4 overflow-hidden">
 
         {/* COLUMNA ESQUERRA: Tauler i Rellotges */}
-        <div className="flex flex-col gap-3 w-full max-w-[600px]">
+        <div className="flex flex-col gap-2 w-full max-w-[600px] h-full justify-center shrink-0">
 
           <ChessClock
             whiteTime={gameData.white_time || 600}
@@ -562,7 +594,8 @@ export default function OnlineGamePage() {
             onTimeout={handleTimeout}
           />
 
-          <div className="relative w-full aspect-square shadow-2xl rounded-lg overflow-hidden border-2 border-slate-800 bg-slate-900">
+          {/* Board Container - Responsive Height */}
+          <div className="relative w-full aspect-square max-h-[60vh] lg:max-h-[70vh] shadow-2xl rounded-lg overflow-hidden border-2 border-slate-800 bg-slate-900 mx-auto">
             <Chessboard2D
               fen={fen}
               orientation={orientation}
@@ -572,28 +605,28 @@ export default function OnlineGamePage() {
           </div>
 
           {/* Controls */}
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 hover:border-red-500/50 disabled:opacity-50 text-xs">
-              <Flag size={16} /> Rendir-se
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition border border-slate-700 hover:border-red-500/50 disabled:opacity-50 text-xs">
+              <Flag size={14} /> Rendir-se
             </button>
 
             {/* Botó Taules Dinàmic */}
             {drawOffer && drawOffer !== orientation ? (
               <div className="flex gap-2">
-                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs">
-                  <Handshake size={16} /> Acceptar
+                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs">
+                  <Handshake size={14} /> Acceptar
                 </button>
-                <button onClick={handleDeclineDraw} className="w-10 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl flex items-center justify-center transition border border-slate-700">
-                  <X size={16} />
+                <button onClick={handleDeclineDraw} className="w-10 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg flex items-center justify-center transition border border-slate-700">
+                  <X size={14} />
                 </button>
               </div>
             ) : (
               <button
                 onClick={handleOfferDraw}
                 disabled={gameData.status !== 'active' || drawOffer === orientation}
-                className={`bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50 text-xs ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
+                className={`bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50 text-xs ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
               >
-                <Handshake size={16} /> {drawOffer === orientation ? 'Oferta enviada...' : 'Oferir Taules'}
+                <Handshake size={14} /> {drawOffer === orientation ? 'Oferta enviada...' : 'Oferir Taules'}
               </button>
             )}
           </div>
@@ -622,10 +655,10 @@ export default function OnlineGamePage() {
         </div>
 
         {/* COLUMNA DRETA: Info, Xat, Historial */}
-        <div className="w-full lg:w-80 flex flex-col gap-3 h-[600px]">
+        <div className="w-full lg:w-80 flex flex-col gap-2 h-full lg:h-auto lg:max-h-[80vh] overflow-hidden">
 
           {/* Oponent */}
-          <div className="bg-slate-800 p-2.5 rounded-xl flex items-center gap-3 border border-slate-700 opacity-90">
+          <div className="bg-slate-800 p-2 rounded-lg flex items-center gap-3 border border-slate-700 opacity-90 shrink-0">
             <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white font-bold shadow-inner text-xs">
               {orientation === 'white' ? 'B' : 'W'}
             </div>
@@ -636,15 +669,17 @@ export default function OnlineGamePage() {
           </div>
 
           {/* Historial */}
-          <div className="flex-1 min-h-[150px]">
+          <div className="flex-1 min-h-0 bg-slate-900/50 rounded-lg overflow-hidden">
             <MoveHistory history={game.history()} />
           </div>
 
           {/* Xat */}
-          <ChatBox gameId={id as string} userId={user.id} />
+          <div className="h-32 lg:h-48 shrink-0">
+            <ChatBox gameId={id as string} userId={user.id} />
+          </div>
 
           {/* Tu */}
-          <div className="bg-slate-800 p-2.5 rounded-xl flex items-center gap-3 border border-indigo-500/30 shadow-lg shadow-indigo-900/20">
+          <div className="bg-slate-800 p-2 rounded-lg flex items-center gap-3 border border-indigo-500/30 shadow-lg shadow-indigo-900/20 shrink-0">
             <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold shadow-inner text-xs">
               {orientation === 'white' ? 'W' : 'B'}
             </div>
