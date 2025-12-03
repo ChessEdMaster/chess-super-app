@@ -5,10 +5,12 @@ import Image from 'next/image';
 import { useAuth, useRBAC } from '@/components/auth-provider';
 import { Trophy, LogOut, User, Loader2, Shield } from 'lucide-react';
 import { CartButton } from '@/components/shop/cart-button';
+import { usePlayerStore } from '@/lib/store/player-store';
 
 export function SiteHeader() {
   const { user, loading, signOut } = useAuth();
   const { checkPermission } = useRBAC();
+  const { profile } = usePlayerStore();
 
   return (
     <header className="w-full bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
@@ -47,21 +49,34 @@ export function SiteHeader() {
           ) : user ? (
             <>
               {/* Només visible si estàs loguejat */}
-              <Link href="/profile" className="flex items-center gap-2 text-slate-300 hover:text-white transition bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hover:border-indigo-500/50">
-                {user.user_metadata?.avatar_url ? (
-                  <Image
-                    src={user.user_metadata.avatar_url}
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 rounded-full"
-                    alt="Avatar"
-                  />
-                ) : (
-                  <User size={18} />
-                )}
-                <span className="text-sm font-medium hidden sm:inline">
-                  {user.user_metadata?.full_name || 'Perfil'}
-                </span>
+              <Link href="/profile" className="flex items-center gap-3 text-slate-300 hover:text-white transition bg-slate-800/50 pl-2 pr-4 py-1.5 rounded-full border border-slate-700 hover:border-indigo-500/50 group">
+                <div className="relative">
+                  {user.user_metadata?.avatar_url ? (
+                    <Image
+                      src={user.user_metadata.avatar_url}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full border-2 border-slate-800 group-hover:border-indigo-500 transition"
+                      alt="Avatar"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border-2 border-slate-800 group-hover:border-indigo-500 transition">
+                      <User size={16} />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-1.5 rounded-full border border-slate-900">
+                    {profile.level}
+                  </div>
+                </div>
+
+                <div className="flex flex-col leading-none">
+                  <span className="text-sm font-bold text-white group-hover:text-indigo-400 transition">
+                    {profile.username || user.user_metadata?.full_name || 'Jugador'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    LVL {profile.level}
+                  </span>
+                </div>
               </Link>
 
               <button

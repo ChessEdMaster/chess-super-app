@@ -605,15 +605,7 @@ export default function OnlineGamePage() {
   return (
     <div className="h-dvh w-full bg-slate-950 flex flex-col items-center overflow-hidden">
 
-      {/* Header Simplificat */}
-      <div className="w-full shrink-0 h-12 flex justify-between items-center px-4 border-b border-slate-800 bg-slate-900/50">
-        <div className="flex items-center gap-2 text-slate-400 text-xs">
-          <span>ID: {id?.toString().slice(0, 8)}...</span>
-          <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="hover:text-white"><Copy size={12} /></button>
-        </div>
-        <div className="text-white font-bold text-sm">{status}</div>
-        <div className="w-[100px]"></div> {/* Spacer */}
-      </div>
+
 
       <div className="flex-1 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-4 p-2 lg:p-4 overflow-hidden">
 

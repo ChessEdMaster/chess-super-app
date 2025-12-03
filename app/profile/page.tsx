@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useAuth, useRBAC } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield } from 'lucide-react';
+import { usePlayerStore } from '@/lib/store/player-store';
+import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield, Zap, ShieldCheck, Brain, Activity } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { checkPermission } = useRBAC();
+  const { profile } = usePlayerStore();
   const router = useRouter();
+
+  // Calculate XP to next level (simple formula)
+  const xpToNextLevel = profile.level * 1000;
+
   interface GameRecord {
     id: string;
     white_player_id: string | null;
@@ -130,21 +133,38 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <h2 className="text-3xl font-black text-white mt-6 mb-1">{user.user_metadata?.full_name || 'Jugador'}</h2>
-          <p className="text-slate-400 mb-6 font-medium">{user.email}</p>
+          <h2 className="text-3xl font-black text-white mt-6 mb-1">{profile.username || user.user_metadata?.full_name || 'Jugador'}</h2>
+          <p className="text-slate-400 mb-6 font-medium">Nivell {profile.level} • {profile.xp} / {xpToNextLevel} XP</p>
 
-          <div className="flex gap-4">
-            <div className="bg-slate-900/80 border border-slate-800 px-6 py-3 rounded-2xl flex flex-col items-center min-w-[100px]">
-              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Partides</span>
-              <span className="text-2xl font-black text-white">{totalGames}</span>
+          {/* XP Bar */}
+          <div className="w-full max-w-md h-3 bg-slate-800 rounded-full overflow-hidden mb-8 border border-slate-700">
+            <div
+              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+              style={{ width: `${Math.min((profile.xp / xpToNextLevel) * 100, 100)}%` }}
+            />
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl">
+            <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+              <Zap className="text-amber-400 mb-2" size={24} />
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Agressivitat</span>
+              <span className="text-xl font-black text-white">{profile.attributes.AGGRESSION}</span>
             </div>
-            <div className="bg-slate-900/80 border border-slate-800 px-6 py-3 rounded-2xl flex flex-col items-center min-w-[100px]">
-              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Victòries</span>
-              <span className="text-2xl font-black text-emerald-400">{wins}</span>
+            <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+              <ShieldCheck className="text-emerald-400 mb-2" size={24} />
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Solidesa</span>
+              <span className="text-xl font-black text-white">{profile.attributes.SOLIDITY}</span>
             </div>
-            <div className="bg-slate-900/80 border border-slate-800 px-6 py-3 rounded-2xl flex flex-col items-center min-w-[100px]">
-              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Ràting</span>
-              <span className="text-2xl font-black text-amber-400">1200</span>
+            <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+              <Brain className="text-blue-400 mb-2" size={24} />
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Coneixement</span>
+              <span className="text-xl font-black text-white">{profile.attributes.KNOWLEDGE}</span>
+            </div>
+            <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+              <Activity className="text-purple-400 mb-2" size={24} />
+              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Velocitat</span>
+              <span className="text-xl font-black text-white">{profile.attributes.SPEED}</span>
             </div>
           </div>
         </div>
