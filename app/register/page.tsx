@@ -1,28 +1,66 @@
 'use client';
 
 import { useAuth } from '@/components/auth-provider';
-import { Trophy, ArrowLeft, UserPlus } from 'lucide-react';
+import { Trophy, ArrowLeft, UserPlus, Mail, Lock, User } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function RegisterPage() {
     const { signInWithGoogle, user } = useAuth();
     const router = useRouter();
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (user) router.push('/profile'); // Redirigir si ja està loguejat
+        if (user) router.push('/profile');
     }, [user, router]);
 
-    const handleRegister = async () => {
-        // We use the same Google Sign In, but the callback will handle the profile creation
-        // To distinguish, we might set a cookie or local storage, but for now, 
-        // let's rely on the callback logic to create profile if not exists.
-        // However, the user requested that LOGIN should fail if not registered.
-        // So we need to pass a param to the callback.
+    const handleEmailRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
 
-        // Since we can't easily pass params to the OAuth callback URL dynamically via the simple SDK method without changing the redirect URL in Supabase console,
-        // we will use localStorage to store the intent.
+        const { data, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: username,
+                }
+            }
+        });
+
+        if (signUpError) {
+            setError(signUpError.message);
+            setLoading(false);
+        } else if (data.user) {
+            // Create profile
+            const { error: profileError } = await supabase.from('profiles').insert({
+                id: data.user.id,
+                username: username,
+                level: 1,
+                xp: 0,
+                gold: 0,
+                gems: 0,
+                attributes: { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
+                cards: [],
+                chests: []
+            });
+
+            if (profileError) {
+                console.error('Error creating profile:', profileError);
+            }
+
+            router.push('/play');
+        }
+    };
+
+    const handleRegister = async () => {
         localStorage.setItem('auth_intent', 'register');
         await signInWithGoogle();
     };
@@ -38,6 +76,64 @@ export default function RegisterPage() {
                 <h1 className="text-3xl font-bold text-white mb-2">Crea el teu compte</h1>
                 <p className="text-slate-400 mb-8">Uneix-te a la comunitat de ChessHub i comença la teva aventura.</p>
 
+                {/* Email/Password Form */}
+                <form onSubmit={handleEmailRegister} className="mb-6 space-y-4">
+                    <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Nom d'usuari"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                            className="w-full bg-slate-800 text-white pl-10 pr-4 py-3 rounded-xl border border-slate-700 focus:border-purple-500 focus:outline-none transition"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                            type="email"
+                            placeholder="Correu electrònic"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="w-full bg-slate-800 text-white pl-10 pr-4 py-3 rounded-xl border border-slate-700 focus:border-purple-500 focus:outline-none transition"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                            type="password"
+                            placeholder="Contrasenya (mínim 6 caràcters)"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={6}
+                            className="w-full bg-slate-800 text-white pl-10 pr-4 py-3 rounded-xl border border-slate-700 focus:border-purple-500 focus:outline-none transition"
+                        />
+                    </div>
+                    {error && (
+                        <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg border border-red-500/30">
+                            {error}
+                        </div>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? 'Creant compte...' : 'Registrar-se'}
+                    </button>
+                </form>
+
+                {/* Divider */}
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="flex-1 h-px bg-slate-800"></div>
+                    <span className="text-slate-500 text-sm">o</span>
+                    <div className="flex-1 h-px bg-slate-800"></div>
+                </div>
+
+                {/* Google Register */}
                 <button
                     onClick={handleRegister}
                     className="w-full bg-white text-slate-900 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-200 transition mb-6"
