@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { MobileLayout } from "@/components/layout/mobile-layout";
+import { PlayerStoreSync } from "@/components/player-store-sync";
 
 export const metadata: Metadata = {
   title: "Chess Royale",
@@ -19,9 +20,11 @@ export default function RootLayout({
         className={`antialiased bg-zinc-950 text-white font-sans`}
       >
         <AuthProvider>
-          <MobileLayout>
-            {children}
-          </MobileLayout>
+          <PlayerStoreSync>
+            <MobileLayout>
+              {children}
+            </MobileLayout>
+          </PlayerStoreSync>
         </AuthProvider>
       </body>
     </html>
