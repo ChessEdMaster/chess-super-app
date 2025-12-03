@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useAuth, useRBAC } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { usePlayerStore } from '@/lib/store/player-store';
