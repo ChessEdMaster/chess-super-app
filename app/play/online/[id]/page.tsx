@@ -78,14 +78,41 @@ export default function OnlineGamePage() {
 
     const fetchAndSubscribe = async () => {
       // A. Obtenir dades inicials
-      const { data: initialGame, error } = await supabase
-        .from('games')
-        .select('*')
-        .eq('id', id)
-        .single();
+      let initialGame = null;
+      let isBotGame = false;
 
-      if (initialGame) {
-        // Obtenir perfils dels jugadors
+      // Check if it's a bot game
+      if (typeof id === 'string' && id.startsWith('bot-')) {
+        isBotGame = true;
+        const difficulty = id.split('-')[1];
+        initialGame = {
+          id: id,
+          white_player_id: user.id,
+          black_player_id: 'bot',
+          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+          pgn: '',
+          status: 'active',
+          white: { username: user.user_metadata?.full_name || 'You', avatar_url: user.user_metadata?.avatar_url },
+          black: { username: `Bot (Lvl ${difficulty})`, avatar_url: null }
+        };
+      } else {
+        // Fetch from Supabase
+        const { data, error } = await supabase
+          .from('games')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error || !data) {
+          alert("Partida no trobada");
+          router.push('/lobby');
+          return;
+        }
+        initialGame = data;
+      }
+
+      if (initialGame && !isBotGame) {
+        // Obtenir perfils dels jugadors (Només per partides reals)
         const whiteProfile = initialGame.white_player_id ? await supabase
           .from('profiles')
           .select('username, avatar_url')
@@ -100,12 +127,6 @@ export default function OnlineGamePage() {
 
         initialGame.white = whiteProfile?.data || null;
         initialGame.black = blackProfile?.data || null;
-      }
-
-      if (error || !initialGame) {
-        alert("Partida no trobada");
-        router.push('/lobby');
-        return;
       }
 
       // B. Determinar qui sóc i si m'he d'unir
@@ -187,52 +208,52 @@ export default function OnlineGamePage() {
       setGameFromFen(initialFen);
       updateStatus(new Chess(initialFen), finalGameData); // Use a temp instance for status check if needed, or game ref if updated
 
-      // D. Subscriure's a canvis (REALTIME)
-      const channel = supabase
-        .channel(`game_${id}`)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${id}` }, async (payload) => {
-          const newData = payload.new;
+      // D. Subscriure's a canvis (REALTIME) - Només si NO és un bot
+      if (!isBotGame) {
+        const channel = supabase
+          .channel(`game_${id}`)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${id}` }, async (payload) => {
+            const newData = payload.new;
 
-          // Si s'ha unit un jugador, recarregar perfils
-          if (newData.black_player_id && !gameData?.black_player_id) {
-            const blackProfile = await supabase
-              .from('profiles')
-              .select('username, avatar_url')
-              .eq('id', newData.black_player_id)
-              .single();
+            // Si s'ha unit un jugador, recarregar perfils
+            if (newData.black_player_id && !gameData?.black_player_id) {
+              const blackProfile = await supabase
+                .from('profiles')
+                .select('username, avatar_url')
+                .eq('id', newData.black_player_id)
+                .single();
 
-            newData.black = blackProfile?.data || null;
+              newData.black = blackProfile?.data || null;
 
-            // Actualitzar noms dels jugadors
-            setPlayers(prev => ({
-              ...prev,
-              black: newData.black?.username || 'Jugador 2'
-            }));
-            playSound('game_start');
-          }
+              // Actualitzar noms dels jugadors
+              setPlayers(prev => ({
+                ...prev,
+                black: newData.black?.username || 'Jugador 2'
+              }));
+              playSound('game_start');
+            }
 
-          // Quan rebem un canvi des de la DB (l'altre ha mogut):
-          const incomeGame = new Chess(newData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+            // Quan rebem un canvi des de la DB (l'altre ha mogut):
+            const incomeGame = new Chess(newData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 
-          // Detectar si hi ha hagut moviment per fer so
-          // Note: game.fen() might be stale if we don't use the ref, but here we are inside the callback.
-          // Ideally we compare with current state.
-          if (incomeGame.fen() !== fen) { // Compare with 'fen' state from hook
-            if (incomeGame.isCheckmate()) playSound('game_end');
-            else if (incomeGame.isCheck()) playSound('check');
-            else if (incomeGame.history({ verbose: true }).pop()?.captured) playSound('capture');
-            else playSound('move');
-          }
+            // Detectar si hi ha hagut moviment per fer so
+            if (incomeGame.fen() !== fen) {
+              if (incomeGame.isCheckmate()) playSound('game_end');
+              else if (incomeGame.isCheck()) playSound('check');
+              else if (incomeGame.history({ verbose: true }).pop()?.captured) playSound('capture');
+              else playSound('move');
+            }
 
-          setGameFromFen(newData.fen || incomeGame.fen());
-          setGameData(newData as GameData);
-          setDrawOffer(newData.draw_offer_by); // Sincronitzar oferta de taules
+            setGameFromFen(newData.fen || incomeGame.fen());
+            setGameData(newData as GameData);
+            setDrawOffer(newData.draw_offer_by);
 
-          updateStatus(incomeGame, newData);
-        })
-        .subscribe();
+            updateStatus(incomeGame, newData);
+          })
+          .subscribe();
 
-      return () => { supabase.removeChannel(channel); };
+        return () => { supabase.removeChannel(channel); };
+      }
     };
 
     fetchAndSubscribe();
@@ -307,18 +328,39 @@ export default function OnlineGamePage() {
     }
 
     // Enviar movimiento a la base de datos (async, no bloquea el return)
-    supabase.from('games').update({
-      fen: newFen,
-      pgn: game.pgn(),
-    }).eq('id', id).then(({ error }) => {
-      if (error) {
-        console.error('[Online onDrop] Error actualizando partida:', error);
-        // En caso de error, revertir el estado (opcional, pero recomendado)
-        // Por ahora solo logueamos el error
-      } else {
-        console.log('[Online onDrop] Move saved to database successfully');
+    if (id && !id.toString().startsWith('bot-')) {
+      supabase.from('games').update({
+        fen: newFen,
+        pgn: game.pgn(),
+      }).eq('id', id).then(({ error }) => {
+        if (error) {
+          console.error('[Online onDrop] Error actualizando partida:', error);
+        } else {
+          console.log('[Online onDrop] Move saved to database successfully');
+        }
+      });
+    } else {
+      // BOT LOGIC
+      if (!game.isGameOver()) {
+        setTimeout(() => {
+          // Simple random bot for now (can be improved with Stockfish later)
+          const moves = game.moves({ verbose: true });
+          if (moves.length > 0) {
+            const randomMove = moves[Math.floor(Math.random() * moves.length)];
+            const botMove = makeMove({
+              from: randomMove.from,
+              to: randomMove.to,
+              promotion: randomMove.promotion
+            });
+            if (botMove) {
+              playSound(botMove.captured ? 'capture' : 'move');
+              if (game.isCheckmate()) playSound('game_end');
+              else if (game.isCheck()) playSound('check');
+            }
+          }
+        }, 500);
       }
-    });
+    }
 
     return true;
   }
