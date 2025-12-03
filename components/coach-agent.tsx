@@ -68,16 +68,10 @@ export function CoachAgent({ evaluation, previousEval, currentMove, turn }: Coac
     }[severity];
 
     return (
-        <div className={`${bgColor} border p-4 rounded-xl transition-all duration-300`}>
-            <div className="flex items-start gap-3">
-                <div className="mt-0.5">{icon}</div>
-                <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <Lightbulb size={14} className="text-indigo-400" />
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Entrenador IA</h3>
-                    </div>
-                    <p className="text-sm text-slate-200 leading-relaxed">{message}</p>
-                </div>
+        <div className={`${bgColor} border p-2 rounded-lg transition-all duration-300 flex items-center gap-2`}>
+            <div className="shrink-0">{icon}</div>
+            <div className="flex-1 min-w-0">
+                <p className="text-xs text-slate-300 truncate font-medium">{message}</p>
             </div>
         </div>
     );

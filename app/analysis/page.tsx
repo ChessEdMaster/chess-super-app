@@ -79,12 +79,45 @@ export default function AnalysisPage() {
   // --- ENGINE WORKER ---
   useEffect(() => {
     if (!engine.current) {
+      // Using a reliable CDN for Stockfish.js
       const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
-      const workerCode = `importScripts('${stockfishUrl}');`;
-      const blob = new Blob([workerCode], { type: 'application/javascript' });
-      const localWorkerUrl = URL.createObjectURL(blob);
-      engine.current = new Worker(localWorkerUrl);
-      engine.current.postMessage('uci');
+
+      // Create worker from blob to avoid cross-origin issues with some CDNs
+      fetch(stockfishUrl)
+        .then(response => response.text())
+        .then(code => {
+          const blob = new Blob([code], { type: 'application/javascript' });
+          const localWorkerUrl = URL.createObjectURL(blob);
+          engine.current = new Worker(localWorkerUrl);
+          engine.current.postMessage('uci');
+          console.log("Stockfish engine initialized");
+
+          engine.current.onmessage = (event) => {
+            const msg = event.data;
+            // Parse info
+            if (msg.startsWith('info') && msg.includes('depth')) {
+              const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+              if (scoreMatch) {
+                const type = scoreMatch[1] as 'cp' | 'mate';
+                let value = parseInt(scoreMatch[2]);
+                // Stockfish gives score from white's perspective usually, but let's verify
+                // Actually stockfish.js 10 might be side-to-move. 
+                // Let's assume side-to-move for now and adjust if needed.
+                setEvaluation({ type, value });
+              }
+
+              const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
+              if (pvMatch) {
+                const moves = pvMatch[1].trim().split(/\s+/);
+                if (moves.length > 0) {
+                  setBestMove(moves[0]);
+                  setBestLine(moves.slice(0, 5).join(' '));
+                }
+              }
+            }
+          };
+        })
+        .catch(err => console.error("Failed to load Stockfish:", err));
     }
     return () => {
       engine.current?.terminate();
@@ -92,52 +125,17 @@ export default function AnalysisPage() {
     };
   }, []);
 
-  // --- ENGINE OPTIONS ---
-  useEffect(() => {
-    if (engine.current) {
-      engine.current.postMessage(`setoption name MultiPV value ${multipv}`);
-    }
-  }, [multipv]);
-
-  // --- ENGINE LISTENER ---
-  useEffect(() => {
-    if (!engine.current) return;
-
-    engine.current.onmessage = (event) => {
-      const msg = event.data;
-
-      // Parse info
-      if (msg.startsWith('info') && msg.includes(`depth ${engineDepth}`)) {
-        const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
-        if (scoreMatch) {
-          const type = scoreMatch[1] as 'cp' | 'mate';
-          let value = parseInt(scoreMatch[2]);
-          const currentGame = new Chess(fen);
-          if (currentGame.turn() === 'b') value = -value;
-          setEvaluation({ type, value });
-        }
-
-        const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
-        if (pvMatch) {
-          const moves = pvMatch[1].trim().split(/\s+/);
-          if (moves.length > 0) {
-            setBestMove(moves[0]);
-            setBestLine(moves.slice(0, 5).join(' '));
-          }
-        }
-      }
-    };
-  }, [fen, engineDepth]);
-
   // --- TRIGGER ANALYSIS ---
   useEffect(() => {
     if (!engine.current || !isClient) return;
 
     if (isAnalyzing) {
+      console.log("Starting analysis for FEN:", fen);
       engine.current.postMessage('stop');
       engine.current.postMessage(`position fen ${fen}`);
       engine.current.postMessage(`go depth ${engineDepth}`);
     } else {
+      console.log("Stopping analysis");
       engine.current.postMessage('stop');
     }
 

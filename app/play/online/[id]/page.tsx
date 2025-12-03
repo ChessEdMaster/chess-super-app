@@ -20,10 +20,13 @@ import { useChessEngine } from '@/hooks/use-chess-engine';
 
 // ... imports
 
+import { usePlayerStore } from '@/lib/store/player-store';
+
 export default function OnlineGamePage() {
   const { id } = useParams();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { addXp, addGold } = usePlayerStore();
 
   const [isClient, setIsClient] = useState(false);
 
@@ -565,6 +568,37 @@ export default function OnlineGamePage() {
           "Partida Finalitzada: Guanyen Negres";
       setStatus(statusText);
       playSound('game_end');
+
+      // REWARDS LOGIC
+      // Check if user won
+      const userIsWhite = orientation === 'white';
+      const userWon = (userIsWhite && result === '1-0') || (!userIsWhite && result === '0-1');
+      const isDraw = result === '1/2-1/2';
+
+      if (userWon) {
+        // Award XP and Gold
+        const xp = 50;
+        const gold = 25;
+        // We need to import usePlayerStore at the top level, but we can't do it inside this function easily if it's not a hook call.
+        // Ideally we use the hook at the top and call its methods here.
+        // Assuming 'addXp', 'addGold' are available from the hook called at component level.
+        addXp(xp);
+        addGold(gold);
+        // Chance for chest
+        if (Math.random() > 0.5) {
+          // addChest('WOODEN'); // Need to implement addChest in store if not present, or just ignore for now
+          alert(`Victòria! Has guanyat ${xp} XP i ${gold} d'Or! 🏆`);
+        } else {
+          alert(`Victòria! Has guanyat ${xp} XP i ${gold} d'Or! 🏆`);
+        }
+      } else if (isDraw) {
+        addXp(15);
+        addGold(5);
+        alert("Taules! Has guanyat 15 XP i 5 d'Or.");
+      } else {
+        addXp(5);
+        alert("Has perdut. Guanyes 5 XP per l'esforç.");
+      }
     }
   };
 
