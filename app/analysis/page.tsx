@@ -268,16 +268,11 @@ export default function AnalysisPage() {
     <div className="h-dvh w-full grid grid-cols-1 lg:grid-cols-[1fr_400px] overflow-hidden bg-zinc-950 text-zinc-100">
 
       {/* LEFT: BOARD AREA */}
-      <div className="flex flex-col items-center justify-center bg-zinc-900/50 p-4 relative">
-
-        {/* Floating Eval Bar */}
-        <div className={`absolute top-6 left-6 z-10 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border flex items-center gap-2 ${(evaluation?.value || 0) > 0 ? 'bg-zinc-100 text-zinc-900 border-zinc-300' : 'bg-zinc-800 text-white border-zinc-600'}`}>
-          <Cpu size={14} className={isAnalyzing ? 'animate-spin' : ''} />
-          <span>{getEvalText()}</span>
-        </div>
+      <div className="flex flex-col items-center justify-center bg-zinc-900/50 p-2 lg:p-4 relative">
 
         {/* Board Container */}
-        <div className="w-full max-w-[85vh] aspect-square relative z-0 shadow-2xl rounded-lg overflow-hidden border border-zinc-800">
+        {/* Mobile: max-w-[95vw] to be wider. Desktop: max-w-[65vh] to be smaller and match Play page */}
+        <div className="w-full max-w-[95vw] lg:max-w-[65vh] aspect-square relative z-0 shadow-2xl rounded-lg overflow-hidden border border-zinc-800">
           {viewMode === '3d' ? (
             <ChessScene fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} />
           ) : (
@@ -288,14 +283,14 @@ export default function AnalysisPage() {
         </div>
 
         {/* Navigation Controls */}
-        <div className="flex items-center justify-center gap-2 mt-6 w-full max-w-[600px]">
-          <Button variant="secondary" onClick={goToStart} disabled={pgnTree.isAtStart()}><ChevronsLeft size={20} /></Button>
-          <Button variant="secondary" onClick={goBack} disabled={pgnTree.isAtStart()}><ChevronLeft size={20} /></Button>
-          <Button variant="secondary" onClick={goForward} disabled={pgnTree.isAtEnd()}><ChevronRight size={20} /></Button>
-          <Button variant="secondary" onClick={goToEnd} disabled={pgnTree.isAtEnd()}><ChevronsRight size={20} /></Button>
+        <div className="flex items-center justify-center gap-2 mt-4 w-full max-w-[600px]">
+          <Button variant="secondary" onClick={goToStart} disabled={pgnTree.isAtStart()} size="sm"><ChevronsLeft size={18} /></Button>
+          <Button variant="secondary" onClick={goBack} disabled={pgnTree.isAtStart()} size="sm"><ChevronLeft size={18} /></Button>
+          <Button variant="secondary" onClick={goForward} disabled={pgnTree.isAtEnd()} size="sm"><ChevronRight size={18} /></Button>
+          <Button variant="secondary" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="sm"><ChevronsRight size={18} /></Button>
           <div className="h-6 w-px bg-zinc-800 mx-2" />
-          <Button variant={createVariation ? "default" : "outline"} onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "bg-amber-600 hover:bg-amber-500" : ""}>
-            <GitBranch size={20} />
+          <Button variant={createVariation ? "default" : "outline"} onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "bg-amber-600 hover:bg-amber-500" : ""} size="sm">
+            <GitBranch size={18} />
           </Button>
           <div className="flex bg-zinc-800 rounded-lg p-1 ml-auto">
             <button onClick={() => setViewMode('2d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '2d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>2D</button>

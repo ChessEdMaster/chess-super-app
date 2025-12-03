@@ -29,7 +29,7 @@ export default function CardsPage() {
             </h1>
 
             {/* Cards Grid */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
                 {cards.map((card) => (
                     <ConceptCard
                         key={card.id}
