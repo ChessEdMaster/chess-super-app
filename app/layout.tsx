@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Battle, Collect, Evolve.",
 };
 
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function RootLayout({
   children,

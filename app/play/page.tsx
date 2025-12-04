@@ -331,7 +331,7 @@ export default function PlayPage() {
     if (!chest) {
       if (profile.role === 'SuperAdmin') {
         // Debug: Add a chest
-        usePlayerStore.getState().addChest({
+        addChest({
           id: Math.random().toString(36).substring(7),
           type: 'WOODEN',
           unlockTime: 10,
@@ -343,8 +343,13 @@ export default function PlayPage() {
     }
 
     if (chest.status === 'LOCKED') {
-      startUnlockChest(index);
-      toast.info("Chest unlocking started!");
+      const success = startUnlockChest(index);
+      if (success) {
+        toast.info("Desbloqueig iniciat!");
+      } else {
+        toast.error("Ja hi ha un cofre desbloquejant-se!");
+      }
+
     } else if (chest.status === 'UNLOCKING') {
       if (profile.role === 'SuperAdmin') {
         const rewards = openChest(index);
