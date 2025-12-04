@@ -60,6 +60,22 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         // Extract role name safely
         const roleName = data.app_roles && !Array.isArray(data.app_roles) ? data.app_roles.name : undefined;
 
+        // Merge DB cards with DEFAULT_CARDS to ensure we have all definitions
+        // If DB has no cards (empty array), use DEFAULT_CARDS
+        // If DB has cards, we might want to merge them if we added new cards to the game
+        // For now, simple logic: if DB has cards, use them. If not, use DEFAULT.
+        // BUT, if DB has [] (empty array), it means user has no cards.
+        // We want user to have the starter cards.
+        const loadedCards = (data.cards && Array.isArray(data.cards) && data.cards.length > 0)
+            ? data.cards
+            : DEFAULT_CARDS;
+
+        // Ensure chests is always length 4
+        let loadedChests = (data.chests && Array.isArray(data.chests)) ? data.chests : [null, null, null, null];
+        if (loadedChests.length < 4) {
+            loadedChests = [...loadedChests, ...Array(4 - loadedChests.length).fill(null)];
+        }
+
         set({
             profile: {
                 id: data.id,
@@ -74,8 +90,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                 attributes: data.attributes || { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
                 role: roleName as any,
             },
-            cards: data.cards || DEFAULT_CARDS,
-            chests: data.chests || [null, null, null, null],
+            cards: loadedCards,
+            chests: loadedChests,
             isLoaded: true,
         });
     },
