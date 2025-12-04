@@ -9,11 +9,13 @@ import { useAuth } from '@/components/auth-provider';
 import WelcomePage from './welcome/page';
 import { Zap, Timer, Turtle, Map, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CreateChallengeModal } from '@/components/lobby/create-challenge-modal';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const { chests } = usePlayerStore();
   const [selectedLeague, setSelectedLeague] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
+  const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
 
   if (loading) {
     return <div className="h-full flex items-center justify-center bg-zinc-950 text-zinc-500">Loading...</div>;
@@ -83,24 +85,23 @@ export default function HomePage() {
           <div className="text-white/80 text-[10px] font-bold uppercase tracking-widest drop-shadow-md">
             {selectedLeague} Arena
           </div>
-          <Link href={`/play/online?mode=${selectedLeague}`}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: ["0px 0px 0px 0px rgba(234, 179, 8, 0.7)", "0px 0px 20px 10px rgba(234, 179, 8, 0)"]
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                repeatType: "loop"
-              }}
-              className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2"
-            >
-              <Swords size={24} />
-              Battle
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsChallengeModalOpen(true)}
+            animate={{
+              boxShadow: ["0px 0px 0px 0px rgba(234, 179, 8, 0.7)", "0px 0px 20px 10px rgba(234, 179, 8, 0)"]
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              repeatType: "loop"
+            }}
+            className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2"
+          >
+            <Swords size={24} />
+            Battle
+          </motion.button>
         </div>
 
         {/* Chest Slots */}
@@ -125,6 +126,12 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      <CreateChallengeModal
+        isOpen={isChallengeModalOpen}
+        onClose={() => setIsChallengeModalOpen(false)}
+        defaultTimeControl={selectedLeague}
+      />
     </div>
   );
 }

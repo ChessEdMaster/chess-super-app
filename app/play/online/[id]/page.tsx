@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
@@ -26,6 +26,7 @@ export default function OnlineGamePage() {
   const { id } = useParams();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addXp, addGold } = usePlayerStore();
 
   const [isClient, setIsClient] = useState(false);
@@ -87,7 +88,7 @@ export default function OnlineGamePage() {
       // Check if it's a bot game
       if (typeof id === 'string' && id.startsWith('bot-')) {
         isBotGame = true;
-        const difficulty = id.split('-')[1];
+        const difficulty = searchParams.get('difficulty') || 'medium';
         initialGame = {
           id: id,
           white_player_id: user.id,

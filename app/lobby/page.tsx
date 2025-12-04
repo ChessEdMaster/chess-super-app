@@ -1,176 +1,230 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import Link from 'next/link';
+import { useAuth } from '@/components/auth-provider';
 import { useRouter } from 'next/navigation';
-import { Plus, User, Clock, ArrowRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Bot, Swords, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface Challenge {
+  id: string;
+  host_id: string | null;
+  is_bot: boolean;
+  bot_difficulty: string | null;
+  player_color: string;
+  rated: boolean;
+  time_control_type: string;
+  status: string;
+  map_x: number;
+  map_y: number;
+}
 
 export default function LobbyPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
-  const [pendingGames, setPendingGames] = useState<any[]>([]);
-  const [creating, setCreating] = useState(false);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
-  // --- PROTECCIÓ DE RUTA ---
+  // Fetch & Realtime
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  // 1. Carregar partides pendents i subscriure's a canvis
-  useEffect(() => {
-    const fetchGames = async () => {
+    const fetchChallenges = async () => {
       const { data } = await supabase
-        .from('games')
+        .from('challenges')
         .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-      
-      if (data) {
-        // Obtenir noms d'usuari per cada partida
-        const gamesWithUsers = await Promise.all(
-          data.map(async (game) => {
-            if (game.white_player_id) {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('username, avatar_url')
-                .eq('id', game.white_player_id)
-                .single();
-              return { ...game, white: profile };
-            }
-            return game;
-          })
-        );
-        setPendingGames(gamesWithUsers);
-      }
+        .eq('status', 'open');
+      if (data) setChallenges(data);
     };
 
-    fetchGames();
+    fetchChallenges();
 
-    // Màgia Realtime: Si algú crea una partida, apareix automàticament
     const channel = supabase
-      .channel('lobby_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, () => {
-        fetchGames(); // Recarreguem la llista si hi ha canvis
+      .channel('lobby_challenges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setChallenges(prev => [...prev, payload.new as Challenge]);
+        } else if (payload.eventType === 'DELETE') {
+          setChallenges(prev => prev.filter(c => c.id !== payload.old.id));
+        } else if (payload.eventType === 'UPDATE') {
+          setChallenges(prev => prev.map(c => c.id === payload.new.id ? payload.new as Challenge : c));
+        }
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  // 2. Crear una nova partida
-  const createGame = async () => {
-    if (!user) return router.push('/login');
-    setCreating(true);
-    
-    try {
-      const { data, error } = await supabase
-        .from('games')
-        .insert({
-          white_player_id: user.id,
-          black_player_id: null, // Esperem rival
-          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // Posició inicial
-          pgn: '',
-          status: 'pending'
-        })
-        .select()
-        .single();
+  // Bot Ecosystem Logic
+  useEffect(() => {
+    if (!user) return; // Only run if user is present (client-side manager)
 
-      if (error) throw error;
-      if (data) router.push(`/play/online/${data.id}`); // Redirigim a la sala de joc
-      
-    } catch (error) {
-      console.error(error);
-      alert('Error creant partida');
-    } finally {
-      setCreating(false);
+    const manageBots = async () => {
+      const botChallenges = challenges.filter(c => c.is_bot && c.status === 'open');
+      if (botChallenges.length < 3) {
+        // Create a bot challenge
+        const difficulties = ['easy', 'medium', 'hard'];
+        const times = ['bullet', 'blitz', 'rapid'];
+
+        await supabase.from('challenges').insert({
+          is_bot: true,
+          bot_difficulty: difficulties[Math.floor(Math.random() * difficulties.length)],
+          player_color: 'random',
+          time_control_type: times[Math.floor(Math.random() * times.length)],
+          rated: false,
+          status: 'open',
+          map_x: Math.floor(Math.random() * 80) + 10,
+          map_y: Math.floor(Math.random() * 80) + 10
+        });
+      }
+    };
+
+    // Run periodically or when challenges change
+    const interval = setInterval(manageBots, 5000);
+    return () => clearInterval(interval);
+  }, [challenges, user]);
+
+  // Cleanup my challenge on unmount
+  useEffect(() => {
+    const cleanup = async () => {
+      if (user) {
+        await supabase
+          .from('challenges')
+          .delete()
+          .eq('host_id', user.id)
+          .eq('status', 'open');
+      }
+    };
+
+    // Handle browser close/tab close
+    window.addEventListener('beforeunload', cleanup);
+
+    return () => {
+      cleanup();
+      window.removeEventListener('beforeunload', cleanup);
+    };
+  }, [user]);
+
+  const handleAccept = async (challenge: Challenge) => {
+    if (!user) return;
+
+    // Optimistic update
+    setChallenges(prev => prev.filter(c => c.id !== challenge.id));
+    setSelectedChallenge(null);
+
+    // If bot, delete and create game
+    if (challenge.is_bot) {
+      await supabase.from('challenges').delete().eq('id', challenge.id);
+      // In a real app, we'd create a game record here. 
+      // For now, redirect to play page with bot config
+      router.push(`/play/online/bot-${challenge.id}?difficulty=${challenge.bot_difficulty}&time=${challenge.time_control_type}`);
+    } else {
+      // If human, update status to accepted
+      await supabase
+        .from('challenges')
+        .update({ status: 'accepted' }) // In real app, add opponent_id
+        .eq('id', challenge.id);
+
+      router.push(`/play/online/${challenge.id}`);
     }
   };
 
-  // Mentres comprovem l'usuari, mostrem càrrega
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-        <Loader2 className="animate-spin mr-2" /> Verificant accés...
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-950 p-4 text-slate-200 font-sans">
-      <div className="max-w-4xl mx-auto">
-        
-        <div className="flex items-center justify-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Sala d'Espera (Lobby)</h1>
-        </div>
+    <div className="h-full w-full bg-zinc-950 relative overflow-hidden">
+      {/* Map Background */}
+      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900 via-zinc-900 to-black" />
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
 
-        {/* Botó Crear */}
-        <div className="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-2xl mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white">Vols jugar una partida?</h2>
-            <p className="text-indigo-300 text-sm">Crea una sala i espera que algú s'uneixi.</p>
-          </div>
-          <button 
-            onClick={createGame} 
-            disabled={creating}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition shadow-lg shadow-indigo-900/50"
-          >
-            {creating ? <Loader2 className="animate-spin" /> : <Plus size={20} />}
-            Crear Partida
-          </button>
-        </div>
-
-        {/* Llista de Partides */}
-        <h3 className="text-lg font-bold text-slate-400 mb-4 uppercase tracking-wider text-sm">Partides Disponibles</h3>
-        
-        <div className="grid gap-4">
-          {pendingGames.length === 0 ? (
-            <div className="text-center py-12 bg-slate-900 rounded-xl border border-slate-800 border-dashed">
-              <p className="text-slate-500">No hi ha partides pendents.</p>
-              <p className="text-slate-600 text-sm">Sigues el primer en crear-ne una!</p>
-            </div>
-          ) : (
-            pendingGames.map((game) => (
-              <div key={game.id} className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between hover:border-indigo-500/50 transition group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-xl font-bold text-white border border-slate-700">
-                    {game.white?.avatar_url ? (
-                      <img src={game.white.avatar_url} className="w-full h-full rounded-full" alt="Avatar" />
-                    ) : (
-                      game.white?.username?.[0]?.toUpperCase() || <User />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-bold text-white text-lg">{game.white?.username || 'Anònim'}</p>
-                    <p className="text-xs text-emerald-400 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Esperant rival
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-slate-400 text-xs flex items-center gap-1 justify-end">
-                      <Clock size={12} /> {new Date(game.created_at).toLocaleTimeString()}
-                    </p>
-                    <p className="text-slate-500 text-xs">Clàssica • 10 min</p>
-                  </div>
-                  <Link href={`/play/online/${game.id}`}>
-                    <button className="bg-slate-800 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition group-hover:shadow-lg">
-                      Jugar <ArrowRight size={16} />
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
+      {/* Header */}
+      <div className="absolute top-4 left-4 z-10">
+        <h1 className="text-2xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+          <Swords className="text-yellow-500" />
+          Battle Map
+        </h1>
+        <p className="text-zinc-400 text-xs">Select an opponent or wait for a challenger.</p>
       </div>
+
+      {/* Map Area */}
+      <div className="relative w-full h-full">
+        <AnimatePresence>
+          {challenges.map((challenge) => (
+            <motion.button
+              key={challenge.id}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileHover={{ scale: 1.2 }}
+              style={{
+                left: `${challenge.map_x}%`,
+                top: `${challenge.map_y}%`,
+              }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg border-2 ${challenge.host_id === user?.id
+                  ? 'bg-yellow-500/20 border-yellow-500 animate-pulse'
+                  : challenge.is_bot
+                    ? 'bg-blue-500/20 border-blue-500'
+                    : 'bg-red-500/20 border-red-500'
+                }`}
+              onClick={() => setSelectedChallenge(challenge)}
+            >
+              {challenge.is_bot ? (
+                <Bot className={challenge.is_bot ? "text-blue-400" : "text-red-400"} size={24} />
+              ) : (
+                <User className={challenge.host_id === user?.id ? "text-yellow-400" : "text-red-400"} size={24} />
+              )}
+            </motion.button>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Challenge Preview Modal */}
+      <AnimatePresence>
+        {selectedChallenge && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-md bg-zinc-900/90 backdrop-blur-md border border-zinc-700 rounded-xl p-6 shadow-2xl z-20"
+          >
+            <button
+              onClick={() => setSelectedChallenge(null)}
+              className="absolute top-2 right-2 text-zinc-500 hover:text-white"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="flex items-center gap-4 mb-4">
+              <div className={`p-3 rounded-full ${selectedChallenge.is_bot ? 'bg-blue-500/20' : 'bg-red-500/20'}`}>
+                {selectedChallenge.is_bot ? <Bot size={32} className="text-blue-400" /> : <User size={32} className="text-red-400" />}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {selectedChallenge.is_bot ? `Bot (${selectedChallenge.bot_difficulty})` : 'Human Player'}
+                </h3>
+                <p className="text-zinc-400 text-sm capitalize">
+                  {selectedChallenge.time_control_type} • {selectedChallenge.rated ? 'Rated' : 'Casual'}
+                </p>
+              </div>
+            </div>
+
+            {selectedChallenge.host_id !== user?.id && (
+              <Button
+                onClick={() => handleAccept(selectedChallenge)}
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+              >
+                Accept Challenge
+              </Button>
+            )}
+
+            {selectedChallenge.host_id === user?.id && (
+              <div className="text-center text-yellow-500 font-bold animate-pulse">
+                Waiting for opponent...
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-

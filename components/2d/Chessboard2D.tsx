@@ -183,7 +183,7 @@ const Board2D = ({ onSquareClick, customSquareStyles, orientation }: Board2DProp
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
-                const isBlack = (row + col) % 2 === 1;
+                const isBlack = (row + col) % 2 === 0;
                 let x = col - 3.5;
                 let z = 3.5 - row;
 
