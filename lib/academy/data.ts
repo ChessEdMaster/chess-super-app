@@ -8,7 +8,7 @@ import {
     AcademyLesson,
     AcademyExercise,
     AcademyAchievement
-} from './academy-types';
+} from '@/types/academy';
 
 // ============================================
 // MODULES
@@ -426,3 +426,4 @@ export const INITIAL_ACHIEVEMENTS: Omit<AcademyAchievement, 'id' | 'created_at'>
         requirement: { type: "lessons_completed", count: 50 }
     }
 ];
+

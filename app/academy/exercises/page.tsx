@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Loader2, ArrowLeft, Filter, Trophy, Tag } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { AcademyExercise } from '@/lib/academy-types';
+import { AcademyExercise } from '@/types/academy';
 import { PuzzleSolver } from '@/components/puzzle-solver';
 
 const COMMON_TAGS = [
@@ -345,3 +345,4 @@ export default function ExercisesPage() {
         </div>
     );
 }
+

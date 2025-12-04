@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Crown, Grid3x3, Clock, Book, Laptop, GraduationCap, Shirt, ShoppingBag, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ProductCard } from '@/components/shop/product-card';
-import { Product } from '@/lib/ecommerce-types';
+import { Product } from '@/types/ecommerce';
 
 const categoryIcons: Record<string, any> = {
     'Grid3x3': Grid3x3,
@@ -169,3 +169,4 @@ export default async function ShopPage() {
         </div>
     );
 }
+

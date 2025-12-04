@@ -16,14 +16,14 @@ import {
   Loader2
 } from 'lucide-react';
 import { CoachAgent } from '@/components/coach-agent';
-import { PGNEditor } from '@/components/pgn-editor';
+import { PGNEditor } from '@/components/chess/pgn-editor';
 import { OpeningExplorer } from '@/components/analysis/opening-explorer';
 import { AnalysisControls } from '@/components/analysis/analysis-controls';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
-import { PGNTree } from '@/lib/pgn-tree';
-import { PGNParser } from '@/lib/pgn-parser';
-import type { Evaluation } from '@/lib/pgn-types';
+import { PGNTree } from '@/lib/pgn/tree';
+import { PGNParser } from '@/lib/pgn/parser';
+import type { Evaluation } from '@/types/pgn';
 import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
 import { Button } from '@/components/ui/button';
@@ -366,3 +366,5 @@ export default function AnalysisPage() {
     </div>
   );
 }
+
+

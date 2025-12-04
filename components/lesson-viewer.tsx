@@ -12,7 +12,7 @@ import {
     Trophy,
     RotateCcw
 } from 'lucide-react';
-import { LessonContent } from '@/lib/academy-types';
+import { LessonContent } from '@/types/academy';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
@@ -359,3 +359,4 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
         </div>
     );
 }
+

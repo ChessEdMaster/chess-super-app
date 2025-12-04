@@ -3,7 +3,7 @@
 // Run this once to populate the database with initial data
 // ============================================
 
-import { supabase } from './supabase';
+import { supabase } from '@/lib/supabase';
 import {
     INITIAL_MODULES,
     FUNDAMENTALS_LESSONS,
@@ -11,7 +11,7 @@ import {
     ENDGAME_LESSONS,
     INITIAL_EXERCISES,
     INITIAL_ACHIEVEMENTS
-} from './academy-data';
+} from './data';
 
 export async function populateAcademyDatabase() {
     console.log('🚀 Starting academy database population...');
@@ -118,3 +118,4 @@ export async function clearAcademyData() {
 
     console.log('✅ All academy data cleared');
 }
+

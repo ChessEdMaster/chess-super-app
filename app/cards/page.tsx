@@ -14,13 +14,11 @@ export default function CardsPage() {
     const [selectedCard, setSelectedCard] = useState<IConceptCard | null>(null);
     const [isMining, setIsMining] = useState(false);
 
-    const handleMineComplete = (success: boolean) => {
-        if (success && selectedCard) {
+    const handleMineSuccess = () => {
+        if (selectedCard) {
             addCardCopy(selectedCard.id, 1);
             toast.success("Mining Successful! +1 Card Copy");
         }
-        setIsMining(false);
-        setSelectedCard(null);
     };
 
     const handleUpgrade = () => {
@@ -154,7 +152,7 @@ export default function CardsPage() {
             {isMining && selectedCard && (
                 <PuzzleMiner
                     puzzleId={selectedCard.minigameId}
-                    onComplete={handleMineComplete}
+                    onSuccess={handleMineSuccess}
                     onClose={() => setIsMining(false)}
                 />
             )}

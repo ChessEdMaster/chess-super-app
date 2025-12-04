@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Trophy, Lock, Unlock } from 'lucide-react';
-import { UserAchievement, AcademyAchievement, AchievementRequirement } from '@/lib/academy-types';
+import { UserAchievement, AcademyAchievement, AchievementRequirement } from '@/types/academy';
 
 interface AchievementBadgeProps {
     achievement: AcademyAchievement;
@@ -140,3 +140,4 @@ export function AchievementGrid({ achievements, userAchievements }: AchievementG
         </div>
     );
 }
+

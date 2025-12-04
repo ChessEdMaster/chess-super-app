@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, X } from 'lucide-react';
 import { useCartStore } from '@/lib/cart-store';
-import { formatPrice } from '@/lib/ecommerce-types';
+import { formatPrice } from '@/types/ecommerce';
 import { useEffect, useState } from 'react';
 
 export function CartButton() {
@@ -130,3 +130,4 @@ export function CartButton() {
         </div>
     );
 }
+

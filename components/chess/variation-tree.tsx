@@ -7,8 +7,8 @@
 
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, Trash2, ArrowUp } from 'lucide-react';
-import type { MoveNode } from '@/lib/pgn-types';
-import { NAG_SYMBOLS } from '@/lib/pgn-types';
+import type { MoveNode } from '@/types/pgn';
+import { NAG_SYMBOLS } from '@/types/pgn';
 
 interface VariationTreeProps {
     mainLine: MoveNode[];
@@ -242,3 +242,4 @@ export function MoveList({ moves, currentNode, onSelectNode }: MoveListProps) {
         </div>
     );
 }
+

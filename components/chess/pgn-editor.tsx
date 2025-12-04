@@ -14,9 +14,9 @@ import {
     GitBranch,
     Check,
 } from 'lucide-react';
-import { PGNTree } from '@/lib/pgn-tree';
-import { PGNParser } from '@/lib/pgn-parser';
-import type { MoveNode, Evaluation, NAGSymbol } from '@/lib/pgn-types';
+import { PGNTree } from '@/lib/pgn/tree';
+import { PGNParser } from '@/lib/pgn/parser';
+import type { MoveNode, Evaluation, NAGSymbol } from '@/types/pgn';
 import { VariationTree, MoveList } from './variation-tree';
 import { AnnotationPanel } from './annotation-panel';
 
@@ -323,3 +323,4 @@ export function PGNEditor({
         </div>
     );
 }
+

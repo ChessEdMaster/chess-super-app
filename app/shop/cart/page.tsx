@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/lib/cart-store';
-import { formatPrice } from '@/lib/ecommerce-types';
+import { formatPrice } from '@/types/ecommerce';
 import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
@@ -177,3 +177,4 @@ export default function CartPage() {
         </div>
     );
 }
+

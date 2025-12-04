@@ -1,65 +1,40 @@
-export interface KingdomResources {
-    user_id: string;
-    gold: number;
-    mana: number;
-    last_updated: string;
+export type ResourceType = 'gold' | 'mana' | 'gems';
+
+export interface BuildingSchema {
+    id: string;
+    name: string;
+    type: 'economy' | 'defense' | 'decorative';
+    description: string;
+    base_cost: Record<ResourceType, number>;
+    production_rate: number; // Base resources per hour
+    max_level: number;
+    dimensions: { w: number; h: number };
+    asset_path: string; // Relative to /assets/kingdom/
 }
 
-export interface KingdomBuilding {
+export interface UserBuilding {
     id: string;
     user_id: string;
-    type: string;
+    building_def_id: string; // Links to BuildingSchema.id
     level: number;
     x: number;
     y: number;
     status: 'active' | 'constructing' | 'upgrading';
-    constructed_at: string;
+    last_collected_at: string; // ISO Timestamp
+    created_at: string;
+    construction_finish_at?: string;
 }
 
-export interface BuildingConfig {
-    type: string;
-    name: string;
-    description: string;
-    cost: {
-        gold: number;
-        mana: number;
-    };
-    constructionTime: number; // in seconds
-    width: number; // in tiles
-    height: number; // in tiles
-    spriteUrl?: string;
-    color?: string; // Fallback color
+export interface KingdomProfile {
+    user_id: string;
+    active_terrain_skin: 'grass' | 'snow' | 'lava';
+    unlocked_skins: string[];
+    defense_scenario_id?: string;
 }
 
-export const BUILDING_TYPES: Record<string, BuildingConfig> = {
-    academy: {
-        type: 'academy',
-        name: 'Academy',
-        description: 'Train your units and learn new strategies.',
-        cost: { gold: 100, mana: 0 },
-        constructionTime: 60,
-        width: 1,
-        height: 1,
-        color: '#3b82f6' // Blue
-    },
-    tower: {
-        type: 'tower',
-        name: 'Watch Tower',
-        description: 'Defend your kingdom from attacks.',
-        cost: { gold: 150, mana: 50 },
-        constructionTime: 120,
-        width: 1,
-        height: 1,
-        color: '#ef4444' // Red
-    },
-    mine: {
-        type: 'mine',
-        name: 'Gold Mine',
-        description: 'Generates gold over time.',
-        cost: { gold: 50, mana: 0 },
-        constructionTime: 30,
-        width: 1,
-        height: 1,
-        color: '#eab308' // Yellow
-    }
-};
+export interface KingdomState {
+    resources: Record<ResourceType, number>;
+    buildings: UserBuilding[];
+    buildingDefs: Record<string, BuildingSchema>;
+    profile: KingdomProfile;
+}

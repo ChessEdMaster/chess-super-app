@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { AcademyExercise } from '@/lib/academy-types';
+import { AcademyExercise } from '@/types/academy';
 import { PuzzleSolver } from '@/components/puzzle-solver';
 import { Loader2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PuzzleMinerProps {
     puzzleId: string;
-    onComplete: (success: boolean) => void;
+    onSuccess: () => void;
     onClose: () => void;
 }
 
@@ -37,10 +37,12 @@ const PUZZLE_TAG_MAP: Record<string, string[]> = {
     'puzzle-london': ['opening', 'london'],
 };
 
-export function PuzzleMiner({ puzzleId, onComplete, onClose }: PuzzleMinerProps) {
+export function PuzzleMiner({ puzzleId, onSuccess, onClose }: PuzzleMinerProps) {
     const [exercise, setExercise] = useState<AcademyExercise | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [streak, setStreak] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     useEffect(() => {
         fetchPuzzle();
@@ -98,8 +100,13 @@ export function PuzzleMiner({ puzzleId, onComplete, onClose }: PuzzleMinerProps)
 
     const handleSolved = (timeSpent: number, attempts: number, hintsUsed: number) => {
         // Success!
+        setIsTransitioning(true);
+        onSuccess();
+        setStreak(prev => prev + 1);
+
         setTimeout(() => {
-            onComplete(true);
+            setIsTransitioning(false);
+            fetchPuzzle();
         }, 1500);
     };
 
@@ -114,7 +121,7 @@ export function PuzzleMiner({ puzzleId, onComplete, onClose }: PuzzleMinerProps)
                 <div className="bg-zinc-900 p-4 flex justify-between items-center border-b border-zinc-800">
                     <h3 className="text-white font-bold uppercase tracking-wider flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                        Mining Resources...
+                        Mining Resources... {streak > 0 && <span className="text-emerald-400 text-xs bg-emerald-900/30 px-2 py-0.5 rounded-full">Streak: {streak}</span>}
                     </h3>
                     <button onClick={onClose} className="text-zinc-500 hover:text-white transition bg-zinc-800 hover:bg-zinc-700 p-2 rounded-full">
                         <X size={20} />
@@ -122,7 +129,21 @@ export function PuzzleMiner({ puzzleId, onComplete, onClose }: PuzzleMinerProps)
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-0 bg-slate-950/50">
+                <div className="flex-1 overflow-y-auto p-0 bg-slate-950/50 relative">
+                    {/* Transition Overlay */}
+                    {isTransitioning && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-emerald-900/20 backdrop-blur-[2px]">
+                            <motion.div
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="bg-emerald-500 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+                            >
+                                <CheckCircle size={20} />
+                                +1 Card Extracted!
+                            </motion.div>
+                        </div>
+                    )}
+
                     {loading ? (
                         <div className="flex flex-col items-center justify-center h-64 gap-4">
                             <Loader2 className="animate-spin text-blue-500" size={48} />
@@ -140,6 +161,7 @@ export function PuzzleMiner({ puzzleId, onComplete, onClose }: PuzzleMinerProps)
                         </div>
                     ) : exercise ? (
                         <PuzzleSolver
+                            key={exercise.id} // Force re-mount on new exercise
                             exercise={exercise}
                             onSolved={handleSolved}
                             compact={true}
@@ -150,3 +172,4 @@ export function PuzzleMiner({ puzzleId, onComplete, onClose }: PuzzleMinerProps)
         </div>
     );
 }
+

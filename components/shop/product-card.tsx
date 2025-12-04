@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Star } from 'lucide-react';
-import { Product, formatPrice, calculateDiscount, getStockStatus } from '@/lib/ecommerce-types';
+import { Product, formatPrice, calculateDiscount, getStockStatus } from '@/types/ecommerce';
 import { useCartStore } from '@/lib/cart-store';
 
 interface ProductCardProps {
@@ -120,3 +120,4 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
     );
 }
+

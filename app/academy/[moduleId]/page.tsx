@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Loader2, BookOpen, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { AcademyModule, AcademyLesson } from '@/lib/academy-types';
+import { AcademyModule, AcademyLesson } from '@/types/academy';
 
 export default function ModulePage() {
     const { moduleId } = useParams();
@@ -112,9 +112,9 @@ export default function ModulePage() {
                             <p className="text-slate-400">{module.description}</p>
                         </div>
                         <span className={`text-xs font-bold px-3 py-1 rounded-full border ${module.level === 'Principiant' ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30' :
-                                module.level === 'Intermedi' ? 'bg-amber-900/30 text-amber-400 border-amber-500/30' :
-                                    module.level === 'Avançat' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-500/30' :
-                                        'bg-slate-800 text-slate-400 border-slate-700'
+                            module.level === 'Intermedi' ? 'bg-amber-900/30 text-amber-400 border-amber-500/30' :
+                                module.level === 'Avançat' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-500/30' :
+                                    'bg-slate-800 text-slate-400 border-slate-700'
                             }`}>
                             {module.level}
                         </span>

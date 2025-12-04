@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Loader2, ArrowLeft, Trophy } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { AcademyLesson } from '@/lib/academy-types';
+import { AcademyLesson } from '@/types/academy';
 import { LessonViewer } from '@/components/lesson-viewer';
 
 export default function LessonPage() {

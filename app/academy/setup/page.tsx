@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2, CheckCircle, XCircle, Database } from 'lucide-react';
-import { populateAcademyDatabase, checkExistingData, clearAcademyData } from '@/lib/academy-utils';
+import { populateAcademyDatabase, checkExistingData, clearAcademyData } from '@/lib/academy/utils';
 
 export default function SetupPage() {
     const [loading, setLoading] = useState(false);
@@ -91,8 +91,8 @@ export default function SetupPage() {
 
                     {result && (
                         <div className={`border rounded-xl p-4 mb-6 ${result.success
-                                ? 'bg-emerald-900/20 border-emerald-500/30'
-                                : 'bg-red-900/20 border-red-500/30'
+                            ? 'bg-emerald-900/20 border-emerald-500/30'
+                            : 'bg-red-900/20 border-red-500/30'
                             }`}>
                             <div className="flex items-start gap-3">
                                 {result.success ? (

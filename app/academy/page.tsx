@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { AcademyModule, ModuleProgress, UserAcademyStats } from '@/lib/academy-types';
+import { AcademyModule, ModuleProgress, UserAcademyStats } from '@/types/academy';
 import { ProgressTracker } from '@/components/progress-tracker';
 import { AchievementGrid } from '@/components/achievement-badge';
 
@@ -286,3 +286,4 @@ export default function AcademyPage() {
         </div>
     );
 }
+

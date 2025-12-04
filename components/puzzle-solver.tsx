@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Chessboard2D from '@/components/2d/Chessboard2D';
-import { AcademyExercise } from '@/lib/academy-types';
+import { AcademyExercise } from '@/types/academy';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
@@ -543,3 +543,4 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
         </div>
     );
 }
+

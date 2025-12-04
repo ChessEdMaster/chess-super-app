@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { NAGSymbol, NAG_SYMBOLS } from '@/lib/pgn-types';
+import { NAGSymbol, NAG_SYMBOLS } from '@/types/pgn';
 import { X } from 'lucide-react';
 
 interface NAGCategory {
@@ -166,3 +166,4 @@ export function NAGDisplay({ nags, onRemove }: NAGDisplayProps) {
         </div>
     );
 }
+

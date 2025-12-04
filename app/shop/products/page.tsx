@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { ProductCard } from '@/components/shop/product-card';
-import { Product } from '@/lib/ecommerce-types';
+import { Product } from '@/types/ecommerce';
 import Link from 'next/link';
 
 interface SearchParams {
@@ -135,3 +135,4 @@ export default async function ProductsPage({
         </div>
     );
 }
+

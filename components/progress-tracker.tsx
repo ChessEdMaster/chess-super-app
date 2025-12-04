@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Trophy, Target, Flame, Star, TrendingUp } from 'lucide-react';
-import { ModuleProgress, UserAcademyStats } from '@/lib/academy-types';
+import { ModuleProgress, UserAcademyStats } from '@/types/academy';
 
 interface ProgressTrackerProps {
     moduleProgress: ModuleProgress[];
@@ -119,3 +119,4 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
         </div>
     );
 }
+

@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare, TrendingUp, Palette, Plus, Trash2 } from 'lucide-react';
-import type { MoveNode, Evaluation } from '@/lib/pgn-types';
+import type { MoveNode, Evaluation } from '@/types/pgn';
 import { NAGSelector, NAGDisplay } from './nag-selector';
 
 interface AnnotationPanelProps {
@@ -264,3 +264,4 @@ export function AnnotationPanel({
         </div>
     );
 }
+
