@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, Users, Trophy } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, Users, Trophy, Castle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
 
     const tabs = [
         { name: 'Battle', icon: Swords, href: '/' },
+        { name: 'Kingdom', icon: Castle, href: '/kingdom' },
         { name: 'Cards', icon: Layers, href: '/cards' },
         { name: 'Improve', icon: Trophy, href: '/improve' },
         { name: 'Social', icon: Users, href: '/social' },
