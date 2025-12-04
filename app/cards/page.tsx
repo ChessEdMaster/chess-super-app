@@ -3,23 +3,61 @@
 import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { ConceptCard } from '@/components/cards/concept-card';
-import { ConceptCard as IConceptCard } from '@/types/rpg';
-import { X, ArrowUpCircle, Pickaxe } from 'lucide-react';
+import { ConceptCard as IConceptCard, Chest } from '@/types/rpg';
+import { X, ArrowUpCircle, Pickaxe, Archive, Clock, Lock, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PuzzleMiner } from '@/components/cards/puzzle-miner';
+import { toast } from 'sonner';
 
 export default function CardsPage() {
-    const { cards, profile, addCardCopy } = usePlayerStore();
+    const { cards, chests, profile, addCardCopy, startUnlockChest, openChest } = usePlayerStore();
     const [selectedCard, setSelectedCard] = useState<IConceptCard | null>(null);
     const [isMining, setIsMining] = useState(false);
 
     const handleMineComplete = (success: boolean) => {
         if (success && selectedCard) {
             addCardCopy(selectedCard.id, 1);
-            alert("Mining Successful! +1 Card Copy");
+            toast.success("Mining Successful! +1 Card Copy");
         }
         setIsMining(false);
         setSelectedCard(null);
+    };
+
+    const handleChestClick = (index: number, chest: Chest | null) => {
+        if (!chest) {
+            if (profile.role === 'SuperAdmin') {
+                // Debug: Add a chest
+                usePlayerStore.getState().addChest({
+                    id: Math.random().toString(36).substring(7),
+                    type: 'WOODEN',
+                    unlockTime: 10,
+                    status: 'LOCKED'
+                });
+                toast.success("Debug: Chest Added!");
+            }
+            return;
+        }
+
+        if (chest.status === 'LOCKED') {
+            startUnlockChest(index);
+            toast.info("Chest unlocking started!");
+        } else if (chest.status === 'UNLOCKING') {
+            // For SuperAdmin or testing, allow instant finish?
+            // Or just wait.
+            if (profile.role === 'SuperAdmin') {
+                openChest(index);
+                toast.success("Chest Opened (SuperAdmin Speedup)!");
+            } else {
+                toast.info("Chest is unlocking... wait for timer (Not implemented yet)");
+                // In a real app, we'd check if time is up.
+                // For now, let's just allow opening if it's unlocking for demo purposes
+                openChest(index);
+                toast.success("Chest Opened!");
+            }
+        } else if (chest.status === 'READY') {
+            openChest(index);
+            toast.success("Chest Opened!");
+        }
     };
 
     return (
@@ -28,7 +66,50 @@ export default function CardsPage() {
                 Battle Deck
             </h1>
 
+            {/* Chests Section */}
+            <div className="mb-8">
+                <h2 className="text-sm font-bold text-zinc-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <Archive className="text-amber-500 h-4 w-4" />
+                    Chest Slots
+                </h2>
+                <div className="grid grid-cols-4 gap-3">
+                    {chests.map((chest, index) => (
+                        <div
+                            key={index}
+                            onClick={() => handleChestClick(index, chest)}
+                            className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 ${chest
+                                ? 'border-amber-500/50 bg-amber-900/20 cursor-pointer hover:bg-amber-900/30'
+                                : 'border-zinc-800 bg-zinc-900/50'
+                                }`}
+                        >
+                            {chest ? (
+                                <>
+                                    <Gift className={`h-8 w-8 mb-1 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
+                                        chest.type === 'GOLDEN' ? 'text-yellow-400' :
+                                            chest.type === 'SILVER' ? 'text-slate-300' :
+                                                'text-amber-700'
+                                        }`} />
+                                    <span className="text-[10px] font-bold text-white uppercase">{chest.type}</span>
+
+                                    {/* Status Overlay */}
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                        {chest.status === 'LOCKED' && <Lock className="h-4 w-4 text-white/50" />}
+                                        {chest.status === 'UNLOCKING' && <Clock className="h-4 w-4 text-blue-400 animate-pulse" />}
+                                        {chest.status === 'READY' && <span className="text-[10px] font-bold text-green-400 bg-black/80 px-1 rounded animate-bounce">OPEN!</span>}
+                                    </div>
+                                </>
+                            ) : (
+                                <span className="text-zinc-700 text-xs font-bold">EMPTY</span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Cards Grid */}
+            <h2 className="text-sm font-bold text-zinc-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                Collection
+            </h2>
             <div className="grid grid-cols-4 gap-2">
                 {cards.map((card) => (
                     <ConceptCard

@@ -12,6 +12,7 @@ export interface PlayerProfile {
         gems: number;   // Hard currency (cosmetics/speedups)
     };
     attributes: Record<ChessAttribute, number>; // e.g., { AGGRESSION: 15 }
+    role?: 'SuperAdmin' | 'ClubMember' | 'Guest' | 'NewUser';
 }
 
 export interface ConceptCard {

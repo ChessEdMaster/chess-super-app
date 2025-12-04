@@ -15,6 +15,11 @@ interface PlayerState {
     addGems: (amount: number) => void;
     addXp: (amount: number) => void;
     addCardCopy: (cardId: string, amount?: number) => void;
+
+    // Chest Actions
+    startUnlockChest: (chestIndex: number) => void;
+    openChest: (chestIndex: number) => void;
+    addChest: (chest: Chest) => void;
 }
 
 const DEFAULT_CARDS: ConceptCard[] = [
@@ -40,9 +45,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     isLoaded: false,
 
     loadProfile: async (userId: string) => {
+        // Fetch profile AND role name
         const { data, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('*, app_roles(name)')
             .eq('id', userId)
             .single();
 
@@ -50,6 +56,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             console.error('Error loading profile:', error);
             return;
         }
+
+        // Extract role name safely
+        const roleName = data.app_roles && !Array.isArray(data.app_roles) ? data.app_roles.name : undefined;
 
         set({
             profile: {
@@ -63,6 +72,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                     gems: data.gems || 0,
                 },
                 attributes: data.attributes || { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
+                role: roleName as any,
             },
             cards: data.cards || DEFAULT_CARDS,
             chests: data.chests || [null, null, null, null],
@@ -142,4 +152,85 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         }));
         get().saveProfile();
     },
+
+    // --- Chest Logic ---
+
+    addChest: (chest: Chest) => {
+        set((state) => {
+            const emptyIndex = state.chests.findIndex(c => c === null);
+            if (emptyIndex === -1) return state; // No space
+
+            const newChests = [...state.chests];
+            newChests[emptyIndex] = chest;
+            return { chests: newChests };
+        });
+        get().saveProfile();
+    },
+
+    startUnlockChest: (chestIndex: number) => {
+        set((state) => {
+            const newChests = [...state.chests];
+            const chest = newChests[chestIndex];
+            if (!chest || chest.status !== 'LOCKED') return state;
+
+            // Only one unlocking at a time? For now, allow multiple or enforce one.
+            // Let's enforce one unlocking at a time for realism, unless SuperAdmin?
+            // User didn't specify, but standard mobile game logic is one.
+            // For now, let's just set it to UNLOCKING.
+
+            newChests[chestIndex] = {
+                ...chest,
+                status: 'UNLOCKING',
+                // In a real app, we'd set a timestamp here.
+                // For simplicity/demo, we might just rely on the UI to count down or instant unlock for SuperAdmin.
+            };
+            return { chests: newChests };
+        });
+        get().saveProfile();
+    },
+
+    openChest: (chestIndex: number) => {
+        const state = get();
+        const chest = state.chests[chestIndex];
+        if (!chest) return;
+
+        // 1. Generate Rewards
+        const goldReward = Math.floor(Math.random() * 50) + 10;
+        const gemsReward = Math.floor(Math.random() * 5);
+
+        // Random Card
+        const randomCardIndex = Math.floor(Math.random() * state.cards.length);
+        const cardId = state.cards[randomCardIndex].id;
+        const cardAmount = Math.floor(Math.random() * 5) + 1;
+
+        // 2. Apply Rewards
+        state.addGold(goldReward);
+        state.addGems(gemsReward);
+        state.addCardCopy(cardId, cardAmount);
+
+        // 3. Remove Chest & Handle SuperAdmin Infinite Chests
+        set((currentState) => {
+            const newChests = [...currentState.chests];
+
+            if (currentState.profile.role === 'SuperAdmin') {
+                // Refill immediately with a new random chest
+                newChests[chestIndex] = {
+                    id: Math.random().toString(36).substring(7),
+                    type: Math.random() > 0.8 ? 'GOLDEN' : Math.random() > 0.5 ? 'SILVER' : 'WOODEN',
+                    unlockTime: 10, // Short time for testing
+                    status: 'LOCKED'
+                };
+            } else {
+                newChests[chestIndex] = null;
+            }
+
+            return { chests: newChests };
+        });
+
+        get().saveProfile();
+
+        // Return rewards for UI display if needed (would need to change return type or use a callback)
+        // For now, we assume the UI will show a generic "Chest Opened" message or we can add a toast here if we import it.
+        // But store shouldn't trigger UI side effects directly usually.
+    }
 }));
