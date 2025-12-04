@@ -44,7 +44,7 @@ export default function PlayPage() {
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
   // Player Store (Chests)
-  const { chests, profile, startUnlockChest, openChest } = usePlayerStore();
+  const { chests, profile, startUnlockChest, openChest, loadProfile, addChest } = usePlayerStore();
   const [openingRewards, setOpeningRewards] = useState<{ gold: number; gems: number; cardId: string; cardAmount: number } | null>(null);
 
   // Chest Timer Hook
@@ -79,11 +79,12 @@ export default function PlayPage() {
       if (user) {
         const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
         setUserProfile(data);
+        await loadProfile(user.id);
         fetchArenaProgress(user.id);
       }
     };
     fetchProfile();
-  }, [fetchArenaProgress]);
+  }, [fetchArenaProgress, loadProfile]);
 
   // 2. Initialize Stockfish
   useEffect(() => {
@@ -326,6 +327,7 @@ export default function PlayPage() {
   };
 
   const handleChestClick = (index: number, chest: Chest | null) => {
+    console.log('Chest clicked:', index, chest);
     if (!chest) {
       if (profile.role === 'SuperAdmin') {
         // Debug: Add a chest

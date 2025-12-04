@@ -18,7 +18,7 @@ interface PlayerState {
     upgradeCard: (cardId: string) => void;
 
     // Chest Actions
-    startUnlockChest: (chestIndex: number) => void;
+    startUnlockChest: (chestIndex: number) => boolean;
     updateChestTimers: () => void;
     openChest: (chestIndex: number) => { gold: number; gems: number; cardId: string; cardAmount: number } | null;
     addChest: (chest: Chest) => void;
@@ -282,13 +282,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     },
 
     startUnlockChest: (chestIndex: number) => {
+        let success = false;
         set((state) => {
             const newChests = [...state.chests];
             const chest = newChests[chestIndex];
             if (!chest || chest.status !== 'LOCKED') return state;
 
-            // Limit to 1 chest unlocking at a time (unless SuperAdmin, maybe?)
-            // For simplicity, strict 1 chest rule for everyone for now to avoid bugs
+            // Limit to 1 chest unlocking at a time
             const isAnyUnlocking = newChests.some(c => c && c.status === 'UNLOCKING');
             if (isAnyUnlocking) return state;
 
@@ -297,9 +297,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                 status: 'UNLOCKING',
                 unlockStartedAt: Date.now(),
             };
+            success = true;
             return { chests: newChests };
         });
         get().saveProfile();
+        return success;
     },
 
     updateChestTimers: () => {

@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Battle, Collect, Evolve.",
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,6 +26,7 @@ export default function RootLayout({
             <MobileLayout>
               {children}
             </MobileLayout>
+            <Toaster position="top-center" richColors />
           </PlayerStoreSync>
         </AuthProvider>
       </body>
