@@ -42,12 +42,21 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
 
             if (error) throw error;
 
+            // Success
             router.push('/lobby');
+
+            // Keep modal open briefly to show "Entering..." state or let unmount handle it
+            // But we should close it eventually if navigation is slow
+            setTimeout(() => {
+                onClose();
+                setLoading(false);
+            }, 1000);
+
         } catch (e) {
             console.error(e);
-        } finally {
             setLoading(false);
-            onClose();
+            // Show error to user?
+            alert('Error creating challenge. Please try again.');
         }
     };
 

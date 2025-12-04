@@ -121,11 +121,34 @@ export default function LobbyPage() {
       // For now, redirect to play page with bot config
       router.push(`/play/online/bot-${challenge.id}?difficulty=${challenge.bot_difficulty}&time=${challenge.time_control_type}`);
     } else {
-      // If human, update status to accepted
-      await supabase
-        .from('challenges')
-        .update({ status: 'accepted' }) // In real app, add opponent_id
-        .eq('id', challenge.id);
+      // If human, create the game record first
+      const isRandom = challenge.player_color === 'random';
+      const hostIsWhite = isRandom ? Math.random() > 0.5 : challenge.player_color === 'white';
+
+      const whiteId = hostIsWhite ? challenge.host_id : user.id;
+      const blackId = hostIsWhite ? user.id : challenge.host_id;
+
+      const timeLimit = challenge.time_control_type === 'bullet' ? 60 : challenge.time_control_type === 'blitz' ? 180 : 600;
+
+      // Create Game
+      const { error: gameError } = await supabase.from('games').insert({
+        id: challenge.id, // Reuse challenge ID for the game
+        white_player_id: whiteId,
+        black_player_id: blackId,
+        status: 'active',
+        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        white_time: timeLimit,
+        black_time: timeLimit,
+        pgn: ''
+      });
+
+      if (gameError) {
+        console.error('Error creating game:', gameError);
+        return;
+      }
+
+      // Delete challenge (it's now a game)
+      await supabase.from('challenges').delete().eq('id', challenge.id);
 
       router.push(`/play/online/${challenge.id}`);
     }
@@ -161,10 +184,10 @@ export default function LobbyPage() {
                 top: `${challenge.map_y}%`,
               }}
               className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg border-2 ${challenge.host_id === user?.id
-                  ? 'bg-yellow-500/20 border-yellow-500 animate-pulse'
-                  : challenge.is_bot
-                    ? 'bg-blue-500/20 border-blue-500'
-                    : 'bg-red-500/20 border-red-500'
+                ? 'bg-yellow-500/20 border-yellow-500 animate-pulse'
+                : challenge.is_bot
+                  ? 'bg-blue-500/20 border-blue-500'
+                  : 'bg-red-500/20 border-red-500'
                 }`}
               onClick={() => setSelectedChallenge(challenge)}
             >
