@@ -53,12 +53,12 @@ export default function LobbyPage() {
         } else if (payload.eventType === 'UPDATE') {
           const updated = payload.new as Challenge;
 
-          // Redirect Host if their challenge was accepted
+          // Redirect Host if their challenge was accepted (Legacy/Backup)
           if (updated.status === 'accepted' && updated.host_id === userRef.current?.id) {
             router.push(`/play/online/${updated.id}`);
           }
 
-          // Update list: If not open, remove from map. If open, update data.
+          // Update list
           if (updated.status !== 'open') {
             setChallenges(prev => prev.filter(c => c.id !== updated.id));
           } else {
@@ -68,8 +68,20 @@ export default function LobbyPage() {
       })
       .subscribe();
 
+    // Also listen for NEW GAMES where I am a player (More reliable than challenge update)
+    const gameChannel = supabase
+      .channel('lobby_games')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'games' }, (payload) => {
+        const newGame = payload.new as any;
+        if (newGame.white_player_id === userRef.current?.id || newGame.black_player_id === userRef.current?.id) {
+          router.push(`/play/online/${newGame.id}`);
+        }
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(gameChannel);
     };
   }, [router]);
 
