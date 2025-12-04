@@ -31,9 +31,10 @@ interface PuzzleSolverProps {
     exercise: AcademyExercise;
     onSolved: (timeSpent: number, attempts: number, hintsUsed: number) => void;
     onSkip?: () => void;
+    compact?: boolean;
 }
 
-export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) {
+export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: PuzzleSolverProps) {
     // CRÍTICO: Inicializar directamente con el FEN del ejercicio
     const [game, setGame] = useState(() => new Chess());
     const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
@@ -329,8 +330,8 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-4">
-            <div className="flex flex-col lg:flex-row gap-6">
+        <div className={`w-full ${compact ? 'max-w-md' : 'max-w-6xl'} mx-auto p-4`}>
+            <div className={`flex ${compact ? 'flex-col' : 'flex-col lg:flex-row'} gap-6`}>
 
                 <div className="flex-1">
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
@@ -401,45 +402,47 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                     </div>
                 </div>
 
-                <div className="w-full lg:w-96 flex flex-col gap-4">
+                <div className={`w-full ${compact ? '' : 'lg:w-96'} flex flex-col gap-4`}>
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                        <div className="flex items-start justify-between mb-3">
-                            <div>
-                                <h2 className="text-xl font-bold text-white mb-1">
-                                    {exercise.title || 'Puzzle Tàctic'}
-                                </h2>
-                                {exercise.description && (
-                                    <p className="text-slate-400 text-sm">{exercise.description}</p>
-                                )}
-                            </div>
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getDifficultyColor()}`}>
-                                {exercise.difficulty === 'easy' ? 'Fàcil' : exercise.difficulty === 'medium' ? 'Mitjà' : 'Difícil'}
-                            </span>
-                        </div>
-
-                        {exercise.tags && exercise.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-3">
-                                {exercise.tags.map((tag, idx) => (
-                                    <span
-                                        key={idx}
-                                        className="text-xs px-2 py-1 bg-slate-800 text-slate-300 rounded border border-slate-700"
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="mt-4 pt-4 border-t border-slate-800">
-                            <div className="flex items-center gap-2">
-                                <Trophy className="text-amber-400" size={16} />
-                                <span className="text-sm text-slate-400">
-                                    Rating: <span className="text-white font-bold">{exercise.rating}</span>
+                    {!compact && (
+                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white mb-1">
+                                        {exercise.title || 'Puzzle Tàctic'}
+                                    </h2>
+                                    {exercise.description && (
+                                        <p className="text-slate-400 text-sm">{exercise.description}</p>
+                                    )}
+                                </div>
+                                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getDifficultyColor()}`}>
+                                    {exercise.difficulty === 'easy' ? 'Fàcil' : exercise.difficulty === 'medium' ? 'Mitjà' : 'Difícil'}
                                 </span>
                             </div>
+
+                            {exercise.tags && exercise.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    {exercise.tags.map((tag, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="text-xs px-2 py-1 bg-slate-800 text-slate-300 rounded border border-slate-700"
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="mt-4 pt-4 border-t border-slate-800">
+                                <div className="flex items-center gap-2">
+                                    <Trophy className="text-amber-400" size={16} />
+                                    <span className="text-sm text-slate-400">
+                                        Rating: <span className="text-white font-bold">{exercise.rating}</span>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
                         <div className="flex items-start gap-3 mb-4">
