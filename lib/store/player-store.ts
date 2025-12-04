@@ -15,20 +15,67 @@ interface PlayerState {
     addGems: (amount: number) => void;
     addXp: (amount: number) => void;
     addCardCopy: (cardId: string, amount?: number) => void;
+    upgradeCard: (cardId: string) => void;
 
     // Chest Actions
     startUnlockChest: (chestIndex: number) => void;
+    updateChestTimers: () => void;
     openChest: (chestIndex: number) => { gold: number; gems: number; cardId: string; cardAmount: number } | null;
     addChest: (chest: Chest) => void;
 }
 
-const DEFAULT_CARDS: ConceptCard[] = [
-    // AGGRESSION (1-25)
-    { id: 'c1', title: 'La Forquilla', rarity: 'COMMON', category: 'AGGRESSION', level: 1, cardsOwned: 0, cardsRequired: 10, description: 'Atacar dues peces alhora amb una sola peça.', minigameId: 'puzzle-fork' },
-    { id: 'c2', title: 'La Clavada', rarity: 'COMMON', category: 'AGGRESSION', level: 1, cardsOwned: 0, cardsRequired: 10, description: 'Immobilitzar una peça perquè no exposi una de més valor.', minigameId: 'puzzle-pin' },
-    { id: 'c3', title: "L'Enfilada", rarity: 'COMMON', category: 'AGGRESSION', level: 1, cardsOwned: 0, cardsRequired: 10, description: 'Atacar una peça valuosa i capturar la que hi ha darrere.', minigameId: 'puzzle-skewer' },
-    // ... (rest of cards - keeping them for brevity, they're already defined)
-];
+const GENERATE_CARDS = (): ConceptCard[] => {
+    const categories = ['AGGRESSION', 'SOLIDITY', 'KNOWLEDGE', 'SPEED'] as const;
+    const rarities = ['COMMON', 'RARE', 'EPIC', 'LEGENDARY'] as const;
+    const cards: ConceptCard[] = [];
+
+    // Base cards
+    const bases = [
+        { title: 'La Forquilla', desc: 'Atacar dues peces alhora amb una sola peça.', puzzle: 'puzzle-fork' },
+        { title: 'La Clavada', desc: 'Immobilitzar una peça perquè no exposi una de més valor.', puzzle: 'puzzle-pin' },
+        { title: "L'Enfilada", desc: 'Atacar una peça valuosa i capturar la que hi ha darrere.', puzzle: 'puzzle-skewer' },
+        { title: 'Escac a la Descoberta', desc: 'Moure una peça per obrir línia d\'atac d\'una altra.', puzzle: 'puzzle-discovered' },
+        { title: 'Raigs X', desc: 'Atacar a través d\'una peça enemiga.', puzzle: 'puzzle-xray' },
+        { title: 'Sacrifici', desc: 'Entregar material per obtenir avantatge tàctic.', puzzle: 'puzzle-sacrifice' },
+        { title: 'Desviació', desc: 'Forçar una peça a abandonar una casella clau.', puzzle: 'puzzle-deflection' },
+        { title: 'Intercepció', desc: 'Tallar la línia d\'acció d\'una peça enemiga.', puzzle: 'puzzle-interception' },
+        { title: 'Zugzwang', desc: 'Qualsevol moviment empitjora la posició.', puzzle: 'puzzle-zugzwang' },
+        { title: 'Peó Passat', desc: 'Un peó sense oposició cap a la promoció.', puzzle: 'puzzle-passed-pawn' },
+        { title: 'Mate del Passadís', desc: 'Mate a la vuitena fila per bloqueig de peons.', puzzle: 'puzzle-back-rank' },
+        { title: 'Mate de l\'Ofegat', desc: 'El rei està atrapat per les seves pròpies peces.', puzzle: 'puzzle-smothered' },
+        { title: 'Obertura Italiana', desc: 'Control del centre i atac ràpid.', puzzle: 'puzzle-italian' },
+        { title: 'Defensa Siciliana', desc: 'Contraatac agressiu des del principi.', puzzle: 'puzzle-sicilian' },
+        { title: 'Gambit de Dama', desc: 'Sacrifici de peó per control central.', puzzle: 'puzzle-queens-gambit' },
+        { title: 'Ruy Lopez', desc: 'Pressió constant sobre el cavall i el centre.', puzzle: 'puzzle-ruy-lopez' },
+        { title: 'Defensa Francesa', desc: 'Estructura sòlida i contraatac al centre.', puzzle: 'puzzle-french' },
+        { title: 'Defensa Caro-Kann', desc: 'Solidesa extrema i finals favorables.', puzzle: 'puzzle-caro-kann' },
+        { title: 'Atac Indi de Rei', desc: 'Atac directe al rei enrocant.', puzzle: 'puzzle-kings-indian' },
+        { title: 'Sistema Londres', desc: 'Desenvolupament sòlid i universal.', puzzle: 'puzzle-london' }
+    ];
+
+    // Generate 100 cards based on bases variations
+    for (let i = 0; i < 100; i++) {
+        const base = bases[i % bases.length];
+        const category = categories[i % categories.length];
+        const rarity = rarities[Math.floor((i / bases.length) * 4) % 4]; // Distribute rarities
+
+        cards.push({
+            id: `c${i + 1}`,
+            title: `${base.title} ${Math.floor(i / bases.length) + 1 > 1 ? (Math.floor(i / bases.length) + 1) : ''}`, // Add suffix for variations
+            rarity: rarity,
+            category: category,
+            level: 1,
+            cardsOwned: 0,
+            cardsRequired: 10,
+            description: base.desc,
+            minigameId: base.puzzle
+        });
+    }
+
+    return cards;
+};
+
+const DEFAULT_CARDS = GENERATE_CARDS();
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
     profile: {
@@ -39,13 +86,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         xp: 0,
         currencies: { gold: 0, gems: 0 },
         attributes: { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
+        settings: { language: 'ca', notifications: true },
     },
     cards: DEFAULT_CARDS,
     chests: [null, null, null, null],
     isLoaded: false,
 
     loadProfile: async (userId: string) => {
-        // Fetch profile AND role name
         const { data, error } = await supabase
             .from('profiles')
             .select('*, app_roles(name)')
@@ -57,23 +104,36 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             return;
         }
 
-        // Extract role name safely
         const roleName = data.app_roles && !Array.isArray(data.app_roles) ? data.app_roles.name : undefined;
 
-        // Merge DB cards with DEFAULT_CARDS to ensure we have all definitions
-        // If DB has no cards (empty array), use DEFAULT_CARDS
-        // If DB has cards, we might want to merge them if we added new cards to the game
-        // For now, simple logic: if DB has cards, use them. If not, use DEFAULT.
-        // BUT, if DB has [] (empty array), it means user has no cards.
-        // We want user to have the starter cards.
-        const loadedCards = (data.cards && Array.isArray(data.cards) && data.cards.length > 0)
-            ? data.cards
-            : DEFAULT_CARDS;
+        // Merge logic: Use DEFAULT_CARDS but update with owned counts/levels from DB if they exist
+        let loadedCards = [...DEFAULT_CARDS];
+        if (data.cards && Array.isArray(data.cards) && data.cards.length > 0) {
+            // Map DB cards to current definitions to keep descriptions/titles updated
+            const dbCardsMap = new Map<string, any>(data.cards.map((c: any) => [c.id, c]));
+            loadedCards = loadedCards.map(card => {
+                const dbCard = dbCardsMap.get(card.id);
+                if (dbCard) {
+                    return { ...card, level: dbCard.level, cardsOwned: dbCard.cardsOwned, cardsRequired: dbCard.cardsRequired };
+                }
+                return card;
+            });
+        }
 
-        // Ensure chests is always length 4
         let loadedChests = (data.chests && Array.isArray(data.chests)) ? data.chests : [null, null, null, null];
         if (loadedChests.length < 4) {
             loadedChests = [...loadedChests, ...Array(4 - loadedChests.length).fill(null)];
+        }
+
+        // SuperAdmin Bonus Check
+        let currencies = {
+            gold: data.gold || 0,
+            gems: data.gems || 0,
+        };
+
+        if (roleName === 'SuperAdmin') {
+            if (currencies.gold < 100000) currencies.gold = 100000;
+            if (currencies.gems < 1000) currencies.gems = 1000;
         }
 
         set({
@@ -83,17 +143,20 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                 avatarId: 'king-piece',
                 level: data.level || 1,
                 xp: data.xp || 0,
-                currencies: {
-                    gold: data.gold || 0,
-                    gems: data.gems || 0,
-                },
+                currencies: currencies,
                 attributes: data.attributes || { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
+                settings: data.settings || { language: 'ca', notifications: true },
                 role: roleName as any,
             },
             cards: loadedCards,
             chests: loadedChests,
             isLoaded: true,
         });
+
+        // Save immediately if we updated SuperAdmin currencies
+        if (roleName === 'SuperAdmin' && (data.gold < 100000 || data.gems < 1000)) {
+            get().saveProfile();
+        }
     },
 
     saveProfile: async () => {
@@ -109,6 +172,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                 gold: state.profile.currencies.gold,
                 gems: state.profile.currencies.gems,
                 attributes: state.profile.attributes,
+                settings: state.profile.settings,
                 cards: state.cards,
                 chests: state.chests,
             })
@@ -169,6 +233,40 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         get().saveProfile();
     },
 
+    upgradeCard: (cardId) => {
+        set((state) => {
+            const cardIndex = state.cards.findIndex(c => c.id === cardId);
+            if (cardIndex === -1) return state;
+
+            const card = state.cards[cardIndex];
+            // Cost logic: Level * 100 Gold (Example)
+            const upgradeCost = card.level * 100;
+
+            if (state.profile.currencies.gold < upgradeCost) return state; // Not enough gold
+            if (card.cardsOwned < card.cardsRequired) return state; // Not enough cards
+
+            const newCards = [...state.cards];
+            newCards[cardIndex] = {
+                ...card,
+                level: card.level + 1,
+                cardsOwned: card.cardsOwned - card.cardsRequired,
+                cardsRequired: Math.floor(card.cardsRequired * 1.5)
+            };
+
+            return {
+                cards: newCards,
+                profile: {
+                    ...state.profile,
+                    currencies: {
+                        ...state.profile.currencies,
+                        gold: state.profile.currencies.gold - upgradeCost
+                    }
+                }
+            };
+        });
+        get().saveProfile();
+    },
+
     // --- Chest Logic ---
 
     addChest: (chest: Chest) => {
@@ -189,20 +287,48 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             const chest = newChests[chestIndex];
             if (!chest || chest.status !== 'LOCKED') return state;
 
-            // Only one unlocking at a time? For now, allow multiple or enforce one.
-            // Let's enforce one unlocking at a time for realism, unless SuperAdmin?
-            // User didn't specify, but standard mobile game logic is one.
-            // For now, let's just set it to UNLOCKING.
+            // Limit to 1 chest unlocking at a time (unless SuperAdmin, maybe?)
+            // For simplicity, strict 1 chest rule for everyone for now to avoid bugs
+            const isAnyUnlocking = newChests.some(c => c && c.status === 'UNLOCKING');
+            if (isAnyUnlocking) return state;
 
             newChests[chestIndex] = {
                 ...chest,
                 status: 'UNLOCKING',
-                // In a real app, we'd set a timestamp here.
-                // For simplicity/demo, we might just rely on the UI to count down or instant unlock for SuperAdmin.
+                unlockStartedAt: Date.now(),
             };
             return { chests: newChests };
         });
         get().saveProfile();
+    },
+
+    updateChestTimers: () => {
+        set((state) => {
+            let hasChanges = false;
+            const newChests = state.chests.map(chest => {
+                if (!chest || chest.status !== 'UNLOCKING' || !chest.unlockStartedAt) return chest;
+
+                const elapsed = (Date.now() - chest.unlockStartedAt) / 1000;
+                if (elapsed >= chest.unlockTime) {
+                    hasChanges = true;
+                    return { ...chest, status: 'READY' as const };
+                }
+                return chest;
+            });
+
+            if (hasChanges) {
+                return { chests: newChests };
+            }
+            return state;
+        });
+        // Save if changed (can be optimized to debounce)
+        // We'll just save periodically or when status changes to READY
+        const state = get();
+        if (state.chests.some(c => c?.status === 'READY' && c.unlockStartedAt)) {
+            // Clear unlockStartedAt for READY chests to avoid re-saving? 
+            // Actually, let's just save.
+            get().saveProfile();
+        }
     },
 
     openChest: (chestIndex: number) => {
@@ -253,3 +379,4 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         };
     }
 }));
+

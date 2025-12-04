@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Users, Trophy, MessageSquare, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserProfile } from '@/components/profile/user-profile';
 
-export default function SocialPage() {
+function SocialPageContent() {
     const searchParams = useSearchParams();
     const initialTab = searchParams.get('tab') as 'friends' | 'clans' | 'events' | 'profile' | null;
     const [activeTab, setActiveTab] = useState<'friends' | 'clans' | 'events' | 'profile'>('friends');
@@ -103,5 +103,13 @@ export default function SocialPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function SocialPage() {
+    return (
+        <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-zinc-950 text-white">Loading...</div>}>
+            <SocialPageContent />
+        </Suspense>
     );
 }

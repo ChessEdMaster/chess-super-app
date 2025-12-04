@@ -3,20 +3,16 @@
 import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { ConceptCard } from '@/components/cards/concept-card';
-import { ConceptCard as IConceptCard, Chest } from '@/types/rpg';
-import { X, ArrowUpCircle, Pickaxe, Archive, Clock, Lock, Gift } from 'lucide-react';
+import { ConceptCard as IConceptCard } from '@/types/rpg';
+import { X, ArrowUpCircle, Pickaxe, Crown, Shield, Zap, Target, Crosshair, Hexagon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PuzzleMiner } from '@/components/cards/puzzle-miner';
-import { ChestOpeningModal } from '@/components/cards/chest-opening-modal';
 import { toast } from 'sonner';
 
 export default function CardsPage() {
-    const { cards, chests, profile, addCardCopy, startUnlockChest, openChest } = usePlayerStore();
+    const { cards, profile, addCardCopy, upgradeCard } = usePlayerStore();
     const [selectedCard, setSelectedCard] = useState<IConceptCard | null>(null);
     const [isMining, setIsMining] = useState(false);
-
-    // Chest Opening State
-    const [openingRewards, setOpeningRewards] = useState<{ gold: number; gems: number; cardId: string; cardAmount: number } | null>(null);
 
     const handleMineComplete = (success: boolean) => {
         if (success && selectedCard) {
@@ -27,90 +23,45 @@ export default function CardsPage() {
         setSelectedCard(null);
     };
 
-    const handleChestClick = (index: number, chest: Chest | null) => {
-        if (!chest) {
-            if (profile.role === 'SuperAdmin') {
-                // Debug: Add a chest
-                usePlayerStore.getState().addChest({
-                    id: Math.random().toString(36).substring(7),
-                    type: 'WOODEN',
-                    unlockTime: 10,
-                    status: 'LOCKED'
-                });
-                toast.success("Debug: Chest Added!");
-            }
+    const handleUpgrade = () => {
+        if (!selectedCard) return;
+        const cost = selectedCard.level * 100;
+        if (profile.currencies.gold < cost) {
+            toast.error("Not enough Gold!");
             return;
         }
-
-        if (chest.status === 'LOCKED') {
-            startUnlockChest(index);
-            toast.info("Chest unlocking started!");
-        } else if (chest.status === 'UNLOCKING') {
-            // For SuperAdmin or testing, allow instant finish?
-            // Or just wait.
-            if (profile.role === 'SuperAdmin') {
-                const rewards = openChest(index);
-                if (rewards) {
-                    setOpeningRewards(rewards);
-                }
-            } else {
-                toast.info("Chest is unlocking... wait for timer (Not implemented yet)");
-                // In a real app, we'd check if time is up.
-                // For now, let's just allow opening if it's unlocking for demo purposes
-                const rewards = openChest(index);
-                if (rewards) {
-                    setOpeningRewards(rewards);
-                }
-            }
-        } else if (chest.status === 'READY') {
-            const rewards = openChest(index);
-            if (rewards) {
-                setOpeningRewards(rewards);
-            }
-        }
+        upgradeCard(selectedCard.id);
+        toast.success("Card Upgraded!");
+        setSelectedCard(null);
     };
+
+    const avatars = [
+        { name: 'King', icon: Crown, color: 'text-yellow-500' },
+        { name: 'Queen', icon: Target, color: 'text-purple-500' },
+        { name: 'Rook', icon: Shield, color: 'text-slate-400' },
+        { name: 'Bishop', icon: Crosshair, color: 'text-indigo-400' },
+        { name: 'Knight', icon: Zap, color: 'text-amber-600' },
+        { name: 'Pawn', icon: Hexagon, color: 'text-green-400' },
+    ];
 
     return (
         <div className="h-full w-full bg-zinc-950 p-3 overflow-y-auto pb-24">
-            <h1 className="text-xl font-black text-white mb-4 uppercase tracking-wider italic">
-                Battle Deck
+            <h1 className="text-xl font-black text-white mb-6 uppercase tracking-wider italic">
+                Collection
             </h1>
 
-            {/* Chests Section */}
+            {/* Avatars Section */}
             <div className="mb-8">
                 <h2 className="text-sm font-bold text-zinc-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                    <Archive className="text-amber-500 h-4 w-4" />
-                    Chest Slots
+                    Avatars
                 </h2>
-                <div className="grid grid-cols-4 gap-3">
-                    {chests.map((chest, index) => (
-                        <div
-                            key={index}
-                            onClick={() => handleChestClick(index, chest)}
-                            className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 ${chest
-                                ? 'border-amber-500/50 bg-amber-900/20 cursor-pointer hover:bg-amber-900/30'
-                                : 'border-zinc-800 bg-zinc-900/50'
-                                }`}
-                        >
-                            {chest ? (
-                                <>
-                                    <Gift className={`h-8 w-8 mb-1 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
-                                        chest.type === 'GOLDEN' ? 'text-yellow-400' :
-                                            chest.type === 'SILVER' ? 'text-slate-300' :
-                                                'text-amber-700'
-                                        }`} />
-                                    <span className="text-[10px] font-bold text-white uppercase">{chest.type}</span>
-
-                                    {/* Status Overlay */}
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                                        {chest.status === 'LOCKED' && <Lock className="h-4 w-4 text-white/50" />}
-                                        {chest.status === 'UNLOCKING' && <Clock className="h-4 w-4 text-blue-400 animate-pulse" />}
-                                        {chest.status === 'READY' && <span className="text-[10px] font-bold text-green-400 bg-black/80 px-1 rounded animate-bounce">OPEN!</span>}
-                                    </div>
-                                </>
-                            ) : (
-                                <span className="text-zinc-700 text-xs font-bold">EMPTY</span>
-                            )}
+                <div className="grid grid-cols-6 gap-2">
+                    {avatars.map((avatar, index) => (
+                        <div key={index} className="flex flex-col items-center gap-1">
+                            <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-lg">
+                                <avatar.icon className={`h-6 w-6 ${avatar.color}`} />
+                            </div>
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase">{avatar.name}</span>
                         </div>
                     ))}
                 </div>
@@ -118,7 +69,7 @@ export default function CardsPage() {
 
             {/* Cards Grid */}
             <h2 className="text-sm font-bold text-zinc-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                Collection
+                Cards ({cards.length})
             </h2>
             <div className="grid grid-cols-4 gap-2">
                 {cards.map((card) => (
@@ -175,10 +126,13 @@ export default function CardsPage() {
                                 {/* Actions */}
                                 <div className="flex gap-2">
                                     {selectedCard.cardsOwned >= selectedCard.cardsRequired ? (
-                                        <button className="flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wide shadow-[0_3px_0_rgb(21,128,61)] active:translate-y-0.5 active:shadow-none transition-all text-xs">
+                                        <button
+                                            onClick={handleUpgrade}
+                                            className="flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wide shadow-[0_3px_0_rgb(21,128,61)] active:translate-y-0.5 active:shadow-none transition-all text-xs"
+                                        >
                                             <ArrowUpCircle size={16} />
                                             Upgrade
-                                            <span className="text-[10px] bg-black/20 px-1 py-0.5 rounded ml-0.5">500g</span>
+                                            <span className="text-[10px] bg-black/20 px-1 py-0.5 rounded ml-0.5">{selectedCard.level * 100}g</span>
                                         </button>
                                     ) : (
                                         <button
@@ -204,12 +158,7 @@ export default function CardsPage() {
                     onClose={() => setIsMining(false)}
                 />
             )}
-
-            {/* Chest Opening Modal */}
-            <ChestOpeningModal
-                rewards={openingRewards}
-                onClose={() => setOpeningRewards(null)}
-            />
         </div>
     );
 }
+

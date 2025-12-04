@@ -13,6 +13,10 @@ export interface PlayerProfile {
     };
     attributes: Record<ChessAttribute, number>; // e.g., { AGGRESSION: 15 }
     role?: 'SuperAdmin' | 'ClubMember' | 'Guest' | 'NewUser';
+    settings?: {
+        language: 'ca' | 'es' | 'en';
+        notifications: boolean;
+    };
 }
 
 export interface ConceptCard {
@@ -32,4 +36,5 @@ export interface Chest {
     type: 'WOODEN' | 'SILVER' | 'GOLDEN' | 'MAGIC' | 'LEGENDARY';
     unlockTime: number; // Seconds
     status: 'LOCKED' | 'UNLOCKING' | 'READY';
+    unlockStartedAt?: number; // Timestamp in ms
 }

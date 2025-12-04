@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Chess, Square } from 'chess.js';
-import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword } from 'lucide-react';
+import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword, Archive, Gift, Lock, Clock } from 'lucide-react';
 import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
 import { Card } from '@/components/ui/card';
@@ -19,9 +19,12 @@ import {
 import { toast } from 'sonner';
 import { useChessEngine } from '@/hooks/use-chess-engine';
 import { useArenaStore } from '@/lib/store/arena-store';
+import { usePlayerStore } from '@/lib/store/player-store';
 import { ArenaCard } from '@/components/arena/arena-card';
 import { ArenaPath } from '@/components/arena/arena-path';
 import { ArenaVariant } from '@/types/arena';
+import { ChestOpeningModal } from '@/components/cards/chest-opening-modal';
+import { Chest } from '@/types/rpg';
 
 type GameMode = 'bullet' | 'blitz' | 'rapid';
 type GameState = 'idle' | 'searching' | 'playing' | 'finished';
@@ -39,6 +42,18 @@ export default function PlayPage() {
   const [isGatekeeperMatch, setIsGatekeeperMatch] = useState<number | null>(null);
   const [showBotModal, setShowBotModal] = useState(false);
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+
+  // Player Store (Chests)
+  const { chests, profile, startUnlockChest, openChest } = usePlayerStore();
+  const [openingRewards, setOpeningRewards] = useState<{ gold: number; gems: number; cardId: string; cardAmount: number } | null>(null);
+
+  // Chest Timer Hook
+  useEffect(() => {
+    const interval = setInterval(() => {
+      usePlayerStore.getState().updateChestTimers();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Chess Logic - Use Hook
   const { fen, makeMove: engineMakeMove, setGameFromFen, game, resetGame } = useChessEngine();
@@ -310,6 +325,42 @@ export default function PlayPage() {
     return false;
   };
 
+  const handleChestClick = (index: number, chest: Chest | null) => {
+    if (!chest) {
+      if (profile.role === 'SuperAdmin') {
+        // Debug: Add a chest
+        usePlayerStore.getState().addChest({
+          id: Math.random().toString(36).substring(7),
+          type: 'WOODEN',
+          unlockTime: 10,
+          status: 'LOCKED'
+        });
+        toast.success("Debug: Chest Added!");
+      }
+      return;
+    }
+
+    if (chest.status === 'LOCKED') {
+      startUnlockChest(index);
+      toast.info("Chest unlocking started!");
+    } else if (chest.status === 'UNLOCKING') {
+      if (profile.role === 'SuperAdmin') {
+        const rewards = openChest(index);
+        if (rewards) {
+          setOpeningRewards(rewards);
+        }
+      } else {
+        toast.info("Chest is unlocking... wait for timer!");
+        // We don't open it here, the timer does the job to switch to READY
+      }
+    } else if (chest.status === 'READY') {
+      const rewards = openChest(index);
+      if (rewards) {
+        setOpeningRewards(rewards);
+      }
+    }
+  };
+
   return (
     <div className="h-dvh w-full bg-slate-950 flex flex-col overflow-hidden">
 
@@ -351,6 +402,51 @@ export default function PlayPage() {
                 <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
               </div>
             )}
+
+            {/* Chests Section */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-sm mb-2 flex items-center gap-2 text-slate-300 uppercase tracking-wider px-1">
+                <Archive className="h-4 w-4 text-amber-500" />
+                Cofres
+              </h3>
+              <div className="grid grid-cols-4 gap-2">
+                {chests.map((chest, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleChestClick(index, chest)}
+                    className={`aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 ${chest
+                      ? 'border-amber-500/50 bg-amber-900/20 cursor-pointer hover:bg-amber-900/30'
+                      : 'border-zinc-800 bg-zinc-900/50'
+                      }`}
+                  >
+                    {chest ? (
+                      <>
+                        <Gift className={`h-5 w-5 mb-1 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
+                          chest.type === 'GOLDEN' ? 'text-yellow-400' :
+                            chest.type === 'SILVER' ? 'text-slate-300' :
+                              'text-amber-700'
+                          }`} />
+                        <span className="text-[8px] font-bold text-white uppercase">{chest.type.substring(0, 1)}</span>
+
+                        {/* Status Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                          {chest.status === 'LOCKED' && <Lock className="h-3 w-3 text-white/50" />}
+                          {chest.status === 'UNLOCKING' && (
+                            <div className="flex flex-col items-center">
+                              <Clock className="h-3 w-3 text-blue-400 animate-pulse" />
+                              {/* Simple countdown display could go here */}
+                            </div>
+                          )}
+                          {chest.status === 'READY' && <span className="text-[8px] font-bold text-green-400 bg-black/80 px-1 rounded animate-bounce">!</span>}
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-zinc-700 text-[8px] font-bold">EMPTY</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
               <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
@@ -568,6 +664,12 @@ export default function PlayPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Chest Opening Modal */}
+      <ChestOpeningModal
+        rewards={openingRewards}
+        onClose={() => setOpeningRewards(null)}
+      />
 
     </div>
   );

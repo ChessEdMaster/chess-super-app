@@ -212,20 +212,47 @@ export function UserProfile() {
                                     <Globe size={18} className="text-indigo-400" />
                                     <span className="text-sm font-medium text-slate-300">Idioma</span>
                                 </div>
-                                <select className="bg-slate-900 border border-slate-700 rounded-lg text-xs px-2 py-1 text-slate-300 focus:outline-none focus:border-indigo-500">
-                                    <option>Català</option>
-                                    <option disabled>Español (Aviat)</option>
-                                    <option disabled>English (Soon)</option>
+                                <select
+                                    value={profile.settings?.language || 'ca'}
+                                    onChange={(e) => {
+                                        const newLang = e.target.value as 'ca' | 'es' | 'en';
+                                        usePlayerStore.setState(state => ({
+                                            profile: {
+                                                ...state.profile,
+                                                settings: { ...state.profile.settings!, language: newLang }
+                                            }
+                                        }));
+                                        saveProfile();
+                                        toast.success("Idioma actualitzat");
+                                    }}
+                                    className="bg-slate-900 border border-slate-700 rounded-lg text-xs px-2 py-1 text-slate-300 focus:outline-none focus:border-indigo-500"
+                                >
+                                    <option value="ca">Català</option>
+                                    <option value="es">Español</option>
+                                    <option value="en">English</option>
                                 </select>
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50 opacity-50 cursor-not-allowed">
+                            <div
+                                onClick={() => {
+                                    const newNotif = !profile.settings?.notifications;
+                                    usePlayerStore.setState(state => ({
+                                        profile: {
+                                            ...state.profile,
+                                            settings: { ...state.profile.settings!, notifications: newNotif }
+                                        }
+                                    }));
+                                    saveProfile();
+                                    toast.success(`Notificacions ${newNotif ? 'activades' : 'desactivades'}`);
+                                }}
+                                className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50 cursor-pointer hover:bg-slate-900/50 transition"
+                            >
                                 <div className="flex items-center gap-3">
-                                    <Bell size={18} className="text-indigo-400" />
+                                    <Bell size={18} className={profile.settings?.notifications ? "text-indigo-400" : "text-slate-600"} />
                                     <span className="text-sm font-medium text-slate-300">Notificacions</span>
                                 </div>
-                                <div className="w-8 h-4 bg-slate-700 rounded-full relative">
-                                    <div className="absolute left-1 top-1 w-2 h-2 bg-slate-500 rounded-full"></div>
+                                <div className={`w-8 h-4 rounded-full relative transition-colors ${profile.settings?.notifications ? 'bg-indigo-600' : 'bg-slate-700'}`}>
+                                    <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${profile.settings?.notifications ? 'left-5' : 'left-1'}`}></div>
                                 </div>
                             </div>
                         </div>
