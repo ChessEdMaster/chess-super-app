@@ -352,86 +352,84 @@ export default function PlayPage() {
               </div>
             )}
 
-            {gameState !== 'idle' && (
-              <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
-                <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
-                  <Trophy className="h-4 w-4 text-amber-400" />
-                  Ritme de Joc
-                </h3>
+            <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
+              <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
+                <Trophy className="h-4 w-4 text-amber-400" />
+                Ritme de Joc
+              </h3>
 
-                <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
-                  <Button
-                    variant={gameMode === 'bullet' ? 'default' : 'outline'}
-                    className={`justify-between h-auto py-3 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                    onClick={() => setGameMode('bullet')}
-                    disabled={gameState === 'playing' || gameState === 'searching'}
-                  >
-                    <span className="flex items-center gap-2 text-sm">🚀 Bullet</span>
-                    <span className="text-[10px] opacity-70">1+0</span>
-                  </Button>
-                  <Button
-                    variant={gameMode === 'blitz' ? 'default' : 'outline'}
-                    className={`justify-between h-auto py-3 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                    onClick={() => setGameMode('blitz')}
-                    disabled={gameState === 'playing' || gameState === 'searching'}
-                  >
-                    <span className="flex items-center gap-2 text-sm">⚡ Blitz</span>
-                    <span className="text-[10px] opacity-70">3+2</span>
-                  </Button>
-                  <Button
-                    variant={gameMode === 'rapid' ? 'default' : 'outline'}
-                    className={`justify-between h-auto py-3 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
-                    onClick={() => setGameMode('rapid')}
-                    disabled={gameState === 'playing' || gameState === 'searching'}
-                  >
-                    <span className="flex items-center gap-2 text-sm">🐢 Rapid</span>
-                    <span className="text-[10px] opacity-70">10+0</span>
-                  </Button>
-                </div>
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
+                <Button
+                  variant={gameMode === 'bullet' ? 'default' : 'outline'}
+                  className={`justify-between h-auto py-3 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  onClick={() => setGameMode('bullet')}
+                  disabled={gameState === 'playing' || gameState === 'searching'}
+                >
+                  <span className="flex items-center gap-2 text-sm">🚀 Bullet</span>
+                  <span className="text-[10px] opacity-70">1+0</span>
+                </Button>
+                <Button
+                  variant={gameMode === 'blitz' ? 'default' : 'outline'}
+                  className={`justify-between h-auto py-3 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  onClick={() => setGameMode('blitz')}
+                  disabled={gameState === 'playing' || gameState === 'searching'}
+                >
+                  <span className="flex items-center gap-2 text-sm">⚡ Blitz</span>
+                  <span className="text-[10px] opacity-70">3+2</span>
+                </Button>
+                <Button
+                  variant={gameMode === 'rapid' ? 'default' : 'outline'}
+                  className={`justify-between h-auto py-3 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  onClick={() => setGameMode('rapid')}
+                  disabled={gameState === 'playing' || gameState === 'searching'}
+                >
+                  <span className="flex items-center gap-2 text-sm">🐢 Rapid</span>
+                  <span className="text-[10px] opacity-70">10+0</span>
+                </Button>
+              </div>
 
-                <div className="mt-4">
-                  {gameState === 'idle' || gameState === 'finished' ? (
-                    <Button
-                      className="w-full font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
-                      onClick={() => startSearch(gameMode)}
-                    >
-                      Jugar Partida
+              <div className="mt-4">
+                {gameState === 'idle' || gameState === 'finished' ? (
+                  <Button
+                    className="w-full font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
+                    onClick={() => startSearch(gameMode)}
+                  >
+                    Jugar Partida
+                  </Button>
+                ) : gameState === 'searching' ? (
+                  <div className="flex flex-col items-center gap-2 py-2 bg-black/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cercant...
+                    </div>
+                    <div className="text-2xl font-mono font-bold text-white">
+                      00:{searchTimer.toString().padStart(2, '0')}
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 text-xs">
+                      Cancel·lar
                     </Button>
-                  ) : gameState === 'searching' ? (
-                    <div className="flex flex-col items-center gap-2 py-2 bg-black/20 rounded-lg">
-                      <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse text-sm">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Cercant...
-                      </div>
-                      <div className="text-2xl font-mono font-bold text-white">
-                        00:{searchTimer.toString().padStart(2, '0')}
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 text-xs">
-                        Cancel·lar
-                      </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-2">
+                    <div className="text-xs text-slate-400 mb-1">Partida en curs</div>
+                    <div className="font-bold text-emerald-400 flex items-center justify-center gap-2 text-sm">
+                      <Sword className="h-3 w-3" /> VS Bot ({botDifficulty})
                     </div>
-                  ) : (
-                    <div className="text-center py-2">
-                      <div className="text-xs text-slate-400 mb-1">Partida en curs</div>
-                      <div className="font-bold text-emerald-400 flex items-center justify-center gap-2 text-sm">
-                        <Sword className="h-3 w-3" /> VS Bot ({botDifficulty})
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="mt-3 w-full bg-red-600/80 hover:bg-red-600"
-                        onClick={() => {
-                          setGameState('finished');
-                          setWinner('loss'); // Resign
-                        }}
-                      >
-                        Rendir-se
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="mt-3 w-full bg-red-600/80 hover:bg-red-600"
+                      onClick={() => {
+                        setGameState('finished');
+                        setWinner('loss'); // Resign
+                      }}
+                    >
+                      Rendir-se
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
         </div>
 
