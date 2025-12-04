@@ -32,6 +32,9 @@ export function SiteHeader() {
           <Link href="/play" className="text-slate-300 hover:text-purple-400 transition font-medium">
             Jugar
           </Link>
+          <Link href="/profile" className="text-slate-300 hover:text-indigo-400 transition font-medium">
+            Perfil
+          </Link>
           {checkPermission('view.clubs') && (
             <Link href="/clubs" className="text-slate-300 hover:text-purple-400 transition font-medium">
               Clubs

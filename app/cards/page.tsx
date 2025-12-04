@@ -7,12 +7,16 @@ import { ConceptCard as IConceptCard, Chest } from '@/types/rpg';
 import { X, ArrowUpCircle, Pickaxe, Archive, Clock, Lock, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PuzzleMiner } from '@/components/cards/puzzle-miner';
+import { ChestOpeningModal } from '@/components/cards/chest-opening-modal';
 import { toast } from 'sonner';
 
 export default function CardsPage() {
     const { cards, chests, profile, addCardCopy, startUnlockChest, openChest } = usePlayerStore();
     const [selectedCard, setSelectedCard] = useState<IConceptCard | null>(null);
     const [isMining, setIsMining] = useState(false);
+
+    // Chest Opening State
+    const [openingRewards, setOpeningRewards] = useState<{ gold: number; gems: number; cardId: string; cardAmount: number } | null>(null);
 
     const handleMineComplete = (success: boolean) => {
         if (success && selectedCard) {
@@ -45,18 +49,24 @@ export default function CardsPage() {
             // For SuperAdmin or testing, allow instant finish?
             // Or just wait.
             if (profile.role === 'SuperAdmin') {
-                openChest(index);
-                toast.success("Chest Opened (SuperAdmin Speedup)!");
+                const rewards = openChest(index);
+                if (rewards) {
+                    setOpeningRewards(rewards);
+                }
             } else {
                 toast.info("Chest is unlocking... wait for timer (Not implemented yet)");
                 // In a real app, we'd check if time is up.
                 // For now, let's just allow opening if it's unlocking for demo purposes
-                openChest(index);
-                toast.success("Chest Opened!");
+                const rewards = openChest(index);
+                if (rewards) {
+                    setOpeningRewards(rewards);
+                }
             }
         } else if (chest.status === 'READY') {
-            openChest(index);
-            toast.success("Chest Opened!");
+            const rewards = openChest(index);
+            if (rewards) {
+                setOpeningRewards(rewards);
+            }
         }
     };
 
@@ -194,6 +204,12 @@ export default function CardsPage() {
                     onClose={() => setIsMining(false)}
                 />
             )}
+
+            {/* Chest Opening Modal */}
+            <ChestOpeningModal
+                rewards={openingRewards}
+                onClose={() => setOpeningRewards(null)}
+            />
         </div>
     );
 }

@@ -18,7 +18,7 @@ interface PlayerState {
 
     // Chest Actions
     startUnlockChest: (chestIndex: number) => void;
-    openChest: (chestIndex: number) => void;
+    openChest: (chestIndex: number) => { gold: number; gems: number; cardId: string; cardAmount: number } | null;
     addChest: (chest: Chest) => void;
 }
 
@@ -208,7 +208,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     openChest: (chestIndex: number) => {
         const state = get();
         const chest = state.chests[chestIndex];
-        if (!chest) return;
+        if (!chest) return null;
 
         // 1. Generate Rewards
         const goldReward = Math.floor(Math.random() * 50) + 10;
@@ -245,8 +245,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
         get().saveProfile();
 
-        // Return rewards for UI display if needed (would need to change return type or use a callback)
-        // For now, we assume the UI will show a generic "Chest Opened" message or we can add a toast here if we import it.
-        // But store shouldn't trigger UI side effects directly usually.
+        return {
+            gold: goldReward,
+            gems: gemsReward,
+            cardId,
+            cardAmount
+        };
     }
 }));
