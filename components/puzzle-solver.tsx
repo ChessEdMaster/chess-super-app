@@ -35,18 +35,8 @@ interface PuzzleSolverProps {
 
 export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) {
     // CRÍTICO: Inicializar directamente con el FEN del ejercicio
-    const [game, setGame] = useState<Chess>(() => {
-        if (exercise?.fen) {
-            return new Chess(exercise.fen);
-        }
-        return new Chess();
-    });
-    const [fen, setFen] = useState(() => {
-        if (exercise?.fen) {
-            return exercise.fen;
-        }
-        return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    });
+    const [game, setGame] = useState(() => new Chess());
+    const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
     const [moveIndex, setMoveIndex] = useState(0);
     const [attempts, setAttempts] = useState(0);
     const [hintsUsed, setHintsUsed] = useState(0);
@@ -60,6 +50,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     // Click to move state
     const [moveFrom, setMoveFrom] = useState<string | null>(null);
     const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; borderRadius?: string }>>({});
+    const [lastMoveSquares, setLastMoveSquares] = useState<Record<string, { background: string }>>({});
 
     const { boardTheme } = useSettings();
     const theme = BOARD_THEMES[boardTheme];
@@ -83,32 +74,51 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     }, [startTime, isSolved]);
 
     // CRÍTICO: Resetear completamente cuando cambia el exercise
+    // CRÍTICO: Inicialitzar puzzle amb el moviment de setup
     useEffect(() => {
-        if (!exercise?.fen) {
-            console.warn('PuzzleSolver: exercise.fen no está disponible');
+        if (!exercise?.fen || !exercise?.solution) {
             return;
         }
+        initializePuzzle();
+    }, [exercise?.fen, exercise?.id]);
 
+    const initializePuzzle = () => {
         try {
-            // Crear nueva instancia de Chess con el FEN del puzzle
             const newGame = new Chess(exercise.fen);
+
+            // Aplicar el primer moviment (setup move) automàticament
+            if (exercise.solution.length > 0) {
+                const setupMove = exercise.solution[0];
+                const from = setupMove.substring(0, 2);
+                const to = setupMove.substring(2, 4);
+
+                newGame.move({ from, to, promotion: 'q' });
+
+                // Highlight setup move
+                setLastMoveSquares({
+                    [from]: { background: 'rgba(255, 255, 0, 0.4)' },
+                    [to]: { background: 'rgba(255, 255, 0, 0.4)' }
+                });
+            }
+
             const newFen = newGame.fen();
 
-            // Actualizar estado con nuevas referencias para forzar re-render
             setGame(newGame);
             setFen(newFen);
             setOrientation(newGame.turn() === 'w' ? 'white' : 'black');
-            setMoveIndex(0);
+            setMoveIndex(1); // Comencem a l'índex 1 (després del setup)
             setAttempts(0);
             setHintsUsed(0);
             setIsSolved(false);
             setFeedback(null);
             setShowHint(false);
             setElapsedTime(0);
+            setMoveFrom(null);
+            setOptionSquares({});
         } catch (error) {
-            console.error('Error inicializando puzzle con FEN:', exercise.fen, error);
+            console.error('Error inicializando puzzle:', error);
         }
-    }, [exercise?.fen, exercise?.id]);
+    };
 
     const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
         if (isSolved) return false;
@@ -239,13 +249,14 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     }
 
     const makeOpponentMove = (baseGame: Chess) => {
-        const nextMoveIndex = moveIndex + 1;
-        if (nextMoveIndex < exercise.solution.length) {
-            const opponentMove = exercise.solution[nextMoveIndex];
+        // El moveIndex ja ha estat incrementat per l'usuari (ara apunta al moviment del rival)
+        const currentMoveIndex = moveIndex + 1;
+
+        if (currentMoveIndex < exercise.solution.length) {
+            const opponentMove = exercise.solution[currentMoveIndex];
             const from = opponentMove.substring(0, 2);
             const to = opponentMove.substring(2, 4);
 
-            // CRÍTICO: Crear nova còpia per al moviment del rival
             const gameCopy = new Chess(baseGame.fen());
 
             try {
@@ -258,10 +269,16 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                 if (result) {
                     setGame(gameCopy);
                     setFen(gameCopy.fen());
-                    setMoveIndex(prev => prev + 2);
+                    setMoveIndex(prev => prev + 1); // Avancem un altre pas
                     playSound('move');
 
-                    if (nextMoveIndex + 1 >= exercise.solution.length) {
+                    // Highlight opponent move
+                    setLastMoveSquares({
+                        [from]: { background: 'rgba(255, 255, 0, 0.4)' },
+                        [to]: { background: 'rgba(255, 255, 0, 0.4)' }
+                    });
+
+                    if (currentMoveIndex + 1 >= exercise.solution.length) {
                         setTimeout(() => solvePuzzle(), 500);
                     }
                 }
@@ -283,12 +300,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     };
 
     const resetPuzzle = () => {
-        const newGame = new Chess(exercise.fen);
-        setGame(newGame);
-        setFen(exercise.fen);
-        setMoveIndex(0);
-        setFeedback(null);
-        setShowHint(false);
+        initializePuzzle();
     };
 
     const toggleHint = () => {
@@ -348,7 +360,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                                 fen={fen}
                                 orientation={orientation}
                                 onSquareClick={onSquareClick}
-                                customSquareStyles={optionSquares}
+                                customSquareStyles={{ ...optionSquares, ...lastMoveSquares }}
                             />
                         ) : (
                             <div className="w-full h-full">
@@ -356,7 +368,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                                     fen={fen}
                                     orientation={orientation}
                                     onSquareClick={onSquareClick}
-                                    customSquareStyles={optionSquares}
+                                    customSquareStyles={{ ...optionSquares, ...lastMoveSquares }}
                                 />
                             </div>
                         )}
