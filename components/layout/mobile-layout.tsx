@@ -55,7 +55,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 relative overflow-hidden">
+            <main className="flex-1 relative overflow-y-auto">
                 {children}
             </main>
 

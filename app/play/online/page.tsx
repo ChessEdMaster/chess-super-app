@@ -1,16 +1,21 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, Swords, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/auth-provider';
 
 function MatchmakingContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const mode = searchParams.get('mode') || 'blitz';
+    const { user } = useAuth();
     const [status, setStatus] = useState<'searching' | 'found' | 'starting' | 'bot_offer'>('searching');
     const [elapsedTime, setElapsedTime] = useState(0);
+    const [gameId, setGameId] = useState<string | null>(null);
+    const subscriptionRef = useRef<any>(null);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -19,7 +24,9 @@ function MatchmakingContent() {
             interval = setInterval(() => {
                 setElapsedTime(prev => {
                     const newTime = prev + 1;
-                    if (newTime >= 15) {
+                    if (newTime >= 15 && !gameId) { // Only offer bot if we haven't created a game yet (or maybe we should anyway?)
+                        // Actually, if we created a game, we are waiting for opponent. 
+                        // If 15s pass, we can still offer bot, but we'd need to cancel the created game if they accept.
                         setStatus('bot_offer');
                     }
                     return newTime;
@@ -28,20 +35,123 @@ function MatchmakingContent() {
         }
 
         return () => clearInterval(interval);
-    }, [status]);
+    }, [status, gameId]);
+
+    useEffect(() => {
+        if (!user) return;
+        if (status !== 'searching') return;
+        if (gameId) return; // Already have a game, waiting for opponent
+
+        const findMatch = async () => {
+            try {
+                // 1. Try to find an open game
+                const { data: openGames, error: searchError } = await supabase
+                    .from('games')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .is('black_player_id', null)
+                    .neq('white_player_id', user.id) // Don't join own game
+                    .limit(1);
+
+                if (searchError) {
+                    console.error("Error searching for games:", searchError);
+                    return;
+                }
+
+                if (openGames && openGames.length > 0) {
+                    const game = openGames[0];
+                    // 2. Try to join
+                    const { error: joinError } = await supabase
+                        .from('games')
+                        .update({
+                            black_player_id: user.id,
+                            status: 'active',
+                            started_at: new Date().toISOString()
+                        })
+                        .eq('id', game.id)
+                        .is('black_player_id', null); // Optimistic lock
+
+                    if (!joinError) {
+                        setStatus('found');
+                        setTimeout(() => router.push(`/play/online/${game.id}`), 1500);
+                        return;
+                    }
+                    // If join failed, someone else took it, loop will retry (or we can force retry)
+                }
+
+                // 3. Create new game if no open game found
+                // Only create if we haven't already (checked by gameId check at start of effect)
+
+                const { data: newGame, error: createError } = await supabase
+                    .from('games')
+                    .insert({
+                        white_player_id: user.id,
+                        status: 'pending',
+                        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+                        white_time: mode === 'bullet' ? 60 : mode === 'blitz' ? 180 : 600,
+                        black_time: mode === 'bullet' ? 60 : mode === 'blitz' ? 180 : 600,
+                    })
+                    .select()
+                    .single();
+
+                if (createError) {
+                    console.error("Error creating game:", createError);
+                    return;
+                }
+
+                setGameId(newGame.id);
+
+                // 4. Subscribe to wait for opponent
+                const channel = supabase
+                    .channel(`game:${newGame.id}`)
+                    .on('postgres_changes', {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'games',
+                        filter: `id=eq.${newGame.id}`
+                    }, (payload) => {
+                        if (payload.new.status === 'active' || payload.new.black_player_id) {
+                            setStatus('found');
+                            setTimeout(() => router.push(`/play/online/${newGame.id}`), 1500);
+                        }
+                    })
+                    .subscribe();
+
+                subscriptionRef.current = channel;
+
+            } catch (err) {
+                console.error("Matchmaking error:", err);
+            }
+        };
+
+        findMatch();
+
+        return () => {
+            if (subscriptionRef.current) {
+                supabase.removeChannel(subscriptionRef.current);
+            }
+        };
+
+    }, [user, status, router, mode]);
 
     const handlePlayBot = (difficulty: number) => {
         setStatus('starting');
-        // In a real app, we would create a game with a bot ID
-        const gameId = `bot-${difficulty}-${Math.random().toString(36).substring(7)}`;
+        // If we created a pending game, we should probably delete it or leave it as abandoned
+        if (gameId) {
+            supabase.from('games').delete().eq('id', gameId).then(() => { });
+        }
+
+        const botGameId = `bot-${difficulty}-${Math.random().toString(36).substring(7)}`;
         setTimeout(() => {
-            router.push(`/play/online/${gameId}`);
+            router.push(`/play/online/${botGameId}`);
         }, 1000);
     };
 
     const handleKeepSearching = () => {
         setStatus('searching');
         setElapsedTime(0);
+        // If we already have a gameId, we just keep waiting.
+        // If we don't (e.g. we were in bot_offer before creating one?), we let the effect run.
     };
 
     return (
