@@ -10,8 +10,12 @@ import {
     RotateCcw,
     Trophy,
     Clock,
-    Target
+    Target,
+    LayoutGrid,
+    Box
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Chessboard2D from '@/components/2d/Chessboard2D';
 import { AcademyExercise } from '@/lib/academy-types';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
@@ -51,6 +55,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     const [isSolved, setIsSolved] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const [showHint, setShowHint] = useState(false);
+    const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
     // Click to move state
     const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -59,7 +64,12 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
     const { boardTheme } = useSettings();
     const theme = BOARD_THEMES[boardTheme];
 
-    const currentTurn = game.turn() === 'w' ? 'white' : 'black';
+    const [orientation, setOrientation] = useState<'white' | 'black'>(() => {
+        if (exercise?.fen) {
+            return new Chess(exercise.fen).turn() === 'w' ? 'white' : 'black';
+        }
+        return 'white';
+    });
 
     // Timer effect
     useEffect(() => {
@@ -87,6 +97,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
             // Actualizar estado con nuevas referencias para forzar re-render
             setGame(newGame);
             setFen(newFen);
+            setOrientation(newGame.turn() === 'w' ? 'white' : 'black');
             setMoveIndex(0);
             setAttempts(0);
             setHintsUsed(0);
@@ -311,13 +322,44 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
 
                 <div className="flex-1">
                     <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
-                        <ChessScene
-                            key={exercise.id} // CRÍTICO: Força re-render quan canvia l'exercici
-                            fen={fen}
-                            orientation={currentTurn}
-                            onSquareClick={onSquareClick}
-                            customSquareStyles={optionSquares}
-                        />
+                        {/* View Mode Toggle */}
+                        <div className="absolute top-2 right-2 z-20 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">
+                            <Button
+                                variant={viewMode === '2d' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setViewMode('2d')}
+                                className={`h-7 px-3 text-xs ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                            >
+                                2D
+                            </Button>
+                            <Button
+                                variant={viewMode === '3d' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setViewMode('3d')}
+                                className={`h-7 px-3 text-xs ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                            >
+                                3D
+                            </Button>
+                        </div>
+
+                        {viewMode === '3d' ? (
+                            <ChessScene
+                                key={exercise.id} // CRÍTICO: Força re-render quan canvia l'exercici
+                                fen={fen}
+                                orientation={orientation}
+                                onSquareClick={onSquareClick}
+                                customSquareStyles={optionSquares}
+                            />
+                        ) : (
+                            <div className="w-full h-full">
+                                <Chessboard2D
+                                    fen={fen}
+                                    orientation={orientation}
+                                    onSquareClick={onSquareClick}
+                                    customSquareStyles={optionSquares}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-4 max-w-[600px] mx-auto flex gap-4">
@@ -395,7 +437,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip }: PuzzleSolverProps) 
                                     Objectiu
                                 </h3>
                                 <p className="text-white text-base">
-                                    {currentTurn === 'white' ? 'Les blanques' : 'Les negres'} mouen i guanyen.
+                                    {orientation === 'white' ? 'Les blanques' : 'Les negres'} mouen i guanyen.
                                 </p>
                                 <p className="text-slate-400 text-sm mt-2">
                                     Troba la millor seqüència de moviments.
