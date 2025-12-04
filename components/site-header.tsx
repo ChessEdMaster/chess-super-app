@@ -32,8 +32,8 @@ export function SiteHeader() {
           <Link href="/play" className="text-slate-300 hover:text-purple-400 transition font-medium">
             Jugar
           </Link>
-          <Link href="/profile" className="text-slate-300 hover:text-indigo-400 transition font-medium">
-            Perfil
+          <Link href="/social" className="text-slate-300 hover:text-indigo-400 transition font-medium">
+            Social
           </Link>
           {checkPermission('view.clubs') && (
             <Link href="/clubs" className="text-slate-300 hover:text-purple-400 transition font-medium">
@@ -52,7 +52,7 @@ export function SiteHeader() {
           ) : user ? (
             <>
               {/* Només visible si estàs loguejat */}
-              <Link href="/profile" className="flex items-center gap-3 text-slate-300 hover:text-white transition bg-slate-800/50 pl-2 pr-4 py-1.5 rounded-full border border-slate-700 hover:border-indigo-500/50 group">
+              <Link href="/social?tab=profile" className="flex items-center gap-3 text-slate-300 hover:text-white transition bg-slate-800/50 pl-2 pr-4 py-1.5 rounded-full border border-slate-700 hover:border-indigo-500/50 group">
                 <div className="relative">
                   {user.user_metadata?.avatar_url ? (
                     <Image
