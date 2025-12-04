@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { useRouter } from 'next/navigation';
@@ -27,6 +27,10 @@ export default function LobbyPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
+  // Ref for user to avoid subscription churn
+  const userRef = useRef(user);
+  useEffect(() => { userRef.current = user; }, [user]);
+
   // Fetch & Realtime
   useEffect(() => {
     const fetchChallenges = async () => {
@@ -47,7 +51,19 @@ export default function LobbyPage() {
         } else if (payload.eventType === 'DELETE') {
           setChallenges(prev => prev.filter(c => c.id !== payload.old.id));
         } else if (payload.eventType === 'UPDATE') {
-          setChallenges(prev => prev.map(c => c.id === payload.new.id ? payload.new as Challenge : c));
+          const updated = payload.new as Challenge;
+
+          // Redirect Host if their challenge was accepted
+          if (updated.status === 'accepted' && updated.host_id === userRef.current?.id) {
+            router.push(`/play/online/${updated.id}`);
+          }
+
+          // Update list: If not open, remove from map. If open, update data.
+          if (updated.status !== 'open') {
+            setChallenges(prev => prev.filter(c => c.id !== updated.id));
+          } else {
+            setChallenges(prev => prev.map(c => c.id === updated.id ? updated : c));
+          }
         }
       })
       .subscribe();
@@ -55,7 +71,7 @@ export default function LobbyPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [router]);
 
   // Bot Ecosystem Logic
   useEffect(() => {
@@ -147,8 +163,8 @@ export default function LobbyPage() {
         return;
       }
 
-      // Delete challenge (it's now a game)
-      await supabase.from('challenges').delete().eq('id', challenge.id);
+      // Update challenge status to accepted (signals the host)
+      await supabase.from('challenges').update({ status: 'accepted' }).eq('id', challenge.id);
 
       router.push(`/play/online/${challenge.id}`);
     }
