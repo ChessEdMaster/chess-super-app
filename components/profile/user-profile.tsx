@@ -9,12 +9,17 @@ import { supabase } from '@/lib/supabase';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield, Zap, ShieldCheck, Brain, Activity, Settings, Edit2, Save, X, Globe, Bell } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSocial } from '@/hooks/useSocial';
+import { Feed } from '@/components/social/feed';
 
 export function UserProfile() {
     const { user, loading: authLoading, signOut } = useAuth();
     const { checkPermission } = useRBAC();
     const { profile, saveProfile } = usePlayerStore();
     const router = useRouter();
+
+    // Social Hook
+    const { socialSettings, updateSettings } = useSocial();
 
     // Edit State
     const [isEditing, setIsEditing] = useState(false);
@@ -207,6 +212,7 @@ export function UserProfile() {
                         </h3>
 
                         <div className="space-y-4">
+                            {/* Language */}
                             <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50">
                                 <div className="flex items-center gap-3">
                                     <Globe size={18} className="text-indigo-400" />
@@ -233,6 +239,7 @@ export function UserProfile() {
                                 </select>
                             </div>
 
+                            {/* Notifications */}
                             <div
                                 onClick={() => {
                                     const newNotif = !profile.settings?.notifications;
@@ -255,12 +262,66 @@ export function UserProfile() {
                                     <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${profile.settings?.notifications ? 'left-5' : 'left-1'}`}></div>
                                 </div>
                             </div>
+
+                            {/* Social Privacy Settings */}
+                            {socialSettings && (
+                                <>
+                                    <div className="h-px bg-slate-800 my-2"></div>
+
+                                    {/* Privacy Level */}
+                                    <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50">
+                                        <div className="flex items-center gap-3">
+                                            <Shield size={18} className="text-emerald-400" />
+                                            <span className="text-sm font-medium text-slate-300">Privacitat del Perfil</span>
+                                        </div>
+                                        <select
+                                            value={socialSettings.privacy_level}
+                                            onChange={(e) => updateSettings({ privacy_level: e.target.value as any })}
+                                            className="bg-slate-900 border border-slate-700 rounded-lg text-xs px-2 py-1 text-slate-300 focus:outline-none focus:border-indigo-500"
+                                        >
+                                            <option value="public">Públic</option>
+                                            <option value="friends_only">Només Amics</option>
+                                            <option value="private">Privat</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Show Online Status */}
+                                    <div
+                                        onClick={() => updateSettings({ show_online_status: !socialSettings.show_online_status })}
+                                        className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50 cursor-pointer hover:bg-slate-900/50 transition"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Activity size={18} className={socialSettings.show_online_status ? "text-green-400" : "text-slate-600"} />
+                                            <span className="text-sm font-medium text-slate-300">Mostrar Estat Online</span>
+                                        </div>
+                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${socialSettings.show_online_status ? 'bg-green-600' : 'bg-slate-700'}`}>
+                                            <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${socialSettings.show_online_status ? 'left-5' : 'left-1'}`}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Allow Friend Requests */}
+                                    <div
+                                        onClick={() => updateSettings({ allow_friend_requests: !socialSettings.allow_friend_requests })}
+                                        className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50 cursor-pointer hover:bg-slate-900/50 transition"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <User size={18} className={socialSettings.allow_friend_requests ? "text-blue-400" : "text-slate-600"} />
+                                            <span className="text-sm font-medium text-slate-300">Acceptar Sol·licituds</span>
+                                        </div>
+                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${socialSettings.allow_friend_requests ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                                            <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${socialSettings.allow_friend_requests ? 'left-5' : 'left-1'}`}></div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Columna Dreta: Stats i Historial */}
                 <div className="md:col-span-2 space-y-8">
+
+
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -284,6 +345,14 @@ export function UserProfile() {
                             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Velocitat</span>
                             <span className="text-xl font-black text-white">{profile.attributes.SPEED}</span>
                         </div>
+                    </div>
+
+                    {/* Social Wall */}
+                    <div>
+                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <Activity size={20} className="text-slate-400" /> Activity Wall
+                        </h3>
+                        <Feed userId={user.id} />
                     </div>
 
                     {/* Historial de Partides */}

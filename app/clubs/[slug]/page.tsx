@@ -24,6 +24,8 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
+import { ClubType } from '@/types/feed';
+
 interface Club {
     id: string;
     name: string;
@@ -35,6 +37,7 @@ interface Club {
     is_public: boolean;
     member_count: number;
     created_at: string;
+    type?: ClubType;
     owner?: {
         username?: string;
         avatar_url?: string;
@@ -442,6 +445,11 @@ export default function ClubDetailPage() {
                                     {club.is_public ? <Globe size={14} /> : <Lock size={14} />}
                                     <span>{club.is_public ? 'Públic' : 'Privat'}</span>
                                 </div>
+                                {club.type && (
+                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 text-xs uppercase font-bold tracking-wider">
+                                        <span>{club.type}</span>
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-1">
                                     <Users size={14} />
                                     <span>{club.member_count} membres</span>
