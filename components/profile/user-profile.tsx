@@ -352,7 +352,7 @@ export function UserProfile() {
                         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                             <Activity size={20} className="text-slate-400" /> Activity Wall
                         </h3>
-                        <Feed userId={user.id} />
+                        <Feed userId={user.id} limit={3} />
                     </div>
 
                     {/* Historial de Partides */}

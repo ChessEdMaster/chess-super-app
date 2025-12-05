@@ -9,17 +9,18 @@ import { CreatePost } from './create-post';
 import { Loader2 } from 'lucide-react';
 
 interface FeedProps {
-    userId?: string; // If provided, shows only posts from this user (Profile Wall)
+    userId?: string;
+    limit?: number;
 }
 
-export function Feed({ userId }: FeedProps) {
+export function Feed({ userId, limit }: FeedProps) {
     const { user } = useAuth();
     const [posts, setPosts] = useState<SocialPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
-    const POSTS_PER_PAGE = 10;
+    const POSTS_PER_PAGE = limit || 10;
 
     const fetchPosts = useCallback(async (pageIndex: number, isRefresh = false) => {
         if (pageIndex === 0) setLoading(true);
@@ -77,7 +78,9 @@ export function Feed({ userId }: FeedProps) {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [userId, user]);
+    }, [userId, user, limit]);
+
+    // ... existing useEffect and handlers ...
 
     useEffect(() => {
         fetchPosts(0);
@@ -95,7 +98,6 @@ export function Feed({ userId }: FeedProps) {
         if (newPost) {
             setPosts(prev => [newPost, ...prev]);
         } else {
-            // Fallback if no post object returned
             fetchPosts(0, true);
         }
     };
@@ -114,7 +116,7 @@ export function Feed({ userId }: FeedProps) {
 
     return (
         <div className="max-w-2xl mx-auto pb-8">
-            {!userId && <CreatePost onPostCreated={handlePostCreated} />}
+            {!userId && !limit && <CreatePost onPostCreated={handlePostCreated} />}
 
             {posts.length === 0 ? (
                 <div className="text-center py-8 text-zinc-500">
@@ -128,22 +130,30 @@ export function Feed({ userId }: FeedProps) {
                 </div>
             )}
 
-            {hasMore && posts.length > 0 && (
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={loadMore}
-                        disabled={loadingMore}
-                        className="text-sm text-zinc-400 hover:text-white font-medium disabled:opacity-50"
-                    >
-                        {loadingMore ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <Loader2 size={14} className="animate-spin" /> Loading...
-                            </span>
-                        ) : (
-                            'Load More Posts'
-                        )}
-                    </button>
+            {limit && posts.length >= limit ? (
+                <div className="mt-4 text-center">
+                    <a href="/social?tab=feed" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium hover:underline">
+                        View Full Feed
+                    </a>
                 </div>
+            ) : (
+                hasMore && posts.length > 0 && (
+                    <div className="mt-6 text-center">
+                        <button
+                            onClick={loadMore}
+                            disabled={loadingMore}
+                            className="text-sm text-zinc-400 hover:text-white font-medium disabled:opacity-50"
+                        >
+                            {loadingMore ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <Loader2 size={14} className="animate-spin" /> Loading...
+                                </span>
+                            ) : (
+                                'Load More Posts'
+                            )}
+                        </button>
+                    </div>
+                )
             )}
         </div>
     );

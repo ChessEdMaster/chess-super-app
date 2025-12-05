@@ -73,7 +73,7 @@ export function EventRegistration({
                 .from('event_participants')
                 .select(`
                     *,
-                    profiles!event_participants_user_id_fkey(username, avatar_url)
+                    profiles!fk_event_participants_user_profile(username, avatar_url)
                 `)
                 .eq('event_id', eventId)
                 .eq('status', 'registered')

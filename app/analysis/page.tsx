@@ -56,25 +56,56 @@ export default function AnalysisPage() {
   const { boardTheme } = useSettings();
 
   // --- INITIALIZATION ---
+  // --- INITIALIZATION ---
   useEffect(() => {
     setIsClient(true);
-    const savedPGN = localStorage.getItem('analysis_pgn');
-    if (savedPGN) {
-      try {
-        const newTree = PGNParser.parse(savedPGN);
-        setPgnTree(newTree);
-        const mainLine = newTree.getMainLine();
-        if (mainLine.length > 0) {
-          newTree.goToNode(mainLine[mainLine.length - 1]);
-        }
-        setFen(newTree.getCurrentFen());
-        setGame(new Chess(newTree.getCurrentFen()));
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('gameId');
+
+    if (gameId) {
+      loadGameFromDB(gameId);
+    } else {
+      const savedPGN = localStorage.getItem('analysis_pgn');
+      if (savedPGN) {
+        loadPGN(savedPGN);
         localStorage.removeItem('analysis_pgn');
-      } catch (e) {
-        console.error('Error loading PGN:', e);
       }
     }
   }, []);
+
+  async function loadGameFromDB(gameId: string) {
+    try {
+      // Dynamic import to avoid SSR issues if any, though we are in useEffect
+      const { supabase } = await import('@/lib/supabase');
+      const { data, error } = await supabase
+        .from('games')
+        .select('pgn')
+        .eq('id', gameId)
+        .single();
+
+      if (error) throw error;
+      if (data && data.pgn) {
+        loadPGN(data.pgn);
+      }
+    } catch (error) {
+      console.error('Error loading game:', error);
+    }
+  }
+
+  function loadPGN(pgn: string) {
+    try {
+      const newTree = PGNParser.parse(pgn);
+      setPgnTree(newTree);
+      const mainLine = newTree.getMainLine();
+      if (mainLine.length > 0) {
+        newTree.goToNode(mainLine[mainLine.length - 1]);
+      }
+      setFen(newTree.getCurrentFen());
+      setGame(new Chess(newTree.getCurrentFen()));
+    } catch (e) {
+      console.error('Error parsing PGN:', e);
+    }
+  }
 
   // --- ENGINE WORKER ---
   useEffect(() => {
