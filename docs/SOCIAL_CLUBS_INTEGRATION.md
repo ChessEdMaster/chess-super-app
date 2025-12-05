@@ -62,6 +62,18 @@
 - ✅ Gestió de visibility change (quan canvies de tab)
 - ✅ Cleanup quan es tanca la finestra del navegador
 
+#### 8. **Direct Messages System** ✅ (NOU!)
+- ✅ Taules `conversations` i `direct_messages` amb Realtime
+- ✅ Hook `useDirectMessages` per gestionar xats
+- ✅ Component `ConversationList` amb llista de converses
+- ✅ Component `ChatWindow` amb missatges en temps real
+- ✅ Pàgina `/messages` amb UI completa
+- ✅ Crear o obtenir conversa automàticament
+- ✅ Marcar missatges com llegits automàticament
+- ✅ Indicador de missatges no llegits
+- ✅ Scroll automàtic a nous missatges
+- ✅ Botó de missatge directe des de llista d'amics
+
 ### Canvis Tècnics
 
 #### Base de Dades
@@ -133,12 +145,15 @@ CREATE TRIGGER event_participants_count_trigger
 - ✅ Cancel·lar participació
 - ✅ Veure llista de participants
 - ✅ Control de límit de places
-- ✅ **Veure estat Online/Offline/InGame d'amics en temps real**
-- ✅ **Indicadors visuals de presència**
+- ✅ Veure estat Online/Offline/InGame d'amics en temps real
+- ✅ Indicadors visuals de presència
+- ✅ **Enviar i rebre missatges directes en temps real**
+- ✅ **Llista de converses amb indicadors de missatges no llegits**
+- ✅ **Xat 1-a-1 amb historial persistent**
 
 **Encara per Implementar:**
 - ⏳ Sistema de compartició (shares) complet
-- ⏳ Missatgeria directa
+- ⏳ Notificacions push
 - ⏳ Notificacions en temps real
 
 ### Recomanacions per Propers Passos
@@ -147,5 +162,5 @@ CREATE TRIGGER event_participants_count_trigger
 2. ~~**Events Arena**~~ ✅ **COMPLETAT!**
 3. ~~**Registre a Events**~~ ✅ **COMPLETAT!**
 4. ~~**Presència Online**~~ ✅ **COMPLETAT!**
-5. **Direct Messages**: Crear sistema de chat entre usuaris
-6. **Notifications**: Sistema de notificacions push per likes, comments, friend requests
+5. ~~**Direct Messages**~~ ✅ **COMPLETAT!**
+6. **Notifications**: Sistema de notificacions push per likes, comments, friend requests, missatges

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Trophy, MessageSquare, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ import { OnlineIndicator } from '@/components/presence/online-indicator';
 import { toast } from 'sonner';
 
 function SocialPageContent() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const initialTab = searchParams.get('tab') as 'feed' | 'friends' | 'clans' | 'events' | 'profile' | null;
     const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'clans' | 'events' | 'profile'>('feed');
@@ -216,7 +217,7 @@ function SocialPageContent() {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => toast.info('Direct Messages coming soon!')}
+                                                onClick={() => router.push(`/messages?userId=${friendship.friend_id}`)}
                                                 className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white"
                                             >
                                                 <MessageSquare size={16} />
