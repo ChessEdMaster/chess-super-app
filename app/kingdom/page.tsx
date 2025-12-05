@@ -39,8 +39,8 @@ export default function KingdomPage() {
             {/* Header / Resources */}
             <header className="p-4 border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
-                        Chess Kingdom
+                    <h1 className="text-xl font-black tracking-wider uppercase bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
+                        CHESS CLANS : KINGDOM
                     </h1>
 
                     <div className="flex items-center gap-4">

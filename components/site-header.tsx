@@ -13,12 +13,16 @@ export function SiteHeader() {
   const { profile } = usePlayerStore();
 
   return (
-    <header className="w-full bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* LOGO - Sempre et porta a l'inici */}
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
-          <Trophy className="text-indigo-500" size={28} />
-          <span className="text-xl font-bold text-white tracking-tight">ChessHub</span>
+    <header className="w-full bg-slate-950/50 backdrop-blur-md border-b border-white/10 sticky top-0 z-50 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* LOGO */}
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition group">
+          <div className="relative">
+            <Trophy className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" size={28} />
+          </div>
+          <span className="text-xl font-black text-white tracking-wider uppercase bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent group-hover:to-white transition-all">
+            CHESS CLANS
+          </span>
         </Link>
 
         {/* NAVIGATION */}

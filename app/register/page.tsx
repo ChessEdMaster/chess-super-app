@@ -67,14 +67,14 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl text-center">
+            <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-md p-8 rounded-2xl border border-white/10 shadow-2xl text-center">
                 <div className="flex justify-center mb-6">
-                    <div className="bg-slate-800 p-4 rounded-full">
-                        <UserPlus size={48} className="text-purple-500" />
+                    <div className="bg-slate-800/50 p-4 rounded-full border border-white/5">
+                        <UserPlus size={48} className="text-amber-500 drop-shadow-lg" />
                     </div>
                 </div>
                 <h1 className="text-3xl font-bold text-white mb-2">Crea el teu compte</h1>
-                <p className="text-slate-400 mb-8">Uneix-te a la comunitat de ChessHub i comença la teva aventura.</p>
+                <p className="text-slate-400 mb-8">Uneix-te a la comunitat de CHESS CLANS i comença la teva aventura.</p>
 
                 {/* Email/Password Form */}
                 <form onSubmit={handleEmailRegister} className="mb-6 space-y-4">

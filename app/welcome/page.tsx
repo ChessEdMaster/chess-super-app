@@ -8,18 +8,18 @@ export default function WelcomePage() {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1586165368502-1bad197a6461?q=80&w=2658&auto=format&fit=crop')] bg-cover bg-center opacity-10 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/backgrounds/main-bg.jpg')] bg-cover bg-center opacity-20 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/80 to-slate-950 pointer-events-none" />
 
             <div className="relative z-10 max-w-md w-full text-center">
                 <div className="mb-8 flex justify-center">
-                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl rotate-3 flex items-center justify-center shadow-2xl shadow-indigo-500/30 border-4 border-slate-800">
+                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl rotate-3 flex items-center justify-center shadow-2xl shadow-orange-500/30 border-4 border-slate-800">
                         <Trophy size={48} className="text-white drop-shadow-md" />
                     </div>
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
-                    CHESS<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">HUB</span>
+                    CHESS<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">CLANS</span>
                 </h1>
                 <p className="text-slate-400 text-lg mb-12 leading-relaxed">
                     La plataforma definitiva per a jugadors d'escacs. Competeix, millora i connecta.
