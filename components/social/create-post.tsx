@@ -7,7 +7,7 @@ import { Image as ImageIcon, Send, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CreatePostProps {
-    onPostCreated: () => void;
+    onPostCreated: (post?: any) => void;
 }
 
 export function CreatePost({ onPostCreated }: CreatePostProps) {
@@ -24,12 +24,19 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
         setIsSubmitting(true);
         try {
-            const { error } = await supabase.from('social_posts').insert({
-                user_id: user.id,
-                content: content.trim(),
-                media_url: imageUrl || null,
-                media_type: imageUrl ? 'image' : 'none'
-            });
+            const { data, error } = await supabase
+                .from('social_posts')
+                .insert({
+                    user_id: user.id,
+                    content: content.trim(),
+                    media_url: imageUrl || null,
+                    media_type: imageUrl ? 'image' : 'none'
+                })
+                .select(`
+                    *,
+                    profiles!social_posts_user_id_fkey(username, avatar_url)
+                `)
+                .single();
 
             if (error) throw error;
 
@@ -37,7 +44,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             setImageUrl('');
             setShowImageInput(false);
             toast.success('Post created!');
-            onPostCreated();
+            // @ts-ignore
+            onPostCreated(data);
         } catch (error) {
             console.error('Error creating post:', error);
             toast.error('Failed to create post');
