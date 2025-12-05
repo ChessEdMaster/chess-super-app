@@ -127,7 +127,7 @@ export function ClansView() {
                 </div>
                 <div className="space-y-3">
                     {topClans.map((clan, index) => (
-                        <Link key={clan.id} href={`/clubs/${clan.id}`} className="block">
+                        <Link key={clan.id} href={`/clubs/${clan.id}`} className="block relative z-10">
                             <div className="flex items-center gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-colors group">
                                 <div className="font-black text-zinc-600 text-xl w-6 text-center">#{index + 1}</div>
                                 <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500 shrink-0">
