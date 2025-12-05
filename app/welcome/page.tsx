@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Trophy, ArrowRight, UserPlus, LogIn } from 'lucide-react';
 
 export default function WelcomePage() {
@@ -13,8 +14,13 @@ export default function WelcomePage() {
 
             <div className="relative z-10 max-w-md w-full text-center">
                 <div className="mb-8 flex justify-center">
-                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl rotate-3 flex items-center justify-center shadow-2xl shadow-orange-500/30 border-4 border-slate-800">
-                        <Trophy size={48} className="text-white drop-shadow-md" />
+                    <div className="w-24 h-24 relative rotate-3 shadow-2xl shadow-orange-500/30">
+                        <Image
+                            src="/assets/branding/desktop/logo-icon.png"
+                            alt="Logo"
+                            fill
+                            className="object-contain drop-shadow-md"
+                        />
                     </div>
                 </div>
 

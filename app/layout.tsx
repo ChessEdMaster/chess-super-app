@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased bg-zinc-950 text-white font-sans min-h-screen flex flex-col`}
+        className={`antialiased text-white font-sans min-h-screen flex flex-col`}
       >
         {/* Global Background Layer */}
         <div className="fixed inset-0 z-[-1]">
