@@ -56,17 +56,20 @@ export default function ClubPublicPage() {
         try {
             setLoading(true);
 
+            console.log('Fetching club with ID:', clubId);
+
             // Fetch Club Details
             const { data: clubData, error: clubError } = await supabase
                 .from('clubs')
-                .select(`
-                    *,
-                    owner:profiles!clubs_owner_id_fkey(username, avatar_url)
-                `)
+                .select('*')
                 .eq('id', clubId)
                 .single();
 
-            if (clubError) throw clubError;
+            if (clubError) {
+                console.error('Supabase error fetching club:', clubError);
+                throw clubError;
+            }
+            console.log('Club data fetched:', clubData);
             setClub(clubData);
 
             // Fetch Members (limit to 10 for preview)

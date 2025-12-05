@@ -40,7 +40,7 @@ export default async function ShopPage() {
         .limit(4);
 
     return (
-        <div className="min-h-screen bg-slate-950">
+        <div className="min-h-screen">
             {/* Hero Section */}
             <section className="relative bg-gradient-to-br from-emerald-900/20 via-slate-900 to-slate-950 border-b border-slate-800">
                 <div className="container mx-auto px-4 py-16 md:py-24">

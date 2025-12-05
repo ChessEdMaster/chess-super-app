@@ -48,8 +48,7 @@ function Pedestal() {
 export function LobbyScene() {
     return (
         <div className="w-full h-full relative">
-            <Canvas shadows dpr={[1, 2]} gl={{ preserveDrawingBuffer: true }}>
-                <color attach="background" args={['#020617']} />
+            <Canvas shadows dpr={[1, 2]} gl={{ preserveDrawingBuffer: true, alpha: true }}>
                 <PerspectiveCamera makeDefault position={[0, 2, 6]} fov={50} />
                 <ambientLight intensity={0.5} />
                 <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />

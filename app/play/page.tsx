@@ -369,7 +369,7 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="h-dvh w-full bg-slate-950 flex flex-col overflow-hidden">
+    <div className="h-dvh w-full flex flex-col overflow-hidden">
 
       {/* Header - Compact */}
       <header className="flex-none py-4 px-6 border-b border-white/10 bg-slate-900/50 backdrop-blur-md flex items-center justify-between z-20">
@@ -537,7 +537,7 @@ export default function PlayPage() {
         </div>
 
         {/* Center: Chessboard Area */}
-        <div className="flex-1 flex items-center justify-center bg-slate-950 relative p-4 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden">
 
           {/* View Mode Toggle */}
           <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">

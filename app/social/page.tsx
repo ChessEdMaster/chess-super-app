@@ -34,7 +34,7 @@ function SocialPageContent() {
     };
 
     return (
-        <div className="h-full w-full bg-zinc-950 flex flex-col">
+        <div className="h-full w-full flex flex-col">
             {/* Header Tabs */}
             <div className="flex border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm overflow-x-auto shrink-0 no-scrollbar">
                 <button
@@ -88,7 +88,7 @@ function SocialPageContent() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto bg-zinc-950 relative p-4">
+            <div className="flex-1 overflow-y-auto relative p-4">
                 {activeTab === 'feed' && <Feed />}
                 {activeTab === 'friends' && <FriendsView />}
                 {activeTab === 'clans' && <ClansView />}

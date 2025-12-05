@@ -8,9 +8,7 @@ import { Trophy, ArrowRight, UserPlus, LogIn } from 'lucide-react';
 export default function WelcomePage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/backgrounds/mobile/main-bg.png')] md:bg-[url('/assets/backgrounds/desktop/main-bg.png')] bg-cover bg-center pointer-events-none transition-all duration-500" />
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/40 to-slate-950/80 pointer-events-none" />
+            {/* Background Elements - Removed to use Global Layout Background */}
 
             <div className="relative z-10 max-w-md w-full text-center">
                 <div className="mb-8 flex justify-center">

@@ -32,7 +32,7 @@ export default function HomePage() {
   ] as const;
 
   return (
-    <div className="h-full w-full relative bg-zinc-950">
+    <div className="h-full w-full relative">
       {/* 3D Background */}
       <div className="absolute inset-0 z-0">
         <LobbyScene />

@@ -25,7 +25,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     ];
 
     return (
-        <div className="h-dvh w-full flex flex-col bg-zinc-950 text-white overflow-hidden">
+        <div className="h-dvh w-full flex flex-col text-white overflow-hidden">
             {/* Top Bar */}
             <header className="h-14 px-4 flex items-center justify-between bg-zinc-900/80 backdrop-blur-md border-b border-white/5 z-50 shrink-0">
                 <div className="flex items-center gap-3">

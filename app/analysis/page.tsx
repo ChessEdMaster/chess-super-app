@@ -294,7 +294,7 @@ export default function AnalysisPage() {
   if (!isClient) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
 
   return (
-    <div className="h-dvh w-full grid grid-rows-[auto_1fr] lg:grid-rows-none lg:grid-cols-[1fr_400px] overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="h-dvh w-full grid grid-rows-[auto_1fr] lg:grid-rows-none lg:grid-cols-[1fr_400px] overflow-hidden text-zinc-100">
 
       {/* LEFT: BOARD AREA */}
       <div className="flex flex-col items-center justify-center bg-zinc-900/50 p-2 lg:p-4 relative">

@@ -12,7 +12,7 @@ export default function ProfilePage() {
   }, [router]);
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-zinc-950 text-zinc-500">
+    <div className="h-screen w-full flex items-center justify-center text-zinc-500">
       <Loader2 className="animate-spin mr-2" /> Redirecting...
     </div>
   );

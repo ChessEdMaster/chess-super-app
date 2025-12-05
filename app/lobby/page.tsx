@@ -183,7 +183,7 @@ export default function LobbyPage() {
   };
 
   return (
-    <div className="h-full w-full bg-zinc-950 relative overflow-hidden">
+    <div className="h-full w-full relative overflow-hidden">
       {/* Map Background */}
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900 via-zinc-900 to-black" />
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
