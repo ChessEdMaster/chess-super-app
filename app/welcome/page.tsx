@@ -8,7 +8,7 @@ export default function WelcomePage() {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/backgrounds/main-bg.jpg')] bg-cover bg-center opacity-20 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/backgrounds/mobile/main-bg.jpg')] md:bg-[url('/assets/backgrounds/desktop/main-bg.jpg')] bg-cover bg-center opacity-20 pointer-events-none transition-all duration-500" />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/80 to-slate-950 pointer-events-none" />
 
             <div className="relative z-10 max-w-md w-full text-center">

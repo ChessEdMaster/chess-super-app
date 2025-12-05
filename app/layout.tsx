@@ -24,7 +24,7 @@ export default function RootLayout({
       >
         {/* Global Background Layer */}
         <div className="fixed inset-0 z-[-1]">
-          <div className="absolute inset-0 bg-[url('/assets/backgrounds/main-bg.jpg')] bg-cover bg-center opacity-20" />
+          <div className="absolute inset-0 bg-[url('/assets/backgrounds/mobile/main-bg.jpg')] md:bg-[url('/assets/backgrounds/desktop/main-bg.jpg')] bg-cover bg-center opacity-20 transition-all duration-500" />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/50 to-slate-950/90" />
         </div>
 

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/auth-provider';
+import { toast } from 'sonner';
 import {
     Users,
     TrendingUp,
@@ -24,28 +26,63 @@ export default function ClubDashboardPage() {
     });
     const [loading, setLoading] = useState(true);
 
+    const { user } = useAuth();
+    const router = useRouter();
+
     useEffect(() => {
-        const fetchStats = async () => {
-            // Mock data for now, eventually replace with real aggregations
-            // In a real app, we might create a Postgres View or RPC for this dashboard
+        const checkAccessAndFetchStats = async () => {
+            if (!user) return;
 
-            const { count: memberCount } = await supabase
-                .from('club_members')
-                .select('*', { count: 'exact', head: true })
-                .eq('club_id', clubId);
+            try {
+                // 1. Verify Access
+                const { data: club, error: clubError } = await supabase
+                    .from('clubs')
+                    .select('owner_id, type')
+                    .eq('id', clubId)
+                    .single();
 
-            // Mock revenue calculation
-            setStats({
-                members: memberCount || 0,
-                activeSubscriptions: Math.floor((memberCount || 0) * 0.8),
-                monthlyRevenue: Math.floor((memberCount || 0) * 15), // Example: 15€ avg
-                pendingRequests: 2 // Mock
-            });
-            setLoading(false);
+                if (clubError || !club) {
+                    toast.error('Club not found');
+                    router.push('/clubs');
+                    return;
+                }
+
+                if (club.owner_id !== user.id) {
+                    toast.error('Only the owner can access the ERP');
+                    router.push(`/clubs/${clubId}`);
+                    return;
+                }
+
+                if (club.type !== 'club' && club.type !== 'school') {
+                    toast.error('ERP is only available for Clubs and Schools');
+                    router.push(`/clubs/${clubId}`);
+                    return;
+                }
+
+                // 2. Fetch Stats (Mock for now)
+                // In a real app, we might create a Postgres View or RPC for this dashboard
+                const { count: memberCount } = await supabase
+                    .from('club_members')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('club_id', clubId);
+
+                // Mock revenue calculation
+                setStats({
+                    members: memberCount || 0,
+                    activeSubscriptions: Math.floor((memberCount || 0) * 0.8),
+                    monthlyRevenue: Math.floor((memberCount || 0) * 15), // Example: 15€ avg
+                    pendingRequests: 2 // Mock
+                });
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                toast.error('Failed to load dashboard');
+            } finally {
+                setLoading(false);
+            }
         };
 
-        fetchStats();
-    }, [clubId]);
+        checkAccessAndFetchStats();
+    }, [clubId, user, router]);
 
 
     const StatCard = ({ title, value, icon: Icon, trend, trendValue, subtext }: any) => (
