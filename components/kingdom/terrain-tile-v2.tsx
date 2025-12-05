@@ -14,7 +14,7 @@ interface TerrainTileProps {
     children?: React.ReactNode;
 }
 
-export function TerrainTile({
+export function TerrainTileV2({
     x,
     y,
     terrain = 'grass',
@@ -33,28 +33,23 @@ export function TerrainTile({
             onMouseLeave={() => setIsHovered(false)}
             className="relative border border-white/5 transition-all duration-200 cursor-pointer hover:border-white/30 hover:translate-z-2 shadow-sm overflow-hidden aspect-square"
             style={{
-                transformStyle: 'preserve-3d'
+                transformStyle: 'preserve-3d',
+                backgroundImage: `url(${terrainAssets.base})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                imageRendering: 'pixelated'
             }}
         >
-            {/* Base Terrain Texture */}
-            <img
-                src={terrainAssets.base}
-                alt={`${terrain} tile`}
-                className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                style={{
-                    imageRendering: 'pixelated' // Per mantenir estil pixelat si és pixel art
-                }}
-            />
-
-            {/* Highlight ao fer hover */}
+            {/* Highlight layer amb background-image */}
             {isHovered && (
-                <img
-                    src={terrainAssets.highlight}
-                    alt="highlight"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none animate-pulse"
+                <div
+                    className="absolute inset-0 animate-pulse pointer-events-none"
                     style={{
-                        imageRendering: 'pixelated',
-                        opacity: 0.7
+                        backgroundImage: `url(${terrainAssets.highlight})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        opacity: 0.7,
+                        imageRendering: 'pixelated'
                     }}
                 />
             )}
