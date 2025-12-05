@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
@@ -8,7 +8,7 @@ import { ConversationList } from '@/components/messages/conversation-list';
 import { ChatWindow } from '@/components/messages/chat-window';
 import { Loader2, MessageSquare } from 'lucide-react';
 
-export default function MessagesPage() {
+function MessagesPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, loading: authLoading } = useAuth();
@@ -104,5 +104,17 @@ export default function MessagesPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function MessagesPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <Loader2 className="animate-spin text-indigo-500" size={48} />
+            </div>
+        }>
+            <MessagesPageContent />
+        </Suspense>
     );
 }

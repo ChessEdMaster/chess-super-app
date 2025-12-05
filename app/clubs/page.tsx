@@ -74,7 +74,6 @@ export default function ClubsPage() {
             const { data: clubsData, error: clubsError } = await supabase
                 .from('clubs')
                 .select('*')
-                .eq('is_active', true)
                 .order('member_count', { ascending: false })
                 .order('created_at', { ascending: false });
 
