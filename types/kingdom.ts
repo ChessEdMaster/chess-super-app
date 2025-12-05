@@ -1,4 +1,5 @@
 export type ResourceType = 'gold' | 'mana' | 'gems';
+export type TerrainType = 'grass' | 'snow' | 'lava';
 
 export interface KingdomResources {
     gold: number;

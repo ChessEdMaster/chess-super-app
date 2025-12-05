@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { KingdomBuilding, BUILDING_TYPES } from '@/types/kingdom';
+import { KingdomBuilding, BUILDING_TYPES, TerrainType } from '@/types/kingdom';
+import { TerrainTile } from '@/components/kingdom/terrain-tile';
 
 interface IsometricMapProps {
     buildings: KingdomBuilding[];
@@ -11,10 +12,11 @@ interface IsometricMapProps {
 
 export function IsometricMap({ buildings, onTileClick }: IsometricMapProps) {
     const gridSize = 8;
-    // Create an array of tiles
+    // Create an array of tiles with terrain types
     const tiles = Array.from({ length: gridSize * gridSize }, (_, i) => ({
         x: i % gridSize,
-        y: Math.floor(i / gridSize)
+        y: Math.floor(i / gridSize),
+        terrain: 'grass' as TerrainType // Default terrain, pot ser dinàmic en el futur
     }));
 
     const getBuildingAt = (x: number, y: number) => {
@@ -39,21 +41,14 @@ export function IsometricMap({ buildings, onTileClick }: IsometricMapProps) {
                         const buildingConfig = building ? BUILDING_TYPES[building.type] : null;
 
                         return (
-                            <div
+                            <TerrainTile
                                 key={`${tile.x}-${tile.y}`}
+                                x={tile.x}
+                                y={tile.y}
+                                terrain={tile.terrain}
+                                hasBuilding={!!building}
                                 onClick={() => onTileClick(tile.x, tile.y)}
-                                className={cn(
-                                    "relative border border-white/5 transition-all duration-200 cursor-pointer",
-                                    "bg-slate-800/80 hover:bg-slate-700/80 hover:border-white/30 hover:translate-z-2",
-                                    "shadow-sm"
-                                )}
-                                style={{
-                                    transformStyle: 'preserve-3d'
-                                }}
                             >
-                                {/* Base Tile Content (e.g. grass/ground) */}
-                                <div className="absolute inset-0 bg-emerald-900/20" />
-
                                 {/* Building */}
                                 {building && buildingConfig && (
                                     <div
@@ -80,7 +75,7 @@ export function IsometricMap({ buildings, onTileClick }: IsometricMapProps) {
                                         )}
                                     </div>
                                 )}
-                            </div>
+                            </TerrainTile>
                         );
                     })}
                 </div>
