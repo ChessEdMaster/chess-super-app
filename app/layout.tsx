@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { MobileLayout } from "@/components/layout/mobile-layout";
 import { PlayerStoreSync } from "@/components/player-store-sync";
+import { PresenceSync } from "@/components/presence/presence-sync";
 
 export const metadata: Metadata = {
   title: "Chess Royale",
@@ -23,6 +24,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <PlayerStoreSync>
+            <PresenceSync />
             <MobileLayout>
               {children}
             </MobileLayout>

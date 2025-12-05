@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { UserProfile } from '@/components/profile/user-profile';
 import { useSocial } from '@/hooks/useSocial';
 import { Feed } from '@/components/social/feed';
+import { OnlineIndicator } from '@/components/presence/online-indicator';
 
 import { toast } from 'sonner';
 
@@ -205,11 +206,13 @@ function SocialPageContent() {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 font-bold relative">
                                                     {friendship.friend?.username[0].toUpperCase()}
-                                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-zinc-950 rounded-full"></div>
+                                                    <div className="absolute bottom-0 right-0">
+                                                        <OnlineIndicator userId={friendship.friend_id} size="sm" />
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <p className="text-white font-bold">{friendship.friend?.username}</p>
-                                                    <p className="text-xs text-green-500">Online</p>
+                                                    <OnlineIndicator userId={friendship.friend_id} showLabel size="sm" />
                                                 </div>
                                             </div>
                                             <button

@@ -52,6 +52,16 @@
 - ✅ Taula `event_participants` amb RLS policies
 - ✅ Trigger automàtic per actualitzar `participants_count`
 
+#### 7. **Realtime Presence System** ✅ (NOU!)
+- ✅ Taula `user_presence` amb estats: Online, Offline, InGame
+- ✅ Hook `usePresence` amb heartbeat automàtic cada 30s
+- ✅ Component `OnlineIndicator` amb subscripció Realtime
+- ✅ Indicadors visuals 🟢 Online, 🔴 Offline, 🎮 In Game
+- ✅ Integració a llista d'amics amb actualització en temps real
+- ✅ Cleanup automàtic d'usuaris offline després de 5 minuts
+- ✅ Gestió de visibility change (quan canvies de tab)
+- ✅ Cleanup quan es tanca la finestra del navegador
+
 ### Canvis Tècnics
 
 #### Base de Dades
@@ -119,14 +129,15 @@ CREATE TRIGGER event_participants_count_trigger
 - ✅ Veure tipus de club
 - ✅ Veure events públics (tornejos, classes, meetups)
 - ✅ Filtrar events per data
-- ✅ **Registrar-se a events**
-- ✅ **Cancel·lar participació**
-- ✅ **Veure llista de participants**
-- ✅ **Control de límit de places**
+- ✅ Registrar-se a events
+- ✅ Cancel·lar participació
+- ✅ Veure llista de participants
+- ✅ Control de límit de places
+- ✅ **Veure estat Online/Offline/InGame d'amics en temps real**
+- ✅ **Indicadors visuals de presència**
 
 **Encara per Implementar:**
 - ⏳ Sistema de compartició (shares) complet
-- ⏳ Estat online/offline/in-game dels usuaris (Realtime Presence)
 - ⏳ Missatgeria directa
 - ⏳ Notificacions en temps real
 
@@ -135,6 +146,6 @@ CREATE TRIGGER event_participants_count_trigger
 1. ~~**Implementar Comments**~~ ✅ **COMPLETAT!**
 2. ~~**Events Arena**~~ ✅ **COMPLETAT!**
 3. ~~**Registre a Events**~~ ✅ **COMPLETAT!**
-4. **Presència Online**: Implementar sistema de presence amb Supabase Realtime
+4. ~~**Presència Online**~~ ✅ **COMPLETAT!**
 5. **Direct Messages**: Crear sistema de chat entre usuaris
 6. **Notifications**: Sistema de notificacions push per likes, comments, friend requests
