@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AcademyExercise } from '@/types/academy';
 import { PuzzleSolver } from '@/components/puzzle-solver';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PuzzleMinerProps {

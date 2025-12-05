@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from './supabase';
-import { CartItem, Product } from './ecommerce-types';
+import { CartItem, Product } from '@/types/ecommerce';
 import toast from 'react-hot-toast';
 
 interface CartState {

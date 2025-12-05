@@ -14,7 +14,7 @@ import type {
     NAGSymbol,
     Evaluation,
     VisualAnnotation,
-} from './pgn-types';
+} from '@/types/pgn';
 
 export class PGNTree {
     private game: PGNGame;

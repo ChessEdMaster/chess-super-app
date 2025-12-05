@@ -8,9 +8,9 @@ import type {
     PGNMetadata,
     MoveNode,
     PGNExportOptions,
-} from './pgn-types';
-import { NAG_SYMBOLS } from './pgn-types';
-import { PGNTree } from './pgn-tree';
+} from '@/types/pgn';
+import { NAG_SYMBOLS } from '@/types/pgn';
+import { PGNTree } from './tree';
 
 export class PGNParser {
     /**
