@@ -145,8 +145,8 @@ export default function EventsPage() {
                     <button
                         onClick={() => setFilter('upcoming')}
                         className={`px-4 py-2 font-medium transition ${filter === 'upcoming'
-                                ? 'text-purple-400 border-b-2 border-purple-400'
-                                : 'text-slate-400 hover:text-white'
+                            ? 'text-purple-400 border-b-2 border-purple-400'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         Propers Events
@@ -154,8 +154,8 @@ export default function EventsPage() {
                     <button
                         onClick={() => setFilter('all')}
                         className={`px-4 py-2 font-medium transition ${filter === 'all'
-                                ? 'text-purple-400 border-b-2 border-purple-400'
-                                : 'text-slate-400 hover:text-white'
+                            ? 'text-purple-400 border-b-2 border-purple-400'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         Tots
@@ -163,8 +163,8 @@ export default function EventsPage() {
                     <button
                         onClick={() => setFilter('past')}
                         className={`px-4 py-2 font-medium transition ${filter === 'past'
-                                ? 'text-purple-400 border-b-2 border-purple-400'
-                                : 'text-slate-400 hover:text-white'
+                            ? 'text-purple-400 border-b-2 border-purple-400'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         Passats
@@ -195,71 +195,76 @@ export default function EventsPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {events.map((event) => (
-                            <div
+                            <Link
                                 key={event.id}
-                                className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition group cursor-pointer shadow-lg hover:shadow-purple-900/20"
+                                href={`/events/${event.id}`}
+                                className="block"
                             >
-                                {/* Event Type Badge */}
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${getEventTypeColor(event.event_type)}`}>
-                                        {getEventTypeIcon(event.event_type)}
-                                        {event.event_type}
+                                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition group cursor-pointer shadow-lg hover:shadow-purple-900/20 h-full flex flex-col">
+                                    {/* Event Type Badge */}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${getEventTypeColor(event.event_type)}`}>
+                                            {getEventTypeIcon(event.event_type)}
+                                            {event.event_type}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Event Title */}
-                                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">
-                                    {event.title}
-                                </h3>
+                                    {/* Event Title */}
+                                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">
+                                        {event.title}
+                                    </h3>
 
-                                {/* Event Description */}
-                                {event.description && (
-                                    <p className="text-sm text-slate-400 mb-4 line-clamp-2">
-                                        {event.description}
-                                    </p>
-                                )}
+                                    {/* Event Description */}
+                                    {event.description && (
+                                        <p className="text-sm text-slate-400 mb-4 line-clamp-2 flex-grow">
+                                            {event.description}
+                                        </p>
+                                    )}
 
-                                {/* Event Details */}
-                                <div className="space-y-2 mb-4">
-                                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                                        <Clock size={16} className="text-purple-400" />
-                                        <span>
-                                            {new Date(event.start_date).toLocaleDateString('ca-ES', {
-                                                day: 'numeric',
-                                                month: 'long',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </span>
-                                    </div>
-                                    {event.location && (
+                                    {/* Event Details */}
+                                    <div className="space-y-2 mb-4">
                                         <div className="flex items-center gap-2 text-sm text-slate-400">
-                                            <MapPin size={16} className="text-purple-400" />
-                                            <span>{event.location}</span>
+                                            <Clock size={16} className="text-purple-400" />
+                                            <span>
+                                                {new Date(event.start_date).toLocaleDateString('ca-ES', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </span>
+                                        </div>
+                                        {event.location && (
+                                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                                                <MapPin size={16} className="text-purple-400" />
+                                                <span>{event.location}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                                            <Users size={16} className="text-purple-400" />
+                                            <span>
+                                                {event.current_participants}
+                                                {event.max_participants && ` / ${event.max_participants}`} participants
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Club Badge */}
+                                    {event.club && (
+                                        <div
+                                            className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-purple-400 transition mt-auto"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                            }}
+                                        >
+                                            <Users size={12} />
+                                            {event.club.name}
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                                        <Users size={16} className="text-purple-400" />
-                                        <span>
-                                            {event.current_participants}
-                                            {event.max_participants && ` / ${event.max_participants}`} participants
-                                        </span>
-                                    </div>
                                 </div>
-
-                                {/* Club Badge */}
-                                {event.club && (
-                                    <Link
-                                        href={`/clubs/${event.club.slug}`}
-                                        className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-purple-400 transition"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <Users size={12} />
-                                        {event.club.name}
-                                    </Link>
-                                )}
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}
