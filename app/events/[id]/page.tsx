@@ -30,6 +30,67 @@ interface Event {
     };
 }
 
+function Countdown({ targetDate }: { targetDate: string }) {
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+    function calculateTimeLeft() {
+        const difference = +new Date(targetDate) - +new Date();
+        let timeLeft = {};
+
+        if (difference > 0) {
+            timeLeft = {
+                days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                minutes: Math.floor((difference / 1000 / 60) % 60),
+                seconds: Math.floor((difference / 1000) % 60),
+            };
+        }
+        return timeLeft;
+    }
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+        return () => clearTimeout(timer);
+    });
+
+    const formatTime = (value: number) => value < 10 ? `0${value}` : value;
+
+    // @ts-ignore
+    if (!timeLeft.hours && !timeLeft.minutes && !timeLeft.seconds) {
+        return <span className="text-2xl font-bold text-white">Started!</span>;
+    }
+
+    return (
+        <div className="flex gap-4 text-center">
+            {/* @ts-ignore */}
+            {timeLeft.days > 0 && (
+                <div className="flex flex-col">
+                    {/* @ts-ignore */}
+                    <span className="text-4xl font-black text-white">{formatTime(timeLeft.days)}</span>
+                    <span className="text-xs text-slate-500 uppercase">Days</span>
+                </div>
+            )}
+            <div className="flex flex-col">
+                {/* @ts-ignore */}
+                <span className="text-4xl font-black text-white">{formatTime(timeLeft.hours || 0)}</span>
+                <span className="text-xs text-slate-500 uppercase">Hours</span>
+            </div>
+            <div className="flex flex-col">
+                {/* @ts-ignore */}
+                <span className="text-4xl font-black text-white">{formatTime(timeLeft.minutes || 0)}</span>
+                <span className="text-xs text-slate-500 uppercase">Mins</span>
+            </div>
+            <div className="flex flex-col">
+                {/* @ts-ignore */}
+                <span className="text-4xl font-black text-white">{formatTime(timeLeft.seconds || 0)}</span>
+                <span className="text-xs text-slate-500 uppercase">Secs</span>
+            </div>
+        </div>
+    );
+}
+
 export default function EventDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -152,6 +213,14 @@ export default function EventDetailPage() {
                         <p className="text-slate-300 text-lg mb-6 whitespace-pre-wrap">
                             {event.description}
                         </p>
+                    )}
+
+                    {/* Countdown */}
+                    {new Date(event.start_date) > new Date() && (
+                        <div className="mb-8 p-6 bg-slate-950/50 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
+                            <p className="text-slate-400 text-sm uppercase tracking-widest font-bold mb-2">Tournament Starts In</p>
+                            <Countdown targetDate={event.start_date} />
+                        </div>
                     )}
 
                     {/* Event Details Grid */}

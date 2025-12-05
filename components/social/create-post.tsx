@@ -34,7 +34,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 })
                 .select(`
                     *,
-                    profiles!social_posts_user_id_fkey(username, avatar_url)
+                    profiles!fk_social_posts_profiles(username, avatar_url)
                 `)
                 .single();
 

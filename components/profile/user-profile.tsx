@@ -368,57 +368,69 @@ export function UserProfile() {
                                     <Link href="/play" className="text-indigo-400 hover:underline ml-1">Juga ara!</Link>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-slate-800">
-                                    {games.map((game) => {
-                                        const isWhite = game.white_player_id === user.id;
-                                        // Determinar nom del rival
-                                        let opponentName = 'Stockfish (CPU)';
-                                        if (isWhite) {
-                                            if (game.black_player_id) opponentName = game.black?.username || 'Jugador 2';
-                                        } else {
-                                            if (game.white_player_id) opponentName = game.white?.username || 'Jugador 1';
-                                        }
+                                <>
+                                    <div className="divide-y divide-slate-800">
+                                        {games.slice(0, 5).map((game) => {
+                                            const isWhite = game.white_player_id === user.id;
+                                            // Determinar nom del rival
+                                            let opponentName = 'Stockfish (CPU)';
+                                            if (isWhite) {
+                                                if (game.black_player_id) opponentName = game.black?.username || 'Jugador 2';
+                                            } else {
+                                                if (game.white_player_id) opponentName = game.white?.username || 'Jugador 1';
+                                            }
 
-                                        // Determinem si has guanyat tu
-                                        let outcomeColor = 'text-slate-400';
-                                        let outcomeLabel = 'Taules';
+                                            // Determinem si has guanyat tu
+                                            let outcomeColor = 'text-slate-400';
+                                            let outcomeLabel = 'Taules';
 
-                                        if (game.result === '1/2-1/2') {
-                                            outcomeLabel = '🤝 Taules';
-                                            outcomeColor = 'text-slate-400';
-                                        } else if ((isWhite && game.result === '1-0') || (!isWhite && game.result === '0-1')) {
-                                            outcomeLabel = '🏆 Victòria';
-                                            outcomeColor = 'text-emerald-400';
-                                        } else {
-                                            outcomeLabel = '❌ Derrota';
-                                            outcomeColor = 'text-red-400';
-                                        }
+                                            if (game.result === '1/2-1/2') {
+                                                outcomeLabel = '🤝 Taules';
+                                                outcomeColor = 'text-slate-400';
+                                            } else if ((isWhite && game.result === '1-0') || (!isWhite && game.result === '0-1')) {
+                                                outcomeLabel = '🏆 Victòria';
+                                                outcomeColor = 'text-emerald-400';
+                                            } else {
+                                                outcomeLabel = '❌ Derrota';
+                                                outcomeColor = 'text-red-400';
+                                            }
 
-                                        return (
-                                            <div key={game.id} className="p-4 hover:bg-slate-800/50 transition flex flex-col sm:flex-row justify-between items-center gap-4">
-                                                <div className="flex items-center gap-4 w-full sm:w-auto">
-                                                    <div className={`w-10 h-10 rounded flex items-center justify-center font-bold text-lg ${isWhite ? 'bg-slate-200 text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
-                                                        {isWhite ? 'W' : 'B'}
+                                            return (
+                                                <div
+                                                    key={game.id}
+                                                    onClick={() => router.push(`/analysis?gameId=${game.id}`)}
+                                                    className="p-4 hover:bg-slate-800/50 transition flex flex-col sm:flex-row justify-between items-center gap-4 cursor-pointer group"
+                                                >
+                                                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                        <div className={`w-10 h-10 rounded flex items-center justify-center font-bold text-lg ${isWhite ? 'bg-slate-200 text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
+                                                            {isWhite ? 'W' : 'B'}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-white group-hover:text-indigo-400 transition-colors">vs {opponentName}</p>
+                                                            <p className="text-xs text-slate-500 flex items-center gap-1">
+                                                                <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-bold text-white">vs {opponentName}</p>
-                                                        <p className="text-xs text-slate-500 flex items-center gap-1">
-                                                            <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
-                                                        </p>
+
+                                                    <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                                                        <div className="text-right">
+                                                            <p className={`font-bold ${outcomeColor}`}>{outcomeLabel}</p>
+                                                            <p className="text-xs text-slate-600 font-mono">{game.result}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-
-                                                <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                                                    <div className="text-right">
-                                                        <p className={`font-bold ${outcomeColor}`}>{outcomeLabel}</p>
-                                                        <p className="text-xs text-slate-600 font-mono">{game.result}</p>
-                                                    </div>
-                                                    {/* Aquí en el futur posarem un botó "Veure" per reproduir el PGN */}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    {games.length > 5 && (
+                                        <div className="p-3 bg-slate-900/50 text-center border-t border-slate-800">
+                                            <Link href="/profile/games" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium hover:underline">
+                                                Veure totes les partides ({games.length})
+                                            </Link>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

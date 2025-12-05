@@ -33,7 +33,7 @@ export function Feed({ userId }: FeedProps) {
                 .from('social_posts')
                 .select(`
                     *,
-                    profiles!social_posts_user_id_fkey(username, avatar_url)
+                    profiles!fk_social_posts_profiles(username, avatar_url)
                 `)
                 .order('created_at', { ascending: false })
                 .range(from, to);

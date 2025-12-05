@@ -38,7 +38,7 @@ export function useSocial() {
             .from('friend_requests')
             .select(`
                 *,
-                sender:sender_id(username, avatar_url)
+                sender:profiles!fk_friend_requests_sender_profile(username, avatar_url)
             `)
             .eq('receiver_id', user.id)
             .eq('status', 'pending');
@@ -51,7 +51,7 @@ export function useSocial() {
             .from('friend_requests')
             .select(`
                 *,
-                receiver:receiver_id(username, avatar_url)
+                receiver:profiles!fk_friend_requests_receiver_profile(username, avatar_url)
             `)
             .eq('sender_id', user.id);
 
