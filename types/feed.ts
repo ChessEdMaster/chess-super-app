@@ -25,7 +25,7 @@ export interface SocialComment {
     user_id: string;
     content: string;
     created_at: string;
-    user?: {
+    profiles?: {
         username: string;
         avatar_url?: string;
     };

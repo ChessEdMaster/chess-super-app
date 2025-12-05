@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { CommentSection } from './comment-section';
 
 interface PostCardProps {
     post: SocialPost;
@@ -18,6 +19,8 @@ export function PostCard({ post, onDelete }: PostCardProps) {
     const [isLiked, setIsLiked] = useState(post.liked_by_user || false);
     const [likesCount, setLikesCount] = useState(post.likes_count);
     const [isLikeLoading, setIsLikeLoading] = useState(false);
+    const [showComments, setShowComments] = useState(false);
+    const [commentsCount, setCommentsCount] = useState(post.comments_count);
 
     const handleLike = async () => {
         if (!user || isLikeLoading) return;
@@ -117,9 +120,12 @@ export function PostCard({ post, onDelete }: PostCardProps) {
                     <span>{likesCount}</span>
                 </button>
 
-                <button className="flex items-center gap-2 text-sm text-zinc-500 hover:text-blue-400 transition-colors">
+                <button
+                    onClick={() => setShowComments(!showComments)}
+                    className={`flex items-center gap-2 text-sm transition-colors ${showComments ? 'text-blue-400' : 'text-zinc-500 hover:text-blue-400'}`}
+                >
                     <MessageCircle size={18} />
-                    <span>{post.comments_count}</span>
+                    <span>{commentsCount}</span>
                 </button>
 
                 <button className="flex items-center gap-2 text-sm text-zinc-500 hover:text-green-400 transition-colors">
@@ -127,6 +133,14 @@ export function PostCard({ post, onDelete }: PostCardProps) {
                     <span>{post.shares_count}</span>
                 </button>
             </div>
+
+            {/* Comments Section */}
+            {showComments && (
+                <CommentSection
+                    postId={post.id}
+                    onCommentCountChange={(count) => setCommentsCount(count)}
+                />
+            )}
         </div>
     );
 }
