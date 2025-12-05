@@ -6,6 +6,7 @@ import { ShoppingBag, Layers, Swords, Users, Trophy, Castle } from 'lucide-react
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 
 interface MobileLayoutProps {
     children: React.ReactNode;
@@ -52,6 +53,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                         <div className="w-3 h-3 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
                         <span className="text-xs font-bold text-green-100">{profile.currencies.gems}</span>
                     </div>
+                    <NotificationBell />
                 </div>
             </header>
 
