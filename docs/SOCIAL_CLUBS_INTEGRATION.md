@@ -33,6 +33,14 @@
 - ✅ Secció "Stats Grid" restaurada
 - ✅ Secció "Recent History" restaurada amb enllaços als jocs
 
+#### 5. **Events Arena** ✅ (NOU!)
+- ✅ Pàgina `/events` amb llistat d'esdeveniments públics
+- ✅ Filtres per events propers, tots i passats
+- ✅ Visualització de tornejos, classes i meetups
+- ✅ Detalls complets: data, ubicació, participants, club organitzador
+- ✅ Integració amb sistema de clubs existent
+- ✅ Badges diferenciats per tipus d'event (Tournament, Lesson, Meetup)
+
 ### Canvis Tècnics
 
 #### Base de Dades
@@ -61,11 +69,12 @@ ON DELETE CASCADE;
 1. `app/clubs/page.tsx` - Afegit dropdown per seleccionar tipus de club
 2. `app/clubs/[slug]/page.tsx` - Mostra el tipus de club
 3. `app/social/page.tsx` - Tabs Clans/Events ara són links
-4. `components/social/feed.tsx` - Query corregida per fer join amb `profiles`
-5. `components/social/post-card.tsx` - Sistema de comentaris integrat
-6. `components/social/comment-section.tsx` - **NOU** Component per comentaris
-7. `components/profile/user-profile.tsx` - Feed integrat per mostrar posts de l'usuari
-8. `types/feed.ts` - Interfícies actualitzades
+4. `app/events/page.tsx` - **NOU** Pàgina d'Events Arena
+5. `components/social/feed.tsx` - Query corregida per fer join amb `profiles`
+6. `components/social/post-card.tsx` - Sistema de comentaris integrat
+7. `components/social/comment-section.tsx` - **NOU** Component per comentaris
+8. `components/profile/user-profile.tsx` - Feed integrat per mostrar posts de l'usuari
+9. `types/feed.ts` - Interfícies actualitzades
 
 ### Estat Actual
 
@@ -80,10 +89,12 @@ ON DELETE CASCADE;
 - ✅ **Eliminar comentaris propis**
 - ✅ Crear clubs amb tipus
 - ✅ Veure tipus de club
+- ✅ **Veure events públics (tornejos, classes, meetups)**
+- ✅ **Filtrar events per data**
 
 **Encara per Implementar:**
 - ⏳ Sistema de compartició (shares) complet
-- ⏳ Pàgina Events (`/events`)
+- ⏳ Registre a events i gestió de participants
 - ⏳ Estat online/offline/in-game dels usuaris
 - ⏳ Missatgeria directa
 - ⏳ Notificacions en temps real
@@ -91,8 +102,8 @@ ON DELETE CASCADE;
 ### Recomanacions per Propers Passos
 
 1. ~~**Implementar Comments**~~ ✅ **COMPLETAT!**
-2. **Events Arena**: Desenvolupar la pàgina `/events` amb sistema de tornejos
-3. **Presència Online**: Implementar sistema de presence amb Supabase Realtime
-4. **Direct Messages**: Crear sistema de chat entre usuaris
-5. **Notifications**: Sistema de notificacions push per likes, comments, friend requests
-
+2. ~~**Events Arena**~~ ✅ **COMPLETAT!**
+3. **Registre a Events**: Permetre als usuaris registrar-se i gestionar la seva participació
+4. **Presència Online**: Implementar sistema de presence amb Supabase Realtime
+5. **Direct Messages**: Crear sistema de chat entre usuaris
+6. **Notifications**: Sistema de notificacions push per likes, comments, friend requests
