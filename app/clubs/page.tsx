@@ -241,7 +241,7 @@ export default function ClubsPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {clubs.map((club) => (
-                            <Link key={club.id} href={`/clubs/${club.id}`}>
+                            <Link key={club.id} href={`/clubs/${club.id}`} className="block h-full">
                                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-yellow-500/50 transition group h-full flex flex-col">
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
