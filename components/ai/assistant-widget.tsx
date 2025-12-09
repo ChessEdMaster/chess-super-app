@@ -13,13 +13,17 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export function AssistantWidget() {
     const [isOpen, setIsOpen] = useState(false);
-    // Removed 'input' and 'handleInputChange' destructuring to avoid conflict/issues
-    // Kept 'messages', 'append', 'isLoading', 'error'
-    const { messages = [], append, isLoading, error } = useChat({
+
+    // cast to any to verify runtime behavior of the new SDK version
+    const chatHelpers = useChat({
+        // api: '/api/chat', // Default is often /api/chat, let's rely on default or explicit if needed
         onError: (err) => console.error("Chat Error:", err)
     }) as any;
 
-    // Local state for input to ensure it works reliably
+    // Destructure based on inspection of type definitions: uses sendMessage and status
+    const { messages = [], sendMessage, status, error } = chatHelpers;
+    const isLoading = status === 'streaming' || status === 'submitted';
+
     const [localInput, setLocalInput] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -31,15 +35,30 @@ export function AssistantWidget() {
         scrollToBottom();
     }, [messages, isOpen]);
 
+    useEffect(() => {
+        // Debug logging to verify what we actually get
+        console.log("Chat Helpers Object:", chatHelpers);
+    }, [chatHelpers]);
+
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!localInput.trim()) return;
 
-        // Manually append user message
-        await append({
-            role: 'user',
-            content: localInput
-        });
+        // Manually send user message using sendMessage if available
+        if (typeof sendMessage === 'function') {
+            await sendMessage({
+                role: 'user',
+                content: localInput
+            });
+        } else if (typeof chatHelpers.append === 'function') {
+            // Fallback to append if looking at wrong types
+            await chatHelpers.append({
+                role: 'user',
+                content: localInput
+            });
+        } else {
+            console.error("No sendMessage or append function found in useChat result", chatHelpers);
+        }
 
         setLocalInput("");
     };
@@ -75,7 +94,7 @@ export function AssistantWidget() {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-2 p-4">
-                                        {(messages || []).map((m: any) => (
+                                        {messages.map((m: any) => (
                                             <ChatMessage key={m.id} message={m} />
                                         ))}
                                         {isLoading && (
