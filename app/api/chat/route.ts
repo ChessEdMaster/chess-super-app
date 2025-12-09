@@ -5,6 +5,13 @@ import { streamText, convertToCoreMessages } from 'ai';
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        return new Response(JSON.stringify({ error: "Missing API Key", details: "GOOGLE_GENERATIVE_AI_API_KEY is not set in environment variables." }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     try {
         const { messages } = await req.json();
 

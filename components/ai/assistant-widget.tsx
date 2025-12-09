@@ -120,8 +120,8 @@ export function AssistantWidget() {
                                 </form>
 
                                 {error && (
-                                    <div className="absolute bottom-16 left-4 right-4 p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20">
-                                        An error occurred. Check browser console or API key.
+                                    <div className="absolute bottom-16 left-4 right-4 p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20 break-words">
+                                        Error: {error.message || "Unknown error"}
                                     </div>
                                 )}
                             </CardFooter>
