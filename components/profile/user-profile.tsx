@@ -11,6 +11,62 @@ import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield, Zap, ShieldChe
 import { toast } from 'sonner';
 import { useSocial } from '@/hooks/useSocial';
 import { Feed } from '@/components/social/feed';
+import { useSettings } from '@/lib/settings';
+import { ImageIcon } from 'lucide-react';
+
+function BackgroundSelector() {
+    const { backgroundImage, setBackgroundImage } = useSettings();
+    const [backgrounds, setBackgrounds] = useState<string[]>([]);
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && backgrounds.length === 0) {
+            fetch('/api/backgrounds')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.files) setBackgrounds(data.files);
+                })
+                .catch(err => console.error("Error fetching backgrounds", err));
+        }
+    }, [isOpen]);
+
+    return (
+        <div className="bg-slate-950/50 rounded-xl border border-slate-800/50 overflow-hidden">
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-900/50 transition"
+            >
+                <div className="flex items-center gap-3">
+                    <ImageIcon size={18} className="text-purple-400" />
+                    <span className="text-sm font-medium text-slate-300">Fons de Pantalla</span>
+                </div>
+                <div className="text-xs text-slate-500 flex items-center gap-2">
+                    {backgroundImage ? 'Personalitzat' : 'Per defecte'}
+                    {isOpen ? <X size={14} /> : <Edit2 size={14} />}
+                </div>
+            </div>
+
+            {isOpen && (
+                <div className="p-3 border-t border-slate-800/50 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                    {backgrounds.map((bg) => (
+                        <div
+                            key={bg}
+                            onClick={() => setBackgroundImage(bg)}
+                            className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition hover:scale-105 ${backgroundImage === bg ? 'border-purple-500' : 'border-transparent'}`}
+                        >
+                            <Image src={bg} alt="bg" fill className="object-cover" sizes="150px" />
+                        </div>
+                    ))}
+                    {backgrounds.length === 0 && (
+                        <div className="col-span-2 text-center text-xs text-slate-500 py-4">
+                            Carregant fons...
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export function UserProfile() {
     const { user, loading: authLoading, signOut } = useAuth();
@@ -239,7 +295,6 @@ export function UserProfile() {
                                 </select>
                             </div>
 
-                            {/* Notifications */}
                             <div
                                 onClick={() => {
                                     const newNotif = !profile.settings?.notifications;
@@ -262,6 +317,9 @@ export function UserProfile() {
                                     <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${profile.settings?.notifications ? 'left-5' : 'left-1'}`}></div>
                                 </div>
                             </div>
+
+                            {/* Background Selector */}
+                            <BackgroundSelector />
 
                             {/* Social Privacy Settings */}
                             {socialSettings && (

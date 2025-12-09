@@ -27,7 +27,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     return (
         <div className="h-dvh w-full flex flex-col text-white overflow-hidden">
             {/* Top Bar */}
-            <header className="h-14 px-4 flex items-center justify-between bg-zinc-900/80 backdrop-blur-md border-b border-white/5 z-50 shrink-0">
+            <header className="h-14 px-4 flex items-center justify-between bg-zinc-900/40 backdrop-blur-md border-b border-white/5 z-50 shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center border border-white shadow-lg relative">
                         {/* Placeholder Avatar */}
@@ -68,7 +68,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
             </main>
 
             {/* Bottom Navigation */}
-            <nav className="h-16 bg-zinc-900/90 backdrop-blur-lg border-t border-white/5 flex items-center justify-around z-50 pb-safe shrink-0">
+            <nav className="h-16 bg-zinc-900/50 backdrop-blur-lg border-t border-white/5 flex items-center justify-around z-50 pb-safe shrink-0">
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href;
                     return (
