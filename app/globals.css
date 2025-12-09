@@ -27,7 +27,9 @@
   }
 }
 
+html,
 body {
+  background: transparent !important;
   color: #e2e8f0;
   font-family: 'Inter', sans-serif;
   /* Enforcing Inter as requested */

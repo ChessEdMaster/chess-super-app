@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { CLUB_NAVIGATION } from '@/lib/config/club-navigation';
+import { ClubType } from '@/types/club';
 
 export default function ClubManageLayout({ children }: { children: React.ReactNode }) {
     const params = useParams();
@@ -24,6 +26,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
     const pathname = usePathname();
     const { user, loading: authLoading } = useAuth();
     const [clubName, setClubName] = useState<string>('Carregant...');
+    const [clubType, setClubType] = useState<ClubType>('online');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const router = useRouter();
@@ -66,10 +69,10 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
                     return;
                 }
 
-                // 3. Obtener nombre del club (separado para evitar problemas con RLS)
+                // 3. Obtener nombre y tipo del club
                 const { data: club, error: clubError } = await supabase
                     .from('clubs')
-                    .select('name')
+                    .select('name, type')
                     .eq('id', clubId)
                     .single();
 
@@ -82,6 +85,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
 
                 if (club) {
                     setClubName(club.name);
+                    setClubType((club.type as ClubType) || 'online');
                 }
 
                 setLoading(false);
@@ -104,14 +108,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
         );
     }
 
-    const navItems = [
-        { href: `/clubs/manage/${clubId}`, label: 'Visió General', icon: LayoutDashboard },
-        { href: `/clubs/manage/${clubId}/members`, label: 'Socis i Membres', icon: Users },
-        { href: `/clubs/manage/${clubId}/groups`, label: 'Acadèmia i Grups', icon: GraduationCap },
-        { href: `/clubs/manage/${clubId}/plans`, label: 'Plans i Quotes', icon: CreditCard },
-        { href: `/clubs/manage/${clubId}/matches`, label: 'Competicions', icon: Trophy },
-        { href: `/clubs/manage/${clubId}/settings`, label: 'Configuració', icon: Settings },
-    ];
+    const navItems = CLUB_NAVIGATION[clubType] || CLUB_NAVIGATION['online'];
 
     return (
         <div className="min-h-screen bg-neutral-950 flex">
@@ -131,16 +128,21 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
                         <h2 className="text-xl font-bold text-white truncate" title={clubName}>
                             {clubName}
                         </h2>
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider mt-1">Panell de Gestió</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-neutral-500 uppercase tracking-wider">Panell de Gestió</p>
+                            <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] font-medium uppercase text-neutral-400 border border-neutral-700">
+                                {clubType.replace('_', ' ')}
+                            </span>
+                        </div>
                     </div>
 
                     <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                         {navItems.map((item) => {
-                            const isActive = pathname === item.href;
+                            const isActive = pathname === item.href(clubId);
                             return (
                                 <Link
-                                    key={item.href}
-                                    href={item.href}
+                                    key={item.label}
+                                    href={item.href(clubId)}
                                     className={cn(
                                         "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
                                         isActive
