@@ -13,7 +13,9 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export function AssistantWidget() {
     const [isOpen, setIsOpen] = useState(false);
-    const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat() as any;
+    const { messages = [], input = '', handleInputChange, handleSubmit, isLoading, error } = useChat({
+        onError: (err) => console.error("Chat Error:", err)
+    }) as any;
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -47,7 +49,7 @@ export function AssistantWidget() {
                                 </Button>
                             </CardHeader>
                             <CardContent className="flex-1 overflow-auto p-0 space-y-4">
-                                {messages.length === 0 ? (
+                                {(!messages || messages.length === 0) ? (
                                     <div className="flex flex-col items-center justify-center h-full text-center p-8 text-muted-foreground space-y-2">
                                         <Bot className="w-12 h-12 opacity-20" />
                                         <p className="text-sm">Hi! I'm your Chess Assistant.</p>
@@ -55,7 +57,7 @@ export function AssistantWidget() {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-2 p-4">
-                                        {messages.map((m: any) => (
+                                        {(messages || []).map((m: any) => (
                                             <ChatMessage key={m.id} message={m} />
                                         ))}
                                         {isLoading && (
@@ -80,6 +82,12 @@ export function AssistantWidget() {
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>
+
+                                {error && (
+                                    <div className="absolute bottom-16 left-4 right-4 p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20">
+                                        An error occurred. Check browser console or API key.
+                                    </div>
+                                )}
                             </CardFooter>
                         </Card>
                     </motion.div>
@@ -96,6 +104,6 @@ export function AssistantWidget() {
             >
                 {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
             </Button>
-        </div>
+        </div >
     );
 }
