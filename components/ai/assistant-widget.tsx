@@ -97,7 +97,12 @@ export function AssistantWidget() {
                                     </div>
                                 )}
                             </CardContent>
-                            <CardFooter className="p-4 border-t">
+                            <CardFooter className="flex flex-col p-4 border-t gap-2 items-stretch">
+                                {error && (
+                                    <div className="p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20 break-words mb-2">
+                                        Error: {error.message || "Unknown error"}
+                                    </div>
+                                )}
                                 <form onSubmit={handleFormSubmit} className="flex w-full gap-2">
                                     <Input
                                         value={localInput}
@@ -109,12 +114,6 @@ export function AssistantWidget() {
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>
-
-                                {error && (
-                                    <div className="absolute bottom-16 left-4 right-4 p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20 break-words">
-                                        Error: {error.message || "Unknown error"}
-                                    </div>
-                                )}
                             </CardFooter>
                         </Card>
                     </motion.div>
