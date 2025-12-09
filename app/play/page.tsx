@@ -590,13 +590,43 @@ export default function PlayPage() {
                 <p className="text-slate-300 mb-6 text-sm">
                   {winner === 'win' ? 'Has guanyat punts de lliga!' : 'Segueix practicant per millorar.'}
                 </p>
-                <Button
-                  size="lg"
-                  className="w-full bg-white text-black hover:bg-slate-200 font-bold rounded-xl"
-                  onClick={() => setGameState('idle')}
-                >
-                  Tornar a jugar
-                </Button>
+                <div className="flex flex-col gap-2 w-full">
+                  <Button
+                    size="lg"
+                    className="w-full bg-white text-black hover:bg-slate-200 font-bold rounded-xl"
+                    onClick={() => {
+                      setGameState('searching');
+                      setWinner(null);
+                      // Swap colors for rematch logic if needed, or just search again
+                      const nextColor = orientation === 'white' ? 'black' : 'white';
+                      setOrientation(nextColor);
+                      startBotGame(botDifficulty); // Immediate rematch with same bot settings
+                    }}
+                  >
+                    🔄 Revenja
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl"
+                    onClick={() => {
+                      // Save current game PGN to local storage (or pass via URL state)
+                      const pgn = game.pgn();
+                      localStorage.setItem('analysis_pgn', pgn);
+                      window.location.href = '/analysis';
+                    }}
+                  >
+                    🔍 Analitzar Partida
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="w-full text-slate-400 hover:text-white"
+                    onClick={() => setGameState('idle')}
+                  >
+                    Tornar al menú
+                  </Button>
+                </div>
               </div>
             </div>
           )}
