@@ -7,6 +7,7 @@ import { PresenceSync } from "@/components/presence/presence-sync";
 import { GlobalBackground } from "@/components/global-background";
 import Image from "next/image";
 import { Toaster } from '@/components/ui/sonner';
+import { AssistantWidget } from "@/components/ai/assistant-widget";
 
 export const metadata: Metadata = {
   title: "CHESS CLANS",
@@ -34,6 +35,7 @@ export default function RootLayout({
               <MobileLayout>
                 {children}
               </MobileLayout>
+              <AssistantWidget />
               <Toaster position="top-center" richColors />
             </PlayerStoreSync>
           </AuthProvider>
