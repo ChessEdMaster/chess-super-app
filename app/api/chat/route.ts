@@ -13,7 +13,17 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { messages } = await req.json();
+        const body = await req.json();
+        console.log("Chat Request Body:", body);
+        const { messages } = body;
+
+        if (!messages) {
+            console.error("No messages found in request body");
+            return new Response(JSON.stringify({ error: "Invalid Request", details: "No 'messages' array in request body." }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         const result = streamText({
             model: google('gemini-1.5-flash'),

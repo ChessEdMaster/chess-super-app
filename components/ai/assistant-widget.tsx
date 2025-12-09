@@ -16,13 +16,11 @@ export function AssistantWidget() {
 
     // cast to any to verify runtime behavior of the new SDK version
     const chatHelpers = useChat({
-        // api: '/api/chat', // Default is often /api/chat, let's rely on default or explicit if needed
+        api: '/api/chat',
         onError: (err) => console.error("Chat Error:", err)
     }) as any;
 
-    // Destructure based on inspection of type definitions: uses sendMessage and status
-    const { messages = [], sendMessage, status, error } = chatHelpers;
-    const isLoading = status === 'streaming' || status === 'submitted';
+    const { messages, append, isLoading, error } = chatHelpers;
 
     const [localInput, setLocalInput] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,20 +42,14 @@ export function AssistantWidget() {
         e.preventDefault();
         if (!localInput.trim()) return;
 
-        // Manually send user message using sendMessage if available
-        if (typeof sendMessage === 'function') {
-            await sendMessage({
-                role: 'user',
-                content: localInput
-            });
-        } else if (typeof chatHelpers.append === 'function') {
-            // Fallback to append if looking at wrong types
-            await chatHelpers.append({
+        // Standard append usage
+        if (typeof append === 'function') {
+            await append({
                 role: 'user',
                 content: localInput
             });
         } else {
-            console.error("No sendMessage or append function found in useChat result", chatHelpers);
+            console.error("append function not found in useChat result", chatHelpers);
         }
 
         setLocalInput("");
