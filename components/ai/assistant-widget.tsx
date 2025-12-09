@@ -16,7 +16,6 @@ export function AssistantWidget() {
 
     // cast to any to verify runtime behavior of the new SDK version
     const chatHelpers = useChat({
-        api: '/api/chat',
         onError: (err) => console.error("Chat Error:", err)
     }) as any;
 
