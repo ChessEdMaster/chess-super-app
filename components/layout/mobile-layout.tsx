@@ -53,6 +53,11 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                         <div className="w-3 h-3 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
                         <span className="text-xs font-bold text-green-100">{profile.currencies.gems}</span>
                     </div>
+                    <Link href="/shop" className="text-zinc-400 hover:text-white transition-colors relative">
+                        <div className="bg-zinc-800/50 p-2 rounded-full border border-white/5 hover:bg-zinc-700/50">
+                            <ShoppingBag size={18} />
+                        </div>
+                    </Link>
                     <NotificationBell />
                 </div>
             </header>
