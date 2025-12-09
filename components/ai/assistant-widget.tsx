@@ -75,10 +75,10 @@ export function AssistantWidget() {
                                         value={input}
                                         onChange={handleInputChange}
                                         placeholder="Ask something..."
-                                        disabled={isLoading}
+
                                         className="flex-1"
                                     />
-                                    <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                                    <Button type="submit" size="icon" disabled={!input || !input.trim()}>
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>
