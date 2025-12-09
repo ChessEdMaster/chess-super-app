@@ -13,9 +13,14 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export function AssistantWidget() {
     const [isOpen, setIsOpen] = useState(false);
-    const { messages = [], input = '', handleInputChange, handleSubmit, isLoading, error } = useChat({
+    // Removed 'input' and 'handleInputChange' destructuring to avoid conflict/issues
+    // Kept 'messages', 'append', 'isLoading', 'error'
+    const { messages = [], append, isLoading, error } = useChat({
         onError: (err) => console.error("Chat Error:", err)
     }) as any;
+
+    // Local state for input to ensure it works reliably
+    const [localInput, setLocalInput] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -25,6 +30,19 @@ export function AssistantWidget() {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isOpen]);
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!localInput.trim()) return;
+
+        // Manually append user message
+        await append({
+            role: 'user',
+            content: localInput
+        });
+
+        setLocalInput("");
+    };
 
     return (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
@@ -70,15 +88,14 @@ export function AssistantWidget() {
                                 )}
                             </CardContent>
                             <CardFooter className="p-4 border-t">
-                                <form onSubmit={handleSubmit} className="flex w-full gap-2">
+                                <form onSubmit={handleFormSubmit} className="flex w-full gap-2">
                                     <Input
-                                        value={input}
-                                        onChange={handleInputChange}
+                                        value={localInput}
+                                        onChange={(e) => setLocalInput(e.target.value)}
                                         placeholder="Ask something..."
-
                                         className="flex-1"
                                     />
-                                    <Button type="submit" size="icon" disabled={!input || !input.trim()}>
+                                    <Button type="submit" size="icon" disabled={!localInput || !localInput.trim()}>
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>
