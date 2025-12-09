@@ -43,7 +43,7 @@ export default function CardsPage() {
     ];
 
     return (
-        <div className="h-full w-full bg-zinc-950 p-3 overflow-y-auto pb-24">
+        <div className="h-full w-full p-3 overflow-y-auto pb-24">
             <h1 className="text-xl font-black text-white mb-6 uppercase tracking-wider italic">
                 Collection
             </h1>

@@ -35,7 +35,7 @@ export default function KingdomPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <div className="min-h-screen text-white flex flex-col">
             {/* Header / Resources */}
             <header className="p-4 border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
