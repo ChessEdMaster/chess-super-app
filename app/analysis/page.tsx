@@ -119,6 +119,7 @@ export default function AnalysisPage() {
   }
 
   // --- ENGINE WORKER ---
+  // --- ENGINE WORKER ---
   useEffect(() => {
     if (!engine.current) {
       // Using a reliable CDN for Stockfish.js
@@ -131,8 +132,25 @@ export default function AnalysisPage() {
           const blob = new Blob([code], { type: 'application/javascript' });
           const localWorkerUrl = URL.createObjectURL(blob);
           engine.current = new Worker(localWorkerUrl);
+
+          // --- PERFORMANCE OPTIMIZATION ---
+          // Detect logical cores (default to 4 if unavailable)
+          const cores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4;
+          const threadsToUse = Math.max(1, cores - 1); // Leave 1 core for UI
+          const hashSize = 128; // 128 MB Hash
+
+          console.log(`Initializing Stockfish with ${threadsToUse} threads and ${hashSize}MB Hash`);
+
           engine.current.postMessage('uci');
-          console.log("Stockfish engine initialized");
+
+          // Configure Engine Options for Max Performance
+          engine.current.postMessage(`setoption name Threads value ${threadsToUse}`);
+          engine.current.postMessage(`setoption name Hash value ${hashSize}`);
+          engine.current.postMessage('setoption name UCI_AnalyseMode value true');
+          engine.current.postMessage('setoption name Ponder value false');
+
+          // Wait for ready
+          engine.current.postMessage('isready');
 
           engine.current.onmessage = (event) => {
             const msg = event.data;
@@ -378,7 +396,8 @@ export default function AnalysisPage() {
         {/* Mobile: max-w-[95vw] to be wider. Desktop: max-w-[65vh] to be smaller and match Play page */}
         <div className="w-full max-w-[95vw] lg:max-w-[65vh] aspect-square relative z-0 shadow-2xl rounded-lg overflow-hidden border border-zinc-800">
           {viewMode === '3d' ? (
-            <ChessScene fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} />
+            /* @ts-ignore - Arrows prop added dynamically */
+            <ChessScene fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} arrows={analysisArrows} />
           ) : (
             <div className="w-full h-full">
               {/* @ts-ignore - Arrows prop added dynamically */}

@@ -317,12 +317,78 @@ import ClientOnly from '@/components/ClientOnly';
 
 // ...
 
+// --- ARROWS ---
+interface ArrowProps {
+    from: string;
+    to: string;
+    color: string;
+}
+
+const Arrow = ({ from, to, color }: ArrowProps) => {
+    // Convert square notation to board coordinates
+    // Same coordinate system as Board: files 'a' -> 'h' map to x (-3.5 -> 3.5)
+    // ranks 1 -> 8 map to z (3.5 -> -3.5)
+
+    const getCoords = (square: string) => {
+        const col = square.charCodeAt(0) - 97;
+        const row = parseInt(square[1]) - 1;
+
+        // Match Board logic: 
+        // x = col - 3.5
+        // z = 3.5 - row (reversed because row 0 is rank 1 which is at z=3.5)
+
+        return { x: col - 3.5, z: 3.5 - row };
+    };
+
+    const start = getCoords(from);
+    const end = getCoords(to);
+
+    // Calculate vector properties
+    const dx = end.x - start.x;
+    const dz = end.z - start.z;
+    const length = Math.sqrt(dx * dx + dz * dz);
+
+    // Angle in XZ plane
+    // atan2(z, x) gives angle from X axis.
+    // Three.js rotation "y" is around Y axis.
+    // We want to rotate a box that starts pointing along X axis? 
+    // Usually easier to compute rotation.
+    // Let's assume default box aligns with X.
+    const angle = Math.atan2(dz, dx);
+
+    // Midpoint
+    const midX = (start.x + end.x) / 2;
+    const midZ = (start.z + end.z) / 2;
+
+    // Lift arrow slightly above board/pieces if possible, or just above board
+    // Pieces are roughly 1 unit high. Let's put arrow at 0.1 for ground level or higher for "over pieces"
+    // Ground level is better for clarity usually, but might clip.
+    const yHeight = 0.05;
+
+    return (
+        <group position={[midX, yHeight, midZ]} rotation={[0, -angle, 0]}>
+            {/* Shaft */}
+            {/* Length adjusted so head doesn't overlap excessively or fall short */}
+            <mesh position={[-length / 2 + (length - 0.5) / 2, 0, 0]} receiveShadow castShadow>
+                <boxGeometry args={[length - 0.5, 0.15, 0.05]} />
+                <meshStandardMaterial color={color} transparent opacity={0.8} />
+            </mesh>
+            {/* Head */}
+            <mesh position={[length / 2 - 0.25, 0, 0]} rotation={[0, 0, -Math.PI / 2]} receiveShadow castShadow>
+                <coneGeometry args={[0.25, 0.5, 32]} />
+                <meshStandardMaterial color={color} transparent opacity={0.9} />
+            </mesh>
+        </group>
+    );
+};
+
 export default function ChessScene({
     fen,
     orientation = 'white',
     onSquareClick,
-    customSquareStyles
-}: ChessSceneProps) {
+    customSquareStyles,
+    arrows = []
+}: ChessSceneProps & { arrows?: ArrowProps[] }) {
     return (
         <ClientOnly>
             <div className="w-full h-full bg-slate-900 rounded-xl overflow-hidden shadow-2xl">
@@ -338,6 +404,12 @@ export default function ChessScene({
                     <Stage environment="city" intensity={0.5} adjustCamera={false} shadows={false}>
                         <group rotation={[0, orientation === 'black' ? Math.PI : 0, 0]}>
                             <Board onSquareClick={onSquareClick} customSquareStyles={customSquareStyles} />
+
+                            {/* Render Arrows */}
+                            {arrows.map((arrow, i) => (
+                                <Arrow key={i} {...arrow} />
+                            ))}
+
                             <Pieces fen={fen} />
                         </group>
                     </Stage>
