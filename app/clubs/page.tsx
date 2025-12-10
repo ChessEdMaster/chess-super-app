@@ -14,9 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
-
-import { ClubType } from '@/types/feed';
+import { CreateClubModal } from '@/components/clubs/create-club-modal';
 
 interface Club {
     id: string;
@@ -45,11 +43,6 @@ export default function ClubsPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [creating, setCreating] = useState(false);
-    const [newClubName, setNewClubName] = useState('');
-    const [newClubDescription, setNewClubDescription] = useState('');
-    const [newClubIsPublic, setNewClubIsPublic] = useState(true);
-    const [newClubType, setNewClubType] = useState<ClubType>('online');
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -137,64 +130,6 @@ export default function ClubsPage() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const createClub = async () => {
-        if (!user || !newClubName.trim()) return;
-
-        setCreating(true);
-        try {
-            const slug = newClubName
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-|-$/g, '');
-
-            const { data, error } = await supabase
-                .from('clubs')
-                .insert({
-                    name: newClubName.trim(),
-                    slug: slug,
-                    description: newClubDescription.trim() || null,
-                    short_description: newClubDescription.trim().substring(0, 150) || null,
-                    owner_id: user.id,
-                    is_public: newClubIsPublic,
-                    type: newClubType
-                })
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            // Afegir el creador com a membre amb rol owner
-            const { error: memberError } = await supabase
-                .from('club_members')
-                .insert({
-                    club_id: data.id,
-                    user_id: user.id,
-                    role: 'owner'
-                });
-
-            if (memberError) {
-                console.error('Error creating membership:', memberError);
-            }
-
-            // Esperar una mica per assegurar que la DB s'ha actualitzat
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Redirigir al club creat (manage page initially)
-            router.push(`/clubs/manage/${data.id}`);
-            toast.success('Club created successfully!');
-        } catch (error: any) {
-            console.error('Error creating club:', error);
-            toast.error(error.message || 'Error al crear el club');
-        } finally {
-            setCreating(false);
-            setShowCreateModal(false);
-            setNewClubName('');
-            setNewClubDescription('');
-            setNewClubIsPublic(true);
-            setNewClubType('online');
-        }
-    };
-
     return (
         <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
             <div className="max-w-6xl mx-auto">
@@ -205,13 +140,13 @@ export default function ClubsPage() {
                             <Shield className="text-yellow-500" size={32} />
                             Chess Clans
                         </h1>
-                        <p className="text-slate-400">Join a clan, compete in wars, and rise to the top!</p>
+                        <p className="text-slate-400">Uneix-te a un clan, competeix i puja al rànquing!</p>
                     </div>
                     <button
                         onClick={() => setShowCreateModal(true)}
-                        className="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg shadow-yellow-900/20 flex items-center gap-2"
+                        className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black px-6 py-2.5 rounded-xl font-bold transition shadow-lg shadow-yellow-900/20 flex items-center gap-2 transform active:scale-95"
                     >
-                        <Plus size={20} /> Create Clan
+                        <Plus size={20} /> Crear Clan
                     </button>
                 </div>
 
@@ -222,7 +157,7 @@ export default function ClubsPage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search clans..."
+                        placeholder="Buscar clans..."
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 transition"
                     />
                 </div>
@@ -235,16 +170,31 @@ export default function ClubsPage() {
                 ) : clubs.length === 0 ? (
                     <div className="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800">
                         <Shield size={48} className="mx-auto text-slate-700 mb-4" />
-                        <h3 className="text-xl font-bold text-slate-400 mb-2">No clans found</h3>
-                        <p className="text-slate-500">Try adjusting your search or create a new one!</p>
+                        <h3 className="text-xl font-bold text-slate-400 mb-2">Cap clan trobat</h3>
+                        <p className="text-slate-500">Prova d'ajustar la cerca o crea'n un de nou!</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {clubs.map((club) => (
-                            <Link key={club.id} href={`/clubs/${club.id}`} className="block h-full relative z-10">
-                                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-yellow-500/50 transition group h-full flex flex-col">
+                            <Link key={club.id} href={`/clubs/manage/${club.id}`} className="block h-full relative z-10 group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500" />
+                                <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 hover:border-yellow-500/50 transition group h-full flex flex-col relative overflow-hidden">
+
+                                    {/* Type Badge */}
+                                    <div className="absolute top-4 right-4">
+                                        {club.is_public ? (
+                                            <div className="bg-green-500/10 text-green-400 text-xs font-bold px-2 py-1 rounded-full border border-green-500/20 flex items-center gap-1">
+                                                <Globe size={10} /> Públic
+                                            </div>
+                                        ) : (
+                                            <div className="bg-red-500/10 text-red-400 text-xs font-bold px-2 py-1 rounded-full border border-red-500/20 flex items-center gap-1">
+                                                <Lock size={10} /> Privat
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
+                                        <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 overflow-hidden border border-slate-700">
                                             {club.image_url ? (
                                                 <img src={club.image_url} alt={club.name} className="w-full h-full object-cover" />
                                             ) : (
@@ -253,21 +203,16 @@ export default function ClubsPage() {
                                         </div>
                                         <div>
                                             <h3 className="text-xl font-bold text-white group-hover:text-yellow-500 transition-colors line-clamp-1">{club.name}</h3>
-                                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
                                                 <span className="flex items-center gap-1">
-                                                    <Users size={12} /> {club.member_count}
-                                                </span>
-                                                <span>•</span>
-                                                <span className="flex items-center gap-1">
-                                                    {club.is_public ? <Globe size={12} /> : <Lock size={12} />}
-                                                    {club.is_public ? 'Public' : 'Private'}
+                                                    <Users size={12} /> {club.member_count} membres
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <p className="text-sm text-slate-400 mb-4 line-clamp-2 flex-grow">
-                                        {club.short_description || club.description || 'No description provided.'}
+                                        {club.short_description || club.description || 'Sense descripció.'}
                                     </p>
 
                                     <div className="flex items-center justify-between pt-4 border-t border-slate-800 mt-auto">
@@ -276,7 +221,7 @@ export default function ClubsPage() {
                                         </span>
                                         {club.is_member && (
                                             <span className="text-xs font-bold text-green-400 bg-green-900/20 px-2 py-1 rounded-full">
-                                                Member
+                                                Membre
                                             </span>
                                         )}
                                     </div>
@@ -286,94 +231,11 @@ export default function ClubsPage() {
                     </div>
                 )}
 
-                {/* CREATE CLUB MODAL */}
-                {showCreateModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
-                            <h2 className="text-2xl font-bold text-white mb-6">Create New Clan</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                                        Clan Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newClubName}
-                                        onChange={(e) => setNewClubName(e.target.value)}
-                                        placeholder="Ex: Grandmasters United"
-                                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        value={newClubDescription}
-                                        onChange={(e) => setNewClubDescription(e.target.value)}
-                                        placeholder="Describe your clan..."
-                                        rows={4}
-                                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 resize-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                                        Clan Type
-                                    </label>
-                                    <select
-                                        value={newClubType}
-                                        onChange={(e) => setNewClubType(e.target.value as ClubType)}
-                                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
-                                    >
-                                        <option value="online">Online Clan</option>
-                                        <option value="club">Real Chess Club</option>
-                                        <option value="school">School / Education</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        id="isPublic"
-                                        checked={newClubIsPublic}
-                                        onChange={(e) => setNewClubIsPublic(e.target.checked)}
-                                        className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-yellow-600 focus:ring-yellow-500"
-                                    />
-                                    <label htmlFor="isPublic" className="text-sm text-slate-300">
-                                        Public Clan (Anyone can join)
-                                    </label>
-                                </div>
-                            </div>
-                            <div className="flex gap-4 mt-6">
-                                <button
-                                    onClick={() => {
-                                        setShowCreateModal(false);
-                                        setNewClubName('');
-                                        setNewClubDescription('');
-                                        setNewClubIsPublic(true);
-                                        setNewClubType('online');
-                                    }}
-                                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium transition"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={createClub}
-                                    disabled={!newClubName.trim() || creating}
-                                    className="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {creating ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <Loader2 className="animate-spin" size={16} />
-                                            Creating...
-                                        </span>
-                                    ) : (
-                                        'Create Clan'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <CreateClubModal
+                    isOpen={showCreateModal}
+                    onClose={() => setShowCreateModal(false)}
+                    userId={user?.id || ''}
+                />
             </div>
         </div>
     );

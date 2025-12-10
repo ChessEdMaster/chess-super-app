@@ -21,6 +21,7 @@ export interface AcademyCourse {
     subject_tags?: string[];
     published?: boolean;
     created_at?: string;
+    is_enrolled?: boolean; // UI helper
 }
 
 export interface AcademyModule {
@@ -32,6 +33,16 @@ export interface AcademyModule {
     level: DifficultyLevel;
     order: number;
     created_at?: string;
+}
+
+export interface AcademyEnrollment {
+    id: string;
+    user_id: string;
+    course_id: string;
+    assigned_by?: string;
+    club_id?: string;
+    created_at: string;
+    course?: AcademyCourse;
 }
 
 // ============================================
@@ -50,6 +61,10 @@ export interface LessonContent {
     steps: LessonStep[];
     introduction?: string; // Optional intro text
     conclusion?: string; // Optional conclusion text
+    // Additional types based on the seed
+    type?: string;
+    text?: string;
+    piece?: string;
 }
 
 export interface AcademyLesson {
@@ -60,6 +75,7 @@ export interface AcademyLesson {
     content: LessonContent;
     order: number;
     difficulty: number; // 1-5
+    is_free?: boolean;
     created_at?: string;
 }
 

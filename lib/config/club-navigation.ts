@@ -8,9 +8,10 @@ import {
     Mail,
     CreditCard,
     FileText,
-    Swords
+    Swords,
+    BookOpen
 } from 'lucide-react';
-import { ClubType } from '@/types/club';
+import { ClubType } from '@/types/feed'; // Change to feed if that's where the union is
 
 type NavItem = {
     label: string;
@@ -26,7 +27,7 @@ const BASE_ITEMS: NavItem[] = [
     }
 ];
 
-export const CLUB_NAVIGATION: Record<ClubType, NavItem[]> = {
+export const CLUB_NAVIGATION: Record<string, NavItem[]> = {
     online: [
         { label: 'Resum', href: (id) => `/clubs/manage/${id}`, icon: LayoutDashboard },
         { label: 'Torneigs', href: (id) => `/clubs/manage/${id}/tournaments`, icon: Trophy },
@@ -35,16 +36,18 @@ export const CLUB_NAVIGATION: Record<ClubType, NavItem[]> = {
         ...BASE_ITEMS
     ],
     school: [
-        { label: 'Aula Virtual', href: (id) => `/clubs/manage/${id}`, icon: LayoutDashboard }, // School Dashboard
-        { label: 'Alumnes', href: (id) => `/clubs/manage/${id}/members`, icon: GraduationCap }, // Reutilitzem members però li diem Alumnes
+        { label: 'Aula Virtual', href: (id) => `/clubs/manage/${id}`, icon: LayoutDashboard },
+        { label: 'Alumnes', href: (id) => `/clubs/manage/${id}/members`, icon: GraduationCap },
+        { label: 'Gestió Acadèmica', href: (id) => `/clubs/manage/${id}/academy`, icon: BookOpen }, // NEW
         { label: 'Grups/Classes', href: (id) => `/clubs/manage/${id}/groups`, icon: Users },
-        { label: 'Progrés', href: (id) => `/clubs/manage/${id}/progress`, icon: LineChart }, // Nou
-        { label: 'Comunicats', href: (id) => `/clubs/manage/${id}/communications`, icon: Mail }, // Nou
+        { label: 'Progrés', href: (id) => `/clubs/manage/${id}/progress`, icon: LineChart },
+        { label: 'Comunicats', href: (id) => `/clubs/manage/${id}/communications`, icon: Mail },
         ...BASE_ITEMS
     ],
-    physical_club: [
+    club: [ // Renamed from physical_club to match DB 'club'
         { label: 'Administració', href: (id) => `/clubs/manage/${id}`, icon: LayoutDashboard },
         { label: 'Socis', href: (id) => `/clubs/manage/${id}/members`, icon: Users },
+        { label: 'Gestió Acadèmica', href: (id) => `/clubs/manage/${id}/academy`, icon: BookOpen }, // NEW
         { label: 'Quotes', href: (id) => `/clubs/manage/${id}/plans`, icon: CreditCard },
         { label: 'Federació', href: (id) => `/clubs/manage/${id}/federation`, icon: FileText },
         ...BASE_ITEMS
