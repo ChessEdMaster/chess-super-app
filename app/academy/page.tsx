@@ -10,26 +10,48 @@ import {
     Target,
     ArrowRight,
     Loader2,
-    TrendingUp
+    TrendingUp,
+    School,
+    Trophy,
+    BrainCircuit,
+    Calculator,
+    Palette,
+    History
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { AcademyModule, ModuleProgress, UserAcademyStats } from '@/types/academy';
+import { AcademyCourse, AcademyModule, UserAcademyStats } from '@/types/academy';
 import { ProgressTracker } from '@/components/progress-tracker';
 import { AchievementGrid } from '@/components/achievement-badge';
 
-const ICON_MAP: Record<string, any> = {
-    BookOpen,
-    Puzzle,
-    GraduationCap,
-    Target
+const TRACK_ICONS: Record<string, any> = {
+    academic: GraduationCap,
+    pedagogical: BrainCircuit,
+    sport: Trophy,
+    vocational: Target
+};
+
+const TRACK_TITLES: Record<string, string> = {
+    academic: '🎓 Currículum Escolar Oficial',
+    pedagogical: '📐 Escacs Transversals (Interdisciplinar)',
+    sport: '⚽ Alt Rendiment Esportiu (Cross-Training)',
+    vocational: '💼 Carrera Professional i Investigació'
+};
+
+const SUBJECT_ICONS: Record<string, any> = {
+    matemàtiques: Calculator,
+    geometria: Calculator,
+    història: History,
+    art: Palette,
+    psicologia: BrainCircuit,
+    futbol: Trophy
 };
 
 export default function AcademyPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
+    const [courses, setCourses] = useState<AcademyCourse[]>([]);
     const [modules, setModules] = useState<AcademyModule[]>([]);
-    const [moduleProgress, setModuleProgress] = useState<ModuleProgress[]>([]);
     const [stats, setStats] = useState<UserAcademyStats>({
         totalLessonsCompleted: 0,
         totalExercisesSolved: 0,
@@ -57,49 +79,22 @@ export default function AcademyPage() {
 
     const loadAcademyData = async () => {
         try {
-            // Load modules
-            const { data: modulesData, error: modulesError } = await supabase
-                .from('academy_modules')
+            // Load courses
+            const { data: coursesData, error: coursesError } = await supabase
+                .from('academy_courses')
                 .select('*')
-                .order('order', { ascending: true });
+                .order('target_grade');
 
-            if (modulesError) throw modulesError;
-            setModules(modulesData || []);
-
-            // Load module progress
-            const progressData: ModuleProgress[] = [];
-            for (const module of modulesData || []) {
-                // Count total lessons in module
-                const { count: totalLessons } = await supabase
-                    .from('academy_lessons')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('module_id', module.id);
-
-                // Count completed lessons by user
-                const { data: completedLessons } = await supabase
-                    .from('user_lesson_progress')
-                    .select('lesson_id')
-                    .eq('user_id', user!.id)
-                    .eq('completed', true)
-                    .in('lesson_id',
-                        (await supabase
-                            .from('academy_lessons')
-                            .select('id')
-                            .eq('module_id', module.id)
-                        ).data?.map(l => l.id) || []
-                    );
-
-                const completed = completedLessons?.length || 0;
-                const total = totalLessons || 0;
-
-                progressData.push({
-                    module,
-                    totalLessons: total,
-                    completedLessons: completed,
-                    progressPercentage: total > 0 ? (completed / total) * 100 : 0
-                });
+            if (coursesError) {
+                console.error('Error loading courses:', coursesError);
             }
-            setModuleProgress(progressData);
+            setCourses(coursesData || []);
+
+            // Load all modules 
+            const { data: modulesData } = await supabase
+                .from('academy_modules')
+                .select('*');
+            setModules(modulesData || []);
 
             // Load user stats
             const { data: lessonsProgress } = await supabase
@@ -126,7 +121,7 @@ export default function AcademyPage() {
             setStats({
                 totalLessonsCompleted: lessonsProgress?.length || 0,
                 totalExercisesSolved: exercisesProgress?.length || 0,
-                currentStreak: 0, // TODO: Calculate streak
+                currentStreak: 0,
                 longestStreak: 0,
                 totalTimeSpent: exercisesProgress?.reduce((sum, e) => sum + (e.time_spent || 0), 0) || 0,
                 averageScore: avgScore,
@@ -156,9 +151,16 @@ export default function AcademyPage() {
         );
     }
 
+    // Group courses by track
+    const tracks = ['academic', 'pedagogical', 'sport', 'vocational'];
+    const groupedCourses = tracks.reduce((acc, track) => {
+        acc[track] = courses.filter(c => (c.track || 'academic') === track);
+        return acc;
+    }, {} as Record<string, AcademyCourse[]>);
+
     return (
         <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-7xl mx-auto">
 
                 {/* HEADER */}
                 <div className="flex flex-col items-center justify-center mb-12 text-center">
@@ -166,124 +168,163 @@ export default function AcademyPage() {
                         <GraduationCap size={40} className="text-indigo-500" /> Acadèmia ChessHub
                     </h1>
                     <p className="text-slate-400 max-w-2xl text-lg">
-                        Millora el teu joc amb les nostres lliçons interactives. Des dels moviments bàsics fins a estratègies de Gran Mestre.
+                        El primer currículum d'escacs adaptat al Disseny Universal per l'Aprenentatge (DUA).
+                        Des de P3 fins al Doctorat.
                     </p>
                 </div>
 
                 {/* PROGRESS OVERVIEW */}
                 {stats.totalLessonsCompleted > 0 && (
-                    <div className="mb-8">
-                        <ProgressTracker moduleProgress={moduleProgress} stats={stats} />
-                    </div>
-                )}
-
-                {/* MODULES GRID */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-6">
-                        <TrendingUp className="text-indigo-400" size={24} />
-                        <h2 className="text-2xl font-bold text-white">Mòduls d'Aprenentatge</h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {modules.map((module) => {
-                            const Icon = ICON_MAP[module.icon] || BookOpen;
-                            const progress = moduleProgress.find(p => p.module.id === module.id);
-
-                            return (
-                                <Link
-                                    key={module.id}
-                                    href={`/academy/${module.id}`}
-                                    className="block"
-                                >
-                                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition group cursor-pointer shadow-lg hover:shadow-indigo-900/20 h-full">
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 group-hover:scale-110 transition-transform">
-                                                <Icon className="text-indigo-400" size={32} />
-                                            </div>
-                                            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${module.level === 'Principiant' ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30' :
-                                                    module.level === 'Intermedi' ? 'bg-amber-900/30 text-amber-400 border-amber-500/30' :
-                                                        module.level === 'Avançat' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-500/30' :
-                                                            'bg-slate-800 text-slate-400 border-slate-700'
-                                                }`}>
-                                                {module.level}
-                                            </span>
-                                        </div>
-
-                                        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
-                                            {module.title}
-                                        </h3>
-                                        <p className="text-slate-400 mb-6 text-sm">{module.description}</p>
-
-                                        <div className="flex items-center justify-between mt-auto">
-                                            <div className="text-xs text-slate-500 font-bold flex items-center gap-1">
-                                                <BookOpen size={14} /> {progress?.totalLessons || 0} Lliçons
-                                            </div>
-                                            <div className="text-indigo-400 font-bold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                                                {progress && progress.completedLessons > 0 ? 'Continuar' : 'Començar'}
-                                                <ArrowRight size={16} />
-                                            </div>
-                                        </div>
-
-                                        {/* Progress Bar */}
-                                        <div className="w-full bg-slate-800 h-1.5 rounded-full mt-4 overflow-hidden">
-                                            <div
-                                                className="bg-indigo-500 h-full transition-all duration-500"
-                                                style={{ width: `${progress?.progressPercentage || 0}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* QUICK ACCESS TO EXERCISES */}
-                <Link href="/academy/exercises" className="block mb-8">
-                    <div className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-500/30 rounded-2xl p-8 hover:border-amber-500/50 transition group cursor-pointer">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Puzzle className="text-amber-400" size={32} />
-                                    <h2 className="text-2xl font-bold text-white">Exercicis Tàctics</h2>
+                    <div className="mb-12">
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                <TrendingUp className="text-indigo-400" /> El teu Progrés Global
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-slate-800 rounded-xl p-4">
+                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Lliçons</div>
+                                    <div className="text-2xl font-bold text-white">{stats.totalLessonsCompleted}</div>
                                 </div>
-                                <p className="text-amber-200 mb-2">
-                                    Practica tàctiques amb puzzles interactius
-                                </p>
-                                <p className="text-sm text-slate-400">
-                                    {stats.totalExercisesSolved} exercicis resolts
-                                </p>
+                                <div className="bg-slate-800 rounded-xl p-4">
+                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Exercicis</div>
+                                    <div className="text-2xl font-bold text-white">{stats.totalExercisesSolved}</div>
+                                </div>
+                                <div className="bg-slate-800 rounded-xl p-4">
+                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Temps</div>
+                                    <div className="text-2xl font-bold text-white">{Math.round(stats.totalTimeSpent / 60)} min</div>
+                                </div>
+                                <div className="bg-slate-800 rounded-xl p-4">
+                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Assoliments</div>
+                                    <div className="text-2xl font-bold text-white">{stats.achievementsUnlocked}</div>
+                                </div>
                             </div>
-                            <ArrowRight className="text-amber-400 group-hover:translate-x-2 transition-transform" size={32} />
                         </div>
                     </div>
-                </Link>
-
-                {/* ACHIEVEMENTS */}
-                {achievements.length > 0 && (
-                    <div className="mb-8">
-                        <AchievementGrid
-                            achievements={achievements}
-                            userAchievements={userAchievements}
-                        />
-                    </div>
                 )}
 
-                {/* AI ANALYSIS CTA */}
-                <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-2xl p-8 text-center">
-                    <h2 className="text-2xl font-bold text-white mb-2">Vols entrenament personalitzat?</h2>
-                    <p className="text-indigo-200 mb-6">
-                        La nostra IA analitza les teves partides i et recomana exercicis específics.
-                    </p>
-                    <Link href="/profile">
-                        <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold transition shadow-lg shadow-indigo-900/50">
-                            Analitzar les meves partides
-                        </button>
-                    </Link>
+                {/* TRACK SECTIONS */}
+                <div className="space-y-16">
+                    {tracks.map(track => {
+                        const trackCourses = groupedCourses[track];
+                        if (!trackCourses || trackCourses.length === 0) return null;
+
+                        const TrackIcon = TRACK_ICONS[track] || BookOpen;
+
+                        return (
+                            <section key={track} className="relative">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-3 bg-indigo-500/10 rounded-xl">
+                                        <TrackIcon className="text-indigo-400" size={32} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-white">{TRACK_TITLES[track]}</h2>
+                                        <p className="text-slate-400 text-sm">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
+                                    </div>
+                                </div>
+
+                                {/* Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {trackCourses.map(course => (
+                                        <CourseCard key={course.id} course={course} />
+                                    ))}
+                                </div>
+                            </section>
+                        );
+                    })}
                 </div>
 
+                {/* QUICK ACCESS TO EXERCISES & ANALYTICS */}
+                <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Link href="/academy/exercises" className="block">
+                        <div className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-500/30 rounded-2xl p-8 hover:border-amber-500/50 transition group cursor-pointer h-full">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <Puzzle className="text-amber-400" size={32} />
+                                    <h2 className="text-2xl font-bold text-white">Sala d'Entrenament</h2>
+                                </div>
+                                <ArrowRight className="text-amber-400 group-hover:translate-x-2 transition-transform" />
+                            </div>
+                            <p className="text-amber-200/80">
+                                Accedeix directament als més de 5.000 exercicis tàctics classificats per tema i dificultat.
+                            </p>
+                        </div>
+                    </Link>
+
+                    <Link href="/profile" className="block">
+                        <div className="bg-gradient-to-r from-indigo-900/20 to-blue-900/20 border border-indigo-500/30 rounded-2xl p-8 hover:border-indigo-500/50 transition group cursor-pointer h-full">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <BrainCircuit className="text-indigo-400" size={32} />
+                                    <h2 className="text-2xl font-bold text-white">Anàlisi amb IA</h2>
+                                </div>
+                                <ArrowRight className="text-indigo-400 group-hover:translate-x-2 transition-transform" />
+                            </div>
+                            <p className="text-indigo-200/80">
+                                Revisa les teves partides i deixa que la IA detecti els teus patrons d'error més comuns.
+                            </p>
+                        </div>
+                    </Link>
+                </div>
             </div>
         </div>
     );
 }
 
+function CourseCard({ course }: { course: AcademyCourse }) {
+
+    // Get subject icons if any
+    const firstSubject = course.subject_tags?.[0]?.toLowerCase();
+
+    return (
+        <Link href={`/academy/course/${course.id}`} className="block h-full">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-900/20 flex flex-col h-full group">
+                {/* Cover Image */}
+                <div className="h-32 bg-slate-800 relative overflow-hidden">
+                    {course.image_url ? (
+                        <img src={course.image_url} alt={course.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+                    ) : (
+                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                            <School className="text-slate-700" size={48} />
+                        </div>
+                    )}
+
+                    {/* Grade Badge */}
+                    <div className="absolute top-3 left-3">
+                        <span className="bg-black/60 backdrop-blur border border-white/10 text-white text-xs font-bold px-2 py-1 rounded-md">
+                            {course.target_grade}
+                        </span>
+                    </div>
+
+                    {/* Subject Tags */}
+                    {course.subject_tags && course.subject_tags.length > 0 && (
+                        <div className="absolute bottom-3 right-3 flex gap-1">
+                            {course.subject_tags.map(tag => (
+                                <span key={tag} className="bg-indigo-600/80 backdrop-blur text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-5 flex flex-col flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-indigo-400 transition-colors">
+                        {course.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm line-clamp-3 mb-4 flex-1">
+                        {course.description}
+                    </p>
+
+                    <div className="border-t border-slate-800 pt-3 flex items-center justify-between text-xs text-slate-500 font-medium">
+                        <span className="flex items-center gap-1">
+                            <Target size={14} /> {course.difficulty_level === 'beginner' ? 'Principiant' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
+                        </span>
+                        <span className="text-indigo-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Veure curs <ArrowRight size={14} />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+}

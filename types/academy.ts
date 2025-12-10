@@ -6,11 +6,26 @@ export type DifficultyLevel = 'Principiant' | 'Intermedi' | 'Avançat' | 'Tots';
 export type ExerciseDifficulty = 'easy' | 'medium' | 'hard';
 
 // ============================================
-// MODULES
+// COURSES & MODULES
 // ============================================
+
+export interface AcademyCourse {
+    id: string;
+    title: string;
+    slug?: string;
+    description: string;
+    track: 'academic' | 'pedagogical' | 'sport' | 'vocational';
+    target_grade: string;
+    difficulty_level: string;
+    image_url?: string;
+    subject_tags?: string[];
+    published?: boolean;
+    created_at?: string;
+}
 
 export interface AcademyModule {
     id: string;
+    course_id?: string;
     title: string;
     description: string;
     icon: string; // lucide-react icon name
