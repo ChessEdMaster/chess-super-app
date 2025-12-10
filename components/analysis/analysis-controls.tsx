@@ -52,14 +52,25 @@ export function AnalysisControls({
 
                 <div className="flex items-center gap-2">
                     <Label className="text-xs text-slate-400">Línies:</Label>
-                    <Input
-                        type="number"
-                        min={1}
-                        max={5}
-                        value={multipv}
-                        onChange={(e) => setMultipv(parseInt(e.target.value) || 1)}
-                        className="w-16 h-8 bg-slate-800 border-slate-700 text-white text-xs"
-                    />
+                    <div className="flex items-center gap-1">
+                        <Input
+                            type="number"
+                            min={1}
+                            max={5}
+                            value={multipv > 20 ? 1 : multipv}
+                            onChange={(e) => setMultipv(parseInt(e.target.value) || 1)}
+                            disabled={multipv > 20}
+                            className="w-12 h-8 bg-slate-800 border-slate-700 text-white text-xs px-2"
+                        />
+                        <Button
+                            variant={multipv > 20 ? "default" : "outline"}
+                            size="sm"
+                            className={`h-8 px-2 text-xs ${multipv > 20 ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-transparent border-slate-700 text-slate-400'}`}
+                            onClick={() => setMultipv(multipv > 20 ? 1 : 50)}
+                        >
+                            Tot
+                        </Button>
+                    </div>
                 </div>
             </div>
 

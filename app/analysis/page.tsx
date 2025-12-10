@@ -25,6 +25,13 @@ import { PGNTree } from '@/lib/pgn/tree';
 import { PGNParser } from '@/lib/pgn/parser';
 import type { Evaluation } from '@/types/pgn';
 import Chessboard2D from '@/components/2d/Chessboard2D';
+
+interface EvaluationLine {
+  id: number;
+  evaluation: Evaluation;
+  bestMove: string;
+  line: string;
+}
 import ChessScene from '@/components/3d/ChessScene';
 import { Button } from '@/components/ui/button';
 
@@ -48,6 +55,7 @@ export default function AnalysisPage() {
   const [engineDepth, setEngineDepth] = useState(15);
   const [multipv, setMultipv] = useState(1);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const [lines, setLines] = useState<EvaluationLine[]>([]);
   const [bestMove, setBestMove] = useState<string | null>(null);
   const [bestLine, setBestLine] = useState<string>("");
   const [lastMove, setLastMove] = useState<string | null>(null);
@@ -130,22 +138,50 @@ export default function AnalysisPage() {
             const msg = event.data;
             // Parse info
             if (msg.startsWith('info') && msg.includes('depth')) {
+              // Parse multipv ID (default to 1)
+              const multipvMatch = msg.match(/multipv (\d+)/);
+              const multipvId = multipvMatch ? parseInt(multipvMatch[1]) : 1;
+
               const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+              let evalData: Evaluation | null = null;
+
               if (scoreMatch) {
                 const type = scoreMatch[1] as 'cp' | 'mate';
                 let value = parseInt(scoreMatch[2]);
-                // Stockfish gives score from white's perspective usually, but let's verify
-                // Actually stockfish.js 10 might be side-to-move. 
-                // Let's assume side-to-move for now and adjust if needed.
-                setEvaluation({ type, value });
+                evalData = { type, value };
+
+                // Update primary evaluation if this is the best line
+                if (multipvId === 1) {
+                  setEvaluation(evalData);
+                }
               }
 
               const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
-              if (pvMatch) {
+              if (pvMatch && evalData) {
                 const moves = pvMatch[1].trim().split(/\s+/);
                 if (moves.length > 0) {
-                  setBestMove(moves[0]);
-                  setBestLine(moves.slice(0, 5).join(' '));
+                  const newLine: EvaluationLine = {
+                    id: multipvId,
+                    evaluation: evalData,
+                    bestMove: moves[0],
+                    line: moves.slice(0, 10).join(' ')
+                  };
+
+                  setLines(prev => {
+                    const newLines = [...prev];
+                    const index = newLines.findIndex(l => l.id === multipvId);
+                    if (index !== -1) {
+                      newLines[index] = newLine;
+                    } else {
+                      newLines.push(newLine);
+                    }
+                    return newLines.sort((a, b) => a.id - b.id);
+                  });
+
+                  if (multipvId === 1) {
+                    setBestMove(moves[0]);
+                    setBestLine(moves.slice(0, 5).join(' '));
+                  }
                 }
               }
             }
@@ -165,15 +201,22 @@ export default function AnalysisPage() {
 
     if (isAnalyzing) {
       console.log("Starting analysis for FEN:", fen);
+      // Clean up previous lines
+      setLines([]);
+      setEvaluation(null);
+
       engine.current.postMessage('stop');
+      engine.current.postMessage(`setoption name MultiPV value ${multipv}`);
       engine.current.postMessage(`position fen ${fen}`);
       engine.current.postMessage(`go depth ${engineDepth}`);
     } else {
       console.log("Stopping analysis");
       engine.current.postMessage('stop');
+      setEvaluation(null);
+      setLines([]);
     }
 
-  }, [fen, isClient, isAnalyzing, engineDepth]);
+  }, [fen, isClient, isAnalyzing, engineDepth, multipv]);
 
   // --- GAME LOGIC ---
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
@@ -287,12 +330,41 @@ export default function AnalysisPage() {
     }
   };
 
-  const getEvalText = () => {
-    if (!evaluation) return '...';
-    if (evaluation.type === 'mate') return evaluation.value > 0 ? `M${Math.abs(evaluation.value)}` : `-M${Math.abs(evaluation.value)}`;
-    const val = evaluation.value / 100;
-    return val > 0 ? `+${val.toFixed(1)}` : val.toFixed(1);
+  const getEvalText = (evalData: Evaluation | null) => {
+    if (!evalData) return '...';
+    if (evalData.type === 'mate') return evalData.value > 0 ? `M${Math.abs(evalData.value)}` : `-M${Math.abs(evalData.value)}`;
+    const val = evalData.value / 100;
+    return val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2);
   };
+
+  // Derive arrows from analysis lines
+  const analysisArrows = lines.map((line) => {
+    if (!line.bestMove || line.bestMove.length < 4) return null;
+    const from = line.bestMove.substring(0, 2);
+    const to = line.bestMove.substring(2, 4);
+
+    // Color logic
+    let color = '#ef4444'; // default red
+
+    if (lines.length > 5) {
+      // Full analysis mode color coding
+      const bestEval = lines.find(l => l.id === 1)?.evaluation.value || 0;
+      const diff = bestEval - line.evaluation.value;
+
+      if (line.id === 1) color = '#06b6d4'; // Cyan for best
+      else if (diff < 50) color = '#22c55e'; // < 0.5 pawn loss
+      else if (diff < 150) color = '#eab308'; // < 1.5 pawn loss
+      else color = '#ef4444'; // > 1.5 pawn loss
+    } else {
+      // Standard mode
+      if (line.id === 1) color = '#22c55e'; // Best = Green
+      else if (line.id === 2) color = '#84cc16'; // 2nd = Lime
+      else if (line.id === 3) color = '#eab308'; // 3rd = Yellow
+      else color = '#f97316'; // 4+ = Orange
+    }
+
+    return { from, to, color };
+  }).filter(Boolean) as { from: string, to: string, color: string }[];
 
   if (!isClient) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
 
@@ -309,7 +381,8 @@ export default function AnalysisPage() {
             <ChessScene fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} />
           ) : (
             <div className="w-full h-full">
-              <Chessboard2D fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} />
+              {/* @ts-ignore - Arrows prop added dynamically */}
+              <Chessboard2D fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} arrows={analysisArrows} />
             </div>
           )}
         </div>
@@ -354,17 +427,34 @@ export default function AnalysisPage() {
                 <CoachAgent evaluation={evaluation} previousEval={currentNode?.parent?.annotation?.evaluation || null} currentMove={currentNode?.move || null} turn={game.turn()} />
 
                 {/* Best Line Info */}
-                <div className="bg-zinc-950/50 border border-zinc-800 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-xs text-zinc-500 mb-1 uppercase tracking-wider font-bold">Millor Línia</div>
-                  {bestLine ? (
-                    <div className="text-emerald-400 break-words leading-relaxed">
-                      <span className="font-bold text-white mr-2">{getEvalText()}</span>
-                      {bestLine}
+                {/* Analysis Lines */}
+                <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg overflow-hidden flex flex-col max-h-48 overflow-y-auto">
+                  <div className="px-3 py-2 bg-zinc-900/50 text-xs text-zinc-500 font-bold uppercase tracking-wider border-b border-zinc-800">
+                    Anàlisi del Motor ({isAnalyzing ? `Calculant...` : 'Aturat'})
+                  </div>
+
+                  {lines.length > 0 ? (
+                    <div>
+                      {lines.map((line) => (
+                        <div key={line.id} className="p-2 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-900/50 transition flex items-start gap-3 text-sm font-mono group">
+                          <div className={`w-12 shrink-0 font-bold text-right ${line.evaluation.value > 0
+                            ? 'text-emerald-400'
+                            : line.evaluation.value < 0
+                              ? 'text-rose-400'
+                              : 'text-zinc-400'
+                            }`}>
+                            {getEvalText(line.evaluation)}
+                          </div>
+                          <div className="text-zinc-300 break-all leading-relaxed">
+                            <span className="text-indigo-400 font-bold mr-2">{line.bestMove}</span>
+                            <span className="text-zinc-500">{line.line.substring(line.bestMove.length)}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="text-zinc-600 italic flex items-center gap-2">
-                      {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : null}
-                      {isAnalyzing ? 'Calculant...' : 'Motor aturat'}
+                    <div className="p-4 text-center text-zinc-500 text-xs py-8 italic">
+                      {isAnalyzing ? <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={14} /> Buscant les millors jugades...</span> : 'Motor aturat. Prem "Analitzar" per començar.'}
                     </div>
                   )}
                 </div>

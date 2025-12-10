@@ -305,13 +305,60 @@ const ResponsiveCamera = () => {
 
 // ... (rest of imports)
 
+// --- ARROWS ---
+interface ArrowProps {
+    from: string;
+    to: string;
+    color: string;
+}
+
+const Arrow = ({ from, to, color }: ArrowProps) => {
+    // Convert square notation to board coordinates
+    const getCoords = (square: string) => {
+        const col = square.charCodeAt(0) - 97;
+        const row = parseInt(square[1]) - 1;
+        return { x: col - 3.5, z: 3.5 - row };
+    };
+
+    const start = getCoords(from);
+    const end = getCoords(to);
+
+    // Calculate vector
+    const dx = end.x - start.x;
+    const dz = end.z - start.z;
+    const length = Math.sqrt(dx * dx + dz * dz);
+
+    // Angle
+    const angle = Math.atan2(dz, dx);
+
+    // Midpoint for position
+    const midX = (start.x + end.x) / 2;
+    const midZ = (start.z + end.z) / 2;
+
+    return (
+        <group position={[midX, 0.15, midZ]} rotation={[0, -angle, 0]}>
+            {/* Shaft */}
+            <mesh position={[-length / 2 + (length - 0.4) / 2, 0, 0]} rotation={[0, 0, 0]}>
+                <boxGeometry args={[length - 0.5, 0.15, 0.05]} />
+                <meshBasicMaterial color={color} transparent opacity={0.8} />
+            </mesh>
+            {/* Head */}
+            <mesh position={[length / 2 - 0.25, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+                <coneGeometry args={[0.2, 0.4, 8]} />
+                <meshBasicMaterial color={color} transparent opacity={0.9} />
+            </mesh>
+        </group>
+    );
+};
+
 // WRAPPER FOR DYNAMIC IMPORT
 const Chessboard2DContent = ({
     fen,
     orientation = 'white',
     onSquareClick = () => { },
-    customSquareStyles
-}: Chessboard2DProps) => {
+    customSquareStyles,
+    arrows = []
+}: Chessboard2DProps & { arrows?: ArrowProps[] }) => {
     const [particleTriggers, setParticleTriggers] = useState<{ x: number, z: number, color: string, id: number }[]>([]);
 
     const handleCapture = (x: number, z: number, color: string) => {
@@ -329,6 +376,9 @@ const Chessboard2DContent = ({
                         customSquareStyles={customSquareStyles}
                         orientation={orientation}
                     />
+                    {arrows.map((arrow, i) => (
+                        <Arrow key={i} {...arrow} />
+                    ))}
                     <React.Suspense fallback={null}>
                         <Pieces2D fen={fen} orientation={orientation} onCapture={handleCapture} />
                     </React.Suspense>
