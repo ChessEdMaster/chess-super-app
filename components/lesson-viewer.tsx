@@ -72,7 +72,49 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
         }
     }, [currentStepIndex, currentStep]);
 
-    if (!content || !content.steps || content.steps.length === 0) {
+    if (content.activities && content.activities.length > 0) {
+        return (
+            <div className="w-full max-w-4xl mx-auto p-4">
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-3 bg-indigo-600 rounded-lg">
+                            <Trophy className="text-white" size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">{lessonTitle}</h2>
+                            <p className="text-slate-400">Activitats Offline / Aula</p>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4 mb-8">
+                        {content.activities.map((activity, idx) => (
+                            <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-5 flex flex-col gap-2 hover:border-indigo-500/50 transition-colors">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-2 py-0.5 bg-indigo-900/40 rounded border border-indigo-500/20">
+                                        {activity.type}
+                                    </span>
+                                </div>
+                                <h3 className="text-lg font-bold text-white">{activity.title}</h3>
+                                <p className="text-slate-300 text-sm leading-relaxed">{activity.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-center">
+                        <button
+                            onClick={() => onComplete(100)}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
+                        >
+                            <CheckCircle size={20} />
+                            Marcar com a Completat
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!content || (!content.steps && !content.activities)) {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center bg-slate-900 border border-slate-800 rounded-xl">
                 <p className="text-white font-bold mb-2">Error de contingut</p>
@@ -274,7 +316,7 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                     <div className="mt-4 max-w-[600px] mx-auto">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm text-slate-400">
-                                Pas {currentStepIndex + 1} de {content.steps.length}
+                                Pas {currentStepIndex + 1} de {content.steps?.length || 0}
                             </span>
                             <span className="text-sm text-slate-400">
                                 Precisió: {totalAttempts > 0 ? Math.round((correctMoves / totalAttempts) * 100) : 0}%
@@ -283,7 +325,7 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                         <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                             <div
                                 className="bg-indigo-500 h-full transition-all duration-300"
-                                style={{ width: `${((currentStepIndex + 1) / content.steps.length) * 100}%` }}
+                                style={{ width: `${((currentStepIndex + 1) / (content.steps?.length || 1)) * 100}%` }}
                             />
                         </div>
                     </div>

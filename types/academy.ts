@@ -57,8 +57,15 @@ export interface LessonStep {
     highlightSquares?: string[]; // Optional squares to highlight
 }
 
+export interface LessonActivity {
+    type: string;
+    title: string;
+    desc: string;
+}
+
 export interface LessonContent {
-    steps: LessonStep[];
+    steps?: LessonStep[];
+    activities?: LessonActivity[];
     introduction?: string; // Optional intro text
     conclusion?: string; // Optional conclusion text
     // Additional types based on the seed
