@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import {
     Users,
@@ -11,7 +12,8 @@ import {
     Loader2,
     ChevronDown,
     ChevronRight,
-    ShieldAlert
+    ShieldAlert,
+    ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AcademyCourse } from '@/types/academy';
@@ -243,12 +245,18 @@ export function AcademyManager({ clubId, currentUserRole }: AcademyManagerProps)
                                                 {trackCourses.map(course => {
                                                     const isEnrolled = enrollments.get(member.user_id)?.has(course.id);
                                                     return (
-                                                        <div key={course.id} className="flex items-center justify-between bg-slate-900 border border-slate-800 p-2 rounded-lg">
-                                                            <div className="flex items-center gap-2">
-                                                                <BookOpen size={16} className={isEnrolled ? "text-green-400" : "text-slate-600"} />
-                                                                <span className={`text-sm ${isEnrolled ? 'text-white' : 'text-slate-400'}`}>
+                                                        <div key={course.id} className="flex items-center justify-between bg-slate-900 border border-slate-800 p-2 rounded-lg group">
+                                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                                <BookOpen size={16} className={isEnrolled ? "text-green-400 shrink-0" : "text-slate-600 shrink-0"} />
+                                                                <Link
+                                                                    href={`/academy/course/${course.id}`}
+                                                                    target="_blank"
+                                                                    className={`text-sm truncate hover:underline flex items-center gap-1 ${isEnrolled ? 'text-white' : 'text-slate-400'}`}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
                                                                     {course.title}
-                                                                </span>
+                                                                    <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                </Link>
                                                             </div>
                                                             <button
                                                                 onClick={(e) => {
@@ -257,7 +265,7 @@ export function AcademyManager({ clubId, currentUserRole }: AcademyManagerProps)
                                                                 }}
                                                                 disabled={assigning}
                                                                 className={`
-                                                                px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1
+                                                                px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1 shrink-0 ml-2
                                                                 ${isEnrolled
                                                                         ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
                                                                         : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'}
