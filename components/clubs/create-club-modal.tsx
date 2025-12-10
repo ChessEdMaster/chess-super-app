@@ -66,7 +66,7 @@ export function CreateClubModal({ isOpen, onClose, userId }: CreateClubModalProp
             toast.success('Club creat amb èxit!');
             // Delay for UX
             setTimeout(() => {
-                router.push(`/clubs/manage/${data.id}`);
+                router.push(`/clubs/${data.id}`);
                 onClose();
             }, 500);
 

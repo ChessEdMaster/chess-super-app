@@ -176,7 +176,7 @@ export default function ClubsPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {clubs.map((club) => (
-                            <Link key={club.id} href={`/clubs/manage/${club.id}`} className="block h-full relative z-10 group">
+                            <Link key={club.id} href={`/clubs/${club.id}`} className="block h-full relative z-10 group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500" />
                                 <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 hover:border-yellow-500/50 transition group h-full flex flex-col relative overflow-hidden">
 

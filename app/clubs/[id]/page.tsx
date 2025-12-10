@@ -197,18 +197,13 @@ export default function ClubPublicPage() {
                             </div>
 
                             <div className="flex gap-3">
-                                {userRole === 'owner' && (club.type === 'club' || club.type === 'school') ? (
+                                {['owner', 'admin'].includes(userRole || '') ? (
                                     <Link href={`/clubs/manage/${club.id}`}>
                                         <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg shadow-indigo-900/20 flex items-center gap-2">
                                             <Shield size={18} />
-                                            Club ERP
+                                            {club.type === 'online' ? 'Manage Clan' : 'Club ERP'}
                                         </button>
                                     </Link>
-                                ) : userRole === 'owner' ? (
-                                    <button className="bg-slate-800 text-slate-400 px-6 py-2.5 rounded-xl font-bold cursor-not-allowed border border-slate-700 flex items-center gap-2" title="ERP only available for Clubs and Schools">
-                                        <Shield size={18} />
-                                        Manage
-                                    </button>
                                 ) : userRole ? (
                                     <button className="bg-slate-800 text-slate-400 px-6 py-2.5 rounded-xl font-bold cursor-default border border-slate-700">
                                         Member
