@@ -330,18 +330,18 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
     };
 
     return (
-        <div className={`w-full ${compact ? 'max-w-md' : 'max-w-6xl'} mx-auto p-4`}>
-            <div className={`flex ${compact ? 'flex-col' : 'flex-col lg:flex-row'} gap-6`}>
+        <div className={`w-full ${compact ? 'max-w-md' : 'max-w-5xl'} mx-auto p-4`}>
+            <div className={`flex ${compact ? 'flex-col' : 'flex-col lg:flex-row'} gap-4`}>
 
                 <div className="flex-1">
-                    <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
+                    <div className="relative w-full max-w-[480px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
                         {/* View Mode Toggle */}
                         <div className="absolute top-2 right-2 z-20 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">
                             <Button
                                 variant={viewMode === '2d' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('2d')}
-                                className={`h-7 px-3 text-xs ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                                className={`h-6 px-2 text-[10px] ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
                             >
                                 2D
                             </Button>
@@ -349,7 +349,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                                 variant={viewMode === '3d' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('3d')}
-                                className={`h-7 px-3 text-xs ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                                className={`h-6 px-2 text-[10px] ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
                             >
                                 3D
                             </Button>
@@ -375,7 +375,7 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                         )}
                     </div>
 
-                    <div className="mt-4 max-w-[600px] mx-auto flex gap-4">
+                    <div className="mt-3 max-w-[480px] mx-auto flex gap-3">
                         <div className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-3 flex items-center gap-2">
                             <Target className="text-indigo-400" size={20} />
                             <div>
@@ -402,30 +402,30 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                     </div>
                 </div>
 
-                <div className={`w-full ${compact ? '' : 'lg:w-96'} flex flex-col gap-4`}>
+                <div className={`w-full ${compact ? '' : 'lg:w-80'} flex flex-col gap-3`}>
 
                     {!compact && (
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                            <div className="flex items-start justify-between mb-3">
+                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <div className="flex items-start justify-between mb-2">
                                 <div>
-                                    <h2 className="text-xl font-bold text-white mb-1">
+                                    <h2 className="text-lg font-bold text-white mb-1">
                                         {exercise.title || 'Puzzle Tàctic'}
                                     </h2>
                                     {exercise.description && (
-                                        <p className="text-slate-400 text-sm">{exercise.description}</p>
+                                        <p className="text-slate-400 text-xs">{exercise.description}</p>
                                     )}
                                 </div>
-                                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getDifficultyColor()}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getDifficultyColor()}`}>
                                     {exercise.difficulty === 'easy' ? 'Fàcil' : exercise.difficulty === 'medium' ? 'Mitjà' : 'Difícil'}
                                 </span>
                             </div>
 
                             {exercise.tags && exercise.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-3">
+                                <div className="flex flex-wrap gap-1.5 mt-2">
                                     {exercise.tags.map((tag, idx) => (
                                         <span
                                             key={idx}
-                                            className="text-xs px-2 py-1 bg-slate-800 text-slate-300 rounded border border-slate-700"
+                                            className="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700"
                                         >
                                             {tag}
                                         </span>
@@ -433,10 +433,10 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                                 </div>
                             )}
 
-                            <div className="mt-4 pt-4 border-t border-slate-800">
-                                <div className="flex items-center gap-2">
-                                    <Trophy className="text-amber-400" size={16} />
-                                    <span className="text-sm text-slate-400">
+                            <div className="mt-3 pt-3 border-t border-slate-800">
+                                <div className="flex items-center gap-1.5">
+                                    <Trophy className="text-amber-400" size={14} />
+                                    <span className="text-xs text-slate-400">
                                         Rating: <span className="text-white font-bold">{exercise.rating}</span>
                                     </span>
                                 </div>
@@ -444,17 +444,17 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                         </div>
                     )}
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                        <div className="flex items-start gap-3 mb-4">
-                            <Target className="text-indigo-400 mt-1" size={20} />
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                        <div className="flex items-start gap-2 mb-3">
+                            <Target className="text-indigo-400 mt-0.5" size={18} />
                             <div>
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
                                     Objectiu
                                 </h3>
-                                <p className="text-white text-base">
+                                <p className="text-white text-sm">
                                     {orientation === 'white' ? 'Les blanques' : 'Les negres'} mouen i guanyen.
                                 </p>
-                                <p className="text-slate-400 text-sm mt-2">
+                                <p className="text-slate-400 text-xs mt-1.5">
                                     Troba la millor seqüència de moviments.
                                 </p>
                             </div>
@@ -463,16 +463,16 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                         {!isSolved && (
                             <button
                                 onClick={toggleHint}
-                                className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-2 transition"
+                                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition"
                             >
-                                <Lightbulb size={16} />
+                                <Lightbulb size={14} />
                                 {showHint ? 'Amagar pista' : 'Mostrar pista'}
                             </button>
                         )}
 
                         {showHint && (
-                            <div className="mt-3 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
-                                <p className="text-sm text-indigo-200">
+                            <div className="mt-2 p-2.5 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
+                                <p className="text-xs text-indigo-200">
                                     {getHintText()}
                                 </p>
                             </div>
@@ -526,12 +526,12 @@ export function PuzzleSolver({ exercise, onSolved, onSkip, compact = false }: Pu
                     </div>
 
                     {isSolved && (
-                        <div className="bg-gradient-to-r from-emerald-900/40 to-green-900/40 border border-emerald-500/50 rounded-xl p-6 text-center">
-                            <Trophy className="text-amber-400 mx-auto mb-3" size={48} />
-                            <h3 className="text-xl font-bold text-white mb-2">
+                        <div className="bg-gradient-to-r from-emerald-900/40 to-green-900/40 border border-emerald-500/50 rounded-xl p-4 text-center">
+                            <Trophy className="text-amber-400 mx-auto mb-2" size={32} />
+                            <h3 className="text-lg font-bold text-white mb-1.5">
                                 Puzzle Resolt!
                             </h3>
-                            <div className="text-sm text-slate-300 space-y-1">
+                            <div className="text-xs text-slate-300 space-y-0.5">
                                 <div>Temps: {elapsedTime}s</div>
                                 <div>Intents: {attempts}</div>
                                 <div>Pistes usades: {hintsUsed}</div>

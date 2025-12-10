@@ -253,7 +253,7 @@ export default function ExercisesPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 py-6 font-sans text-slate-200">
-            <div className="max-w-6xl mx-auto px-4 mb-6">
+            <div className="max-w-5xl mx-auto px-4 mb-6">
                 <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
                     <Link
                         href="/academy"

@@ -117,7 +117,7 @@ export default function CoursePage() {
                 </Link>
 
                 {/* HERO SECTION */}
-                <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 mb-12">
+                <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 mb-8">
                     <div className="absolute inset-0">
                         {course.image_url && (
                             <img src={course.image_url} className="w-full h-full object-cover opacity-20" alt={course.title} />
@@ -125,22 +125,22 @@ export default function CoursePage() {
                         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-transparent" />
                     </div>
 
-                    <div className="relative p-10 max-w-2xl">
-                        <div className="flex gap-2 mb-4">
-                            <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <div className="relative p-6 max-w-2xl">
+                        <div className="flex gap-2 mb-3">
+                            <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                                 {course.target_grade}
                             </span>
                             {course.subject_tags?.map(tag => (
-                                <span key={tag} className="bg-slate-700/50 text-slate-300 border border-slate-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                <span key={tag} className="bg-slate-700/50 text-slate-300 border border-slate-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                                     {tag}
                                 </span>
                             ))}
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
                             {course.title}
                         </h1>
-                        <p className="text-lg text-slate-300 mb-8 leading-relaxed">
+                        <p className="text-sm text-slate-300 mb-4 leading-relaxed">
                             {course.description}
                         </p>
                     </div>

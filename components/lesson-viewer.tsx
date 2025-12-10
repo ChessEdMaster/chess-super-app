@@ -75,27 +75,27 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
     if (content.activities && content.activities.length > 0) {
         return (
             <div className="w-full max-w-4xl mx-auto p-4">
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-3 bg-indigo-600 rounded-lg">
-                            <Trophy className="text-white" size={24} />
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-indigo-600 rounded-lg">
+                            <Trophy className="text-white" size={20} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">{lessonTitle}</h2>
-                            <p className="text-slate-400">Activitats Offline / Aula</p>
+                            <h2 className="text-xl font-bold text-white">{lessonTitle}</h2>
+                            <p className="text-slate-400 text-sm">Activitats Offline / Aula</p>
                         </div>
                     </div>
 
-                    <div className="grid gap-4 mb-8">
+                    <div className="grid gap-3 mb-6">
                         {content.activities.map((activity, idx) => (
-                            <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-5 flex flex-col gap-2 hover:border-indigo-500/50 transition-colors">
-                                <div className="flex items-center gap-2 mb-1">
+                            <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 flex flex-col gap-1.5 hover:border-indigo-500/50 transition-colors">
+                                <div className="flex items-center gap-2 mb-0.5">
                                     <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-2 py-0.5 bg-indigo-900/40 rounded border border-indigo-500/20">
                                         {activity.type}
                                     </span>
                                 </div>
-                                <h3 className="text-lg font-bold text-white">{activity.title}</h3>
-                                <p className="text-slate-300 text-sm leading-relaxed">{activity.desc}</p>
+                                <h3 className="text-base font-bold text-white">{activity.title}</h3>
+                                <p className="text-slate-300 text-xs leading-relaxed">{activity.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -103,9 +103,9 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                     <div className="flex justify-center">
                         <button
                             onClick={() => onComplete(100)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold text-base shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
                         >
-                            <CheckCircle size={20} />
+                            <CheckCircle size={18} />
                             Marcar com a Completat
                         </button>
                     </div>
@@ -300,11 +300,11 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-4">
-            <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full max-w-5xl mx-auto p-4">
+            <div className="flex flex-col lg:flex-row gap-4">
 
                 <div className="flex-1">
-                    <div className="relative w-full max-w-[600px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
+                    <div className="relative w-full max-w-[480px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
                         <Chessboard2D
                             fen={fen}
                             orientation="white"
@@ -313,16 +313,16 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                         />
                     </div>
 
-                    <div className="mt-4 max-w-[600px] mx-auto">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-slate-400">
+                    <div className="mt-3 max-w-[480px] mx-auto">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs text-slate-400">
                                 Pas {currentStepIndex + 1} de {content.steps?.length || 0}
                             </span>
-                            <span className="text-sm text-slate-400">
+                            <span className="text-xs text-slate-400">
                                 Precisió: {totalAttempts > 0 ? Math.round((correctMoves / totalAttempts) * 100) : 0}%
                             </span>
                         </div>
-                        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                             <div
                                 className="bg-indigo-500 h-full transition-all duration-300"
                                 style={{ width: `${((currentStepIndex + 1) / (content.steps?.length || 1)) * 100}%` }}
@@ -331,23 +331,23 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                     </div>
                 </div>
 
-                <div className="w-full lg:w-96 flex flex-col gap-4">
+                <div className="w-full lg:w-80 flex flex-col gap-3">
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                        <h2 className="text-2xl font-bold text-white mb-2">{lessonTitle}</h2>
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                        <h2 className="text-lg font-bold text-white mb-2">{lessonTitle}</h2>
                         {isFirstStep && content.introduction && (
-                            <p className="text-slate-400 text-sm mb-4">{content.introduction}</p>
+                            <p className="text-slate-400 text-xs mb-3">{content.introduction}</p>
                         )}
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                        <div className="flex items-start gap-3 mb-4">
-                            <Lightbulb className="text-amber-400 mt-1" size={20} />
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                        <div className="flex items-start gap-2 mb-3">
+                            <Lightbulb className="text-amber-400 mt-0.5" size={18} />
                             <div>
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
                                     Instrucció
                                 </h3>
-                                <p className="text-white text-base leading-relaxed">
+                                <p className="text-white text-sm leading-relaxed">
                                     {currentStep.instruction}
                                 </p>
                             </div>
@@ -356,16 +356,16 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                         {!isCompleted && (
                             <button
                                 onClick={toggleHint}
-                                className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-2 transition"
+                                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition"
                             >
-                                <Lightbulb size={16} />
+                                <Lightbulb size={14} />
                                 {showHint ? 'Amagar pista' : 'Mostrar pista'}
                             </button>
                         )}
 
                         {showHint && (
-                            <div className="mt-3 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
-                                <p className="text-sm text-indigo-200">
+                            <div className="mt-2 p-2.5 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
+                                <p className="text-xs text-indigo-200">
                                     Busca moviments que segueixin la instrucció. Pensa en la seguretat del teu rei i l&apos;activitat de les peces.
                                 </p>
                             </div>
@@ -373,21 +373,21 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                     </div>
 
                     {feedback && (
-                        <div className={`border rounded-xl p-4 ${feedback.type === 'success'
+                        <div className={`border rounded-xl p-3 ${feedback.type === 'success'
                             ? 'bg-emerald-900/20 border-emerald-500/30'
                             : feedback.type === 'error'
                                 ? 'bg-red-900/20 border-red-500/30'
                                 : 'bg-blue-900/20 border-blue-500/30'
                             }`}>
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-2">
                                 {feedback.type === 'success' ? (
-                                    <CheckCircle className="text-emerald-400 mt-0.5" size={20} />
+                                    <CheckCircle className="text-emerald-400 mt-0.5" size={18} />
                                 ) : feedback.type === 'error' ? (
-                                    <XCircle className="text-red-400 mt-0.5" size={20} />
+                                    <XCircle className="text-red-400 mt-0.5" size={18} />
                                 ) : (
-                                    <Lightbulb className="text-blue-400 mt-0.5" size={20} />
+                                    <Lightbulb className="text-blue-400 mt-0.5" size={18} />
                                 )}
-                                <p className={`text-sm ${feedback.type === 'success'
+                                <p className={`text-xs ${feedback.type === 'success'
                                     ? 'text-emerald-200'
                                     : feedback.type === 'error'
                                         ? 'text-red-200'
@@ -399,45 +399,45 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                         </div>
                     )}
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                         <button
                             onClick={previousStep}
                             disabled={isFirstStep}
-                            className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition"
+                            className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition"
                         >
-                            <ChevronLeft size={20} />
+                            <ChevronLeft size={18} />
                             Anterior
                         </button>
 
                         <button
                             onClick={resetStep}
-                            className="bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-lg transition"
+                            className="bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded-lg transition"
                             title="Reiniciar pas"
                         >
-                            <RotateCcw size={20} />
+                            <RotateCcw size={18} />
                         </button>
 
                         {!isCompleted && !isLastStep && (
                             <button
                                 onClick={nextStep}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition"
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition"
                             >
                                 Següent
-                                <ChevronRight size={20} />
+                                <ChevronRight size={18} />
                             </button>
                         )}
                     </div>
 
                     {isCompleted && (
-                        <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/50 rounded-xl p-6 text-center">
-                            <Trophy className="text-amber-400 mx-auto mb-3" size={48} />
-                            <h3 className="text-xl font-bold text-white mb-2">
+                        <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/50 rounded-xl p-4 text-center">
+                            <Trophy className="text-amber-400 mx-auto mb-2" size={32} />
+                            <h3 className="text-lg font-bold text-white mb-1.5">
                                 Lliçó Completada!
                             </h3>
-                            <p className="text-slate-300 text-sm mb-4">
+                            <p className="text-slate-300 text-xs mb-2">
                                 Puntuació: {Math.round((correctMoves / Math.max(totalAttempts, 1)) * 100)}%
                             </p>
-                            <div className="text-xs text-slate-400">
+                            <div className="text-[10px] text-slate-400">
                                 Moviments correctes: {correctMoves} / {totalAttempts}
                             </div>
                         </div>

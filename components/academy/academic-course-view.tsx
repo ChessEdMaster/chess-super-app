@@ -23,11 +23,11 @@ export function AcademicCourseView({ modules, progressMap }: AcademicCourseViewP
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             {/* Header / Syllabus Info */}
-            <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <BookOpen className="text-indigo-400" /> Temari del Curs
+            <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-3">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <BookOpen className="text-indigo-400" size={20} /> Temari del Curs
                 </h2>
-                <div className="text-sm text-slate-400">
+                <div className="text-xs text-slate-400">
                     {modules.length} Unitats Didàctiques
                 </div>
             </div>
@@ -58,16 +58,16 @@ export function AcademicCourseView({ modules, progressMap }: AcademicCourseViewP
                             onClick={(e) => isLocked && e.preventDefault()}
                         >
                             <div className={`
-                                bg-slate-900/40 border rounded-xl p-6 transition-all
+                                bg-slate-900/40 border rounded-xl p-4 transition-all
                                 ${isLocked
                                     ? 'border-slate-800 opacity-60'
                                     : 'border-slate-700 hover:border-indigo-500/50 hover:bg-slate-800'
                                 }
                             `}>
-                                <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                                                 Unitat {index + 1}
                                             </span>
                                             {isCompleted && (
@@ -77,41 +77,41 @@ export function AcademicCourseView({ modules, progressMap }: AcademicCourseViewP
                                             )}
                                         </div>
 
-                                        <h3 className={`text-xl font-bold mb-2 ${isLocked ? 'text-slate-500' : 'text-white'}`}>
+                                        <h3 className={`text-lg font-bold mb-1.5 ${isLocked ? 'text-slate-500' : 'text-white'}`}>
                                             {module.title}
                                         </h3>
 
-                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">
+                                        <p className="text-slate-400 text-xs mb-3 line-clamp-2">
                                             {module.description}
                                         </p>
 
                                         {/* Metadata / Stats */}
-                                        <div className="flex items-center gap-4 text-xs text-slate-500 font-medium">
+                                        <div className="flex items-center gap-4 text-[10px] text-slate-500 font-medium">
                                             <div className="flex items-center gap-1">
-                                                <FileText size={14} /> {progress?.totalLessons || 0} Lliçons
+                                                <FileText size={12} /> {progress?.totalLessons || 0} Lliçons
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Brain size={14} /> Exercicis Pràctics
+                                                <Brain size={12} /> Exercicis Pràctics
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Clock size={14} /> Est. 30 min
+                                                <Clock size={12} /> Est. 30 min
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Action Button */}
-                                    <div className="flex flex-col items-end justify-center h-full pt-2">
+                                    <div className="flex flex-col items-end justify-center h-full pt-1">
                                         {isLocked ? (
-                                            <Lock className="text-slate-600" size={24} />
+                                            <Lock className="text-slate-600" size={20} />
                                         ) : (
                                             <div className={`
-                                                w-10 h-10 rounded-full flex items-center justify-center border transition-all
+                                                w-8 h-8 rounded-full flex items-center justify-center border transition-all
                                                 ${isCompleted
                                                     ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
                                                     : 'border-indigo-500/30 text-indigo-400 bg-indigo-500/10 group-hover:scale-110'
                                                 }
                                             `}>
-                                                {isCompleted ? <CheckCircle size={20} /> : <ChevronRight size={24} />}
+                                                {isCompleted ? <CheckCircle size={16} /> : <ChevronRight size={20} />}
                                             </div>
                                         )}
                                     </div>

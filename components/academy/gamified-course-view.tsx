@@ -36,7 +36,7 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
                                 <Link
                                     href={isLocked ? '#' : `/academy/${module.id}`}
                                     className={`
-                                        w-24 h-24 rounded-full flex items-center justify-center border-4 shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all transform hover:scale-110
+                                        w-20 h-20 rounded-full flex items-center justify-center border-4 shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all transform hover:scale-110
                                         ${isCompleted
                                             ? 'bg-emerald-500 border-emerald-300 text-white'
                                             : isLocked
@@ -47,11 +47,11 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
                                     onClick={(e) => isLocked && e.preventDefault()}
                                 >
                                     {isCompleted ? (
-                                        <Star size={40} fill="currentColor" />
+                                        <Star size={32} fill="currentColor" />
                                     ) : isLocked ? (
-                                        <Lock size={32} />
+                                        <Lock size={24} />
                                     ) : (
-                                        <Play size={40} fill="currentColor" className="ml-1" />
+                                        <Play size={32} fill="currentColor" className="ml-0.5" />
                                     )}
 
                                     {/* Level Badge */}
@@ -64,27 +64,27 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
                             {/* The Card/Content */}
                             <div className={`flex-1 ${isLeft ? 'md:text-left' : 'md:text-right'} text-center md:items-start items-center flex flex-col`}>
                                 <div className={`
-                                    p-6 rounded-2xl border backdrop-blur-sm transition-all
+                                    p-4 rounded-xl border backdrop-blur-sm transition-all
                                     ${isCurrent
                                         ? 'bg-indigo-900/40 border-indigo-500/50 shadow-lg shadow-indigo-900/20'
                                         : 'bg-slate-900/50 border-slate-800'
                                     }
                                     ${isLocked ? 'opacity-50 grayscale' : 'opacity-100'}
                                 `}>
-                                    <h3 className="text-xl font-bold text-white mb-2">{module.title}</h3>
-                                    <p className="text-slate-400 text-sm mb-4 max-w-xs mx-auto md:mx-0">
+                                    <h3 className="text-lg font-bold text-white mb-1.5">{module.title}</h3>
+                                    <p className="text-slate-400 text-xs mb-3 max-w-xs mx-auto md:mx-0">
                                         {module.description}
                                     </p>
 
                                     {!isLocked && (
                                         <div className="flex items-center gap-2 justify-center md:justify-start">
-                                            <div className="h-2 w-24 bg-slate-700 rounded-full overflow-hidden">
+                                            <div className="h-1.5 w-20 bg-slate-700 rounded-full overflow-hidden">
                                                 <div
                                                     className="h-full bg-emerald-500 transition-all duration-1000"
                                                     style={{ width: `${progress?.progressPercentage || 0}%` }}
                                                 />
                                             </div>
-                                            <span className="text-xs font-bold text-emerald-400">
+                                            <span className="text-[10px] font-bold text-emerald-400">
                                                 {progress?.completedLessons || 0}/{progress?.totalLessons || 0}
                                             </span>
                                         </div>

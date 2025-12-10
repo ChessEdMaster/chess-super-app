@@ -143,11 +143,11 @@ export default function AcademyPage() {
             <div className="max-w-7xl mx-auto">
 
                 {/* HEADER */}
-                <div className="flex flex-col items-center justify-center mb-12 text-center">
-                    <h1 className="text-4xl font-bold text-white mb-4 flex items-center gap-3">
-                        <GraduationCap size={40} className="text-indigo-500" /> Acadèmia ChessHub
+                <div className="flex flex-col items-center justify-center mb-8 text-center">
+                    <h1 className="text-3xl font-bold text-white mb-3 flex items-center gap-3">
+                        <GraduationCap size={32} className="text-indigo-500" /> Acadèmia ChessHub
                     </h1>
-                    <p className="text-slate-400 max-w-2xl text-lg">
+                    <p className="text-slate-400 max-w-2xl text-base">
                         El primer currículum d'escacs adaptat al Disseny Universal per l'Aprenentatge (DUA).
                         Des de P3 fins al Doctorat.
                     </p>
@@ -155,27 +155,27 @@ export default function AcademyPage() {
 
                 {/* PROGRESS OVERVIEW */}
                 {stats.totalLessonsCompleted > 0 && (
-                    <div className="mb-12">
-                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                <TrendingUp className="text-indigo-400" /> El teu Progrés Global
+                    <div className="mb-8">
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+                            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                                <TrendingUp className="text-indigo-400" size={18} /> El teu Progrés Global
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-slate-800 rounded-xl p-4">
-                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Lliçons</div>
-                                    <div className="text-2xl font-bold text-white">{stats.totalLessonsCompleted}</div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Lliçons</div>
+                                    <div className="text-xl font-bold text-white">{stats.totalLessonsCompleted}</div>
                                 </div>
-                                <div className="bg-slate-800 rounded-xl p-4">
-                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Exercicis</div>
-                                    <div className="text-2xl font-bold text-white">{stats.totalExercisesSolved}</div>
+                                <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Exercicis</div>
+                                    <div className="text-xl font-bold text-white">{stats.totalExercisesSolved}</div>
                                 </div>
-                                <div className="bg-slate-800 rounded-xl p-4">
-                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Temps</div>
-                                    <div className="text-2xl font-bold text-white">{Math.round(stats.totalTimeSpent / 60)} min</div>
+                                <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Temps</div>
+                                    <div className="text-xl font-bold text-white">{Math.round(stats.totalTimeSpent / 60)} min</div>
                                 </div>
-                                <div className="bg-slate-800 rounded-xl p-4">
-                                    <div className="text-slate-400 text-xs uppercase font-bold mb-1">Assoliments</div>
-                                    <div className="text-2xl font-bold text-white">{stats.achievementsUnlocked}</div>
+                                <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Assoliments</div>
+                                    <div className="text-xl font-bold text-white">{stats.achievementsUnlocked}</div>
                                 </div>
                             </div>
                         </div>
@@ -198,7 +198,7 @@ export default function AcademyPage() {
                 )}
 
                 {/* TRACK SECTIONS */}
-                <div className="space-y-16">
+                <div className="space-y-12">
                     {tracks.map(track => {
                         const trackCourses = groupedCourses[track];
                         if (!trackCourses || trackCourses.length === 0) return null;
@@ -207,18 +207,18 @@ export default function AcademyPage() {
 
                         return (
                             <section key={track} className="relative">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-3 bg-indigo-500/10 rounded-xl">
-                                        <TrackIcon className="text-indigo-400" size={32} />
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-indigo-500/10 rounded-lg">
+                                        <TrackIcon className="text-indigo-400" size={24} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-bold text-white">{TRACK_TITLES[track]}</h2>
-                                        <p className="text-slate-400 text-sm">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
+                                        <h2 className="text-xl font-bold text-white">{TRACK_TITLES[track]}</h2>
+                                        <p className="text-slate-400 text-xs">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
                                     </div>
                                 </div>
 
                                 {/* Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                     {trackCourses.map(course => (
                                         <CourseCard key={course.id} course={course} />
                                     ))}
@@ -237,37 +237,37 @@ function CourseCard({ course }: { course: AcademyCourse }) {
         <Link href={`/academy/course/${course.id}`} className="block h-full">
             <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-900/20 flex flex-col h-full group">
                 {/* Cover Image */}
-                <div className="h-32 bg-slate-800 relative overflow-hidden">
+                <div className="h-28 bg-slate-800 relative overflow-hidden">
                     {course.image_url ? (
                         <img src={course.image_url} alt={course.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
                     ) : (
                         <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                            <School className="text-slate-700" size={48} />
+                            <School className="text-slate-700" size={32} />
                         </div>
                     )}
 
                     {/* Grade Badge */}
-                    <div className="absolute top-3 left-3">
-                        <span className="bg-black/60 backdrop-blur border border-white/10 text-white text-xs font-bold px-2 py-1 rounded-md">
+                    <div className="absolute top-2 left-2">
+                        <span className="bg-black/60 backdrop-blur border border-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
                             {course.target_grade}
                         </span>
                     </div>
                 </div>
 
-                <div className="p-5 flex flex-col flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-indigo-400 transition-colors">
+                <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-base font-bold text-white mb-1 leading-tight group-hover:text-indigo-400 transition-colors">
                         {course.title}
                     </h3>
-                    <p className="text-slate-400 text-sm line-clamp-3 mb-4 flex-1">
+                    <p className="text-slate-400 text-xs line-clamp-3 mb-3 flex-1">
                         {course.description}
                     </p>
 
-                    <div className="border-t border-slate-800 pt-3 flex items-center justify-between text-xs text-slate-500 font-medium">
+                    <div className="border-t border-slate-800 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-medium">
                         <span className="flex items-center gap-1">
-                            <Target size={14} /> {course.difficulty_level === 'beginner' ? 'Principiant' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
+                            <Target size={12} /> {course.difficulty_level === 'beginner' ? 'Principiant' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
                         </span>
                         <span className="text-indigo-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                            Veure curs <ArrowRight size={14} />
+                            Veure curs <ArrowRight size={12} />
                         </span>
                     </div>
                 </div>

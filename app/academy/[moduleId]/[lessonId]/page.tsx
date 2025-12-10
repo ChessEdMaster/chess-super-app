@@ -178,7 +178,7 @@ export default function LessonPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 py-6 font-sans text-slate-200">
-            <div className="max-w-6xl mx-auto px-4 mb-6">
+            <div className="max-w-5xl mx-auto px-4 mb-6">
                 <Link
                     href={`/academy/${moduleId}`}
                     className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition"
