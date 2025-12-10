@@ -26,7 +26,7 @@ interface LessonViewerProps {
 export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerProps) {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [game, setGame] = useState<Chess>(new Chess());
-    const [fen, setFen] = useState('');
+    const [fen, setFen] = useState('start');
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const [correctMoves, setCorrectMoves] = useState(0);
     const [totalAttempts, setTotalAttempts] = useState(0);
@@ -40,24 +40,59 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
     const { boardTheme } = useSettings();
     const theme = BOARD_THEMES[boardTheme];
 
-    const currentStep = content.steps[currentStepIndex];
-    const isLastStep = currentStepIndex === content.steps.length - 1;
+    const currentStep = content?.steps?.[currentStepIndex];
+    const isLastStep = content?.steps ? currentStepIndex === content.steps.length - 1 : true;
     const isFirstStep = currentStepIndex === 0;
 
     useEffect(() => {
         if (currentStep) {
-            const newGame = new Chess(currentStep.fen);
-            setGame(newGame);
-            setFen(currentStep.fen);
-            setFeedback(null);
-            setShowHint(false);
+            let validFen = currentStep.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+            try {
+                // Validate FEN by attempting to load it
+                const tempGame = new Chess();
+                tempGame.load(validFen);
+            } catch (e) {
+                console.warn('Invalid FEN in lesson step, falling back to start position:', currentStep.fen);
+                validFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+            }
+
+            try {
+                const newGame = new Chess(validFen);
+                setGame(newGame);
+                setFen(validFen);
+                setFeedback(null);
+                setShowHint(false);
+            } catch (e) {
+                console.error("Critical error setting up chess game:", e);
+                // Fallback to start just in case constructor fails differently
+                const safeGame = new Chess();
+                setGame(safeGame);
+                setFen(safeGame.fen());
+            }
         }
     }, [currentStepIndex, currentStep]);
+
+    if (!content || !content.steps || content.steps.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 text-center bg-slate-900 border border-slate-800 rounded-xl">
+                <p className="text-white font-bold mb-2">Error de contingut</p>
+                <p className="text-slate-400">Aquesta lliçó no té passos definits o el format és incorrecte.</p>
+            </div>
+        );
+    }
+
+    if (!currentStep) return null; // Should be handled by effect, but safety first
 
     const handleMove = (sourceSquare: string, targetSquare: string) => {
         if (isCompleted) return false;
 
-        const gameCopy = new Chess(game.fen());
+        let gameCopy;
+        try {
+            gameCopy = new Chess(game.fen());
+        } catch (e) {
+            console.error("Error cloning game state:", e);
+            return false;
+        }
 
         try {
             const result = gameCopy.move({
@@ -71,11 +106,13 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
             const uciMove = `${sourceSquare}${targetSquare}`;
             setTotalAttempts(prev => prev + 1);
 
-            if (currentStep.correctMoves.includes(uciMove)) {
+            // Defensive check for correctMoves array
+            const validMoves = currentStep.correctMoves || [];
+            if (validMoves.includes(uciMove)) {
                 setCorrectMoves(prev => prev + 1);
                 setFeedback({
                     type: 'success',
-                    message: currentStep.explanation
+                    message: currentStep.explanation || 'Molt bé!'
                 });
                 playSound('move');
 
@@ -189,9 +226,18 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
     };
 
     const resetStep = () => {
-        const newGame = new Chess(currentStep.fen);
+        // Safe FEN reset
+        let validFen = currentStep.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+        try {
+            const temp = new Chess();
+            temp.load(validFen);
+        } catch {
+            validFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+        }
+
+        const newGame = new Chess(validFen);
         setGame(newGame);
-        setFen(currentStep.fen);
+        setFen(validFen);
         setFeedback(null);
         setShowHint(false);
     };
@@ -359,4 +405,3 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
         </div>
     );
 }
-
