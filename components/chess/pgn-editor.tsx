@@ -46,6 +46,16 @@ export function PGNEditor({
     // Auto-annotate with engine evaluation
     useEffect(() => {
         if (autoAnnotate && engineEval && currentNode) {
+            // Check if evaluation is different to avoid infinite loop
+            const currentEval = currentNode.annotation.evaluation;
+            if (
+                currentEval &&
+                currentEval.type === engineEval.type &&
+                currentEval.value === engineEval.value
+            ) {
+                return;
+            }
+
             // Create new tree instance for immutability
             const newTree = new PGNTree();
             Object.assign(newTree, tree);

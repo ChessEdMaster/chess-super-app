@@ -55,6 +55,9 @@ export default function AnalysisPage() {
   // Settings
   const { boardTheme } = useSettings();
 
+  // Derived state
+  const currentNode = pgnTree.getCurrentNode();
+
   // --- INITIALIZATION ---
   // --- INITIALIZATION ---
   useEffect(() => {
@@ -348,7 +351,7 @@ export default function AnalysisPage() {
           {activeTab === 'analysis' ? (
             <div className="flex flex-col min-h-full">
               <div className="p-4 space-y-4 flex-1">
-                <CoachAgent evaluation={evaluation} previousEval={null} currentMove={lastMove} turn={game.turn()} />
+                <CoachAgent evaluation={evaluation} previousEval={currentNode?.parent?.annotation?.evaluation || null} currentMove={currentNode?.move || null} turn={game.turn()} />
 
                 {/* Best Line Info */}
                 <div className="bg-zinc-950/50 border border-zinc-800 p-3 rounded-lg font-mono text-sm">
@@ -366,7 +369,7 @@ export default function AnalysisPage() {
                   )}
                 </div>
 
-                <PGNEditor tree={pgnTree} onTreeChange={setPgnTree} onPositionChange={handlePositionChange} currentMove={lastMove || undefined} autoAnnotate={true} engineEval={evaluation} />
+                <PGNEditor tree={pgnTree} onTreeChange={setPgnTree} onPositionChange={handlePositionChange} currentMove={currentNode?.move || undefined} autoAnnotate={true} engineEval={evaluation} />
               </div>
             </div>
           ) : (
