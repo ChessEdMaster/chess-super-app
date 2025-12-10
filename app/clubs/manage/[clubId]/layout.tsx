@@ -11,7 +11,9 @@ import {
     Trophy,
     ArrowLeft,
     Menu,
-    GraduationCap
+    GraduationCap,
+    Lock,
+    ShieldAlert
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth-provider';
@@ -26,11 +28,12 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
     const pathname = usePathname();
     const { user, loading: authLoading } = useAuth();
     const [clubName, setClubName] = useState<string>('Carregant...');
-    const [clubType, setClubType] = useState<ClubType>('online');
+    const [clubType, setClubType] = useState<string>('online'); // Use string to accept 'physical_club' if DB has it
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [accessDenied, setAccessDenied] = useState<string | null>(null);
 
     useEffect(() => {
         const checkPermission = async () => {
@@ -44,66 +47,86 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
             if (!clubId) return;
 
             try {
-                // CRÍTICO: Separar las consultas para evitar problemas con RLS
-                // 1. Verificar membresía
-                const { data: member, error: memberError } = await supabase
-                    .from('club_members')
-                    .select('role')
-                    .eq('club_id', clubId)
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (memberError || !member) {
-                    console.error('[Club ERP] Access denied: Not a member', memberError);
-                    alert('No tens accés a aquest panell de gestió. Només el propietari i els administradors poden accedir.');
-                    router.push('/clubs');
-                    return;
-                }
-
-                // 2. Verificar permisos
-                console.log('[Club ERP] Checking permissions for role:', member.role);
-                if (!['owner', 'admin'].includes(member.role)) {
-                    console.error('[Club ERP] Access denied: Insufficient permissions', { role: member.role });
-                    alert('No tens permisos suficients. Només el propietari i els administradors poden accedir.');
-                    router.push('/clubs');
-                    return;
-                }
-
-                // 3. Obtener nombre y tipo del club
+                setLoading(true);
+                // 1. Obtener nombre y tipo del club FIRST to debug
                 const { data: club, error: clubError } = await supabase
                     .from('clubs')
                     .select('name, type')
                     .eq('id', clubId)
                     .single();
 
-                if (clubError) {
+                if (clubError || !club) {
                     console.error('[Club ERP] Error fetching club:', clubError);
-                    alert('Error carregant la informació del club.');
-                    router.push('/clubs');
+                    setAccessDenied('Club not found or error loading details.');
                     return;
                 }
 
-                if (club) {
-                    setClubName(club.name);
-                    setClubType((club.type as ClubType) || 'online');
+                setClubName(club.name);
+                setClubType(club.type);
+
+                // 2. Verificar membresía
+                const { data: member, error: memberError } = await supabase
+                    .from('club_members')
+                    .select('role')
+                    .eq('club_id', clubId)
+                    .eq('user_id', user.id)
+                    .maybeSingle(); // Use maybeSingle to avoid 406 if row doesn't exist
+
+                if (memberError) {
+                    console.error('[Club ERP] Member check error:', memberError);
+                    setAccessDenied('Database error checking membership.');
+                    return;
                 }
 
+                if (!member) {
+                    setAccessDenied('No ets membre d\'aquest club.');
+                    return;
+                }
+
+                // 3. Verificar permisos de rol
+                if (!['owner', 'admin'].includes(member.role)) {
+                    setAccessDenied('No tens permisos d\'administrador per accedir a aquest panell.');
+                    return;
+                }
+
+                // Success
                 setLoading(false);
 
-            } catch (err) {
-                console.error('[Club ERP] Error checking permissions:', err);
-                alert('Error verificant permisos. Torna-ho a intentar.');
-                router.push('/clubs');
+            } catch (err: any) {
+                console.error('[Club ERP] Unexpected error:', err);
+                setAccessDenied(err.message || 'Error desconegut.');
             }
         };
 
         checkPermission();
     }, [user, clubId, authLoading, router]);
 
-    if (loading) {
+    if (loading && !accessDenied) {
         return (
             <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                    <p className="text-neutral-400 text-sm animate-pulse">Verificant permisos...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (accessDenied) {
+        return (
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
+                <div className="bg-neutral-900 border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ShieldAlert className="text-red-500" size={32} />
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Accés Denegat</h2>
+                    <p className="text-neutral-400 mb-6">{accessDenied}</p>
+                    <Link href="/clubs">
+                        <Button variant="outline" className="w-full">
+                            Tornar als Clubs
+                        </Button>
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -121,9 +144,9 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
             >
                 <div className="h-full flex flex-col">
                     <div className="p-6 border-b border-neutral-800">
-                        <Link href={`/clubs`} className="flex items-center text-sm text-neutral-400 hover:text-white mb-4">
+                        <Link href={`/clubs/${clubId}`} className="flex items-center text-sm text-neutral-400 hover:text-white mb-4">
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Tornar als Clubs
+                            Tornar al Club
                         </Link>
                         <h2 className="text-xl font-bold text-white truncate" title={clubName}>
                             {clubName}
