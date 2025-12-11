@@ -33,6 +33,17 @@ export interface AcademyModule {
     level: DifficultyLevel;
     order: number;
     created_at?: string;
+    // SA Metadata (LOMLOE)
+    duration?: string;
+    context_description?: string;
+    challenge_description?: string;
+    final_product?: string;
+    transversal_vectors?: string[];
+    competencies?: any; // JSONB
+    knowledge_topics?: string[];
+    learning_objective?: string;
+    dua_guidelines?: any; // JSONB
+    evaluation_criteria?: any; // JSONB
 }
 
 export interface AcademyEnrollment {
@@ -74,6 +85,8 @@ export interface LessonContent {
     piece?: string;
 }
 
+export type LessonPhase = 'motivation' | 'application' | 'communication';
+
 export interface AcademyLesson {
     id: string;
     module_id: string;
@@ -83,6 +96,7 @@ export interface AcademyLesson {
     order: number;
     difficulty: number; // 1-5
     is_free?: boolean;
+    phase_type?: LessonPhase;
     created_at?: string;
 }
 
@@ -99,6 +113,12 @@ export interface UserLessonProgress {
     attempts: number;
     last_attempt_at: string;
     completed_at?: string;
+    reflection?: {
+        text: string;
+        mood?: 'happy' | 'neutral' | 'confused';
+        difficulties?: string;
+        created_at?: string;
+    };
 }
 
 export interface ModuleProgress {

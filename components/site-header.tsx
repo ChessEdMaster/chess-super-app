@@ -6,11 +6,15 @@ import { useAuth, useRBAC } from '@/components/auth-provider';
 import { Trophy, LogOut, User, Loader2, Shield } from 'lucide-react';
 import { CartButton } from '@/components/shop/cart-button';
 import { usePlayerStore } from '@/lib/store/player-store';
+import { useUIStore } from '@/lib/store/ui-store';
+import { NotificationBell } from '@/components/notifications/notification-bell';
+import { Bot } from 'lucide-react';
 
 export function SiteHeader() {
   const { user, loading, signOut } = useAuth();
   const { checkPermission } = useRBAC();
   const { profile } = usePlayerStore();
+  const { toggleAssistant, isAssistantOpen } = useUIStore();
 
   return (
     <header className="w-full bg-slate-950/30 backdrop-blur-md border-b border-white/5 sticky top-0 z-50 transition-all duration-300">
@@ -55,6 +59,22 @@ export function SiteHeader() {
         <div className="flex items-center gap-4">
           {/* Cart Button - Always visible */}
           <CartButton />
+
+          {/* Notification Bell */}
+          <NotificationBell />
+
+          {/* Assistant Trigger */}
+          <button
+            onClick={toggleAssistant}
+            className={`p-2 rounded-full transition-colors relative ${isAssistantOpen ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-indigo-400 hover:bg-slate-800'
+              }`}
+            title="Assistent AI"
+          >
+            <Bot size={20} />
+            {!isAssistantOpen && (
+              <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            )}
+          </button>
 
           {loading ? (
             <Loader2 className="animate-spin text-slate-500" size={20} />

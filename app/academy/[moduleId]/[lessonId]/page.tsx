@@ -192,6 +192,8 @@ export default function LessonPage() {
                 content={lesson.content}
                 lessonTitle={lesson.title}
                 onComplete={handleComplete}
+                userId={user.id}
+                lessonId={lesson.id}
             />
         </div>
     );

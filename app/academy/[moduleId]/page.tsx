@@ -7,6 +7,7 @@ import { Loader2, BookOpen, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { AcademyModule, AcademyLesson } from '@/types/academy';
+import { LearningSituationDashboard } from '@/components/academy/sa-view/learning-situation-dashboard';
 
 export default function ModulePage() {
     const { moduleId } = useParams();
@@ -15,6 +16,7 @@ export default function ModulePage() {
     const [module, setModule] = useState<AcademyModule | null>(null);
     const [lessons, setLessons] = useState<AcademyLesson[]>([]);
     const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+    const [userModuleProgress, setUserModuleProgress] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -62,6 +64,16 @@ export default function ModulePage() {
             const completed = new Set(progressData?.map(p => p.lesson_id) || []);
             setCompletedLessons(completed);
 
+            // Load module overall progress (SA self-evaluation)
+            const { data: moduleProgressData } = await supabase
+                .from('user_module_progress')
+                .select('*')
+                .eq('user_id', user!.id)
+                .eq('module_id', moduleId)
+                .single();
+
+            setUserModuleProgress(moduleProgressData);
+
         } catch (error) {
             console.error('Error loading module data:', error);
         } finally {
@@ -93,6 +105,30 @@ export default function ModulePage() {
     const completedCount = lessons.filter(l => completedLessons.has(l.id)).length;
     const progressPercentage = lessons.length > 0 ? (completedCount / lessons.length) * 100 : 0;
 
+    // SA MODE (Learning Situation)
+    if (module.challenge_description) {
+        return (
+            <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
+                <Link
+                    href="/academy"
+                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
+                >
+                    <ArrowLeft size={20} />
+                    Tornar a l'acadèmia
+                </Link>
+
+                <LearningSituationDashboard
+                    module={module}
+                    lessons={lessons}
+                    completedLessons={completedLessons}
+                    userId={user.id}
+                    userModuleProgress={userModuleProgress}
+                />
+            </div>
+        );
+    }
+
+    // LEGACY / SIMPLE MODE
     return (
         <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
             <div className="max-w-4xl mx-auto">

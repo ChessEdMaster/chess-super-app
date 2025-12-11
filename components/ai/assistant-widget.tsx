@@ -10,9 +10,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { ChatMessage } from "./chat-message";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useUIStore } from "@/lib/store/ui-store";
 
 export function AssistantWidget() {
-    const [isOpen, setIsOpen] = useState(false);
+    // const [isOpen, setIsOpen] = useState(false); // REPLACED by Global Store
+    const { isAssistantOpen, setAssistantOpen } = useUIStore();
 
     // cast to any to verify runtime behavior of the new SDK version
     const chatHelpers = useChat({
@@ -30,7 +32,7 @@ export function AssistantWidget() {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isOpen]);
+    }, [messages, isAssistantOpen]);
 
     useEffect(() => {
         // Debug logging to verify what we actually get
@@ -55,16 +57,16 @@ export function AssistantWidget() {
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-            <AnimatePresence>
-                {isOpen && (
+        <AnimatePresence>
+            {isAssistantOpen && (
+                <div className="fixed top-20 right-4 z-50 flex flex-col items-end gap-2">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <Card className="w-[380px] h-[600px] flex flex-col shadow-2xl border-primary/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                        <Card className="w-[380px] h-[calc(100vh-6rem)] max-h-[600px] flex flex-col shadow-2xl border-primary/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 border-b">
                                 <div className="flex items-center gap-2">
                                     <div className="p-2 bg-primary/10 rounded-full">
@@ -72,7 +74,7 @@ export function AssistantWidget() {
                                     </div>
                                     <CardTitle className="text-base font-medium">Chess Guide</CardTitle>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-8 w-8">
+                                <Button variant="ghost" size="icon" onClick={() => setAssistantOpen(false)} className="h-8 w-8">
                                     <X className="w-4 h-4" />
                                 </Button>
                             </CardHeader>
@@ -117,19 +119,8 @@ export function AssistantWidget() {
                             </CardFooter>
                         </Card>
                     </motion.div>
-                )}
-            </AnimatePresence>
-
-            <Button
-                onClick={() => setIsOpen(!isOpen)}
-                size="lg"
-                className={cn(
-                    "h-14 w-14 rounded-full shadow-xl transition-all duration-300 hover:scale-105",
-                    isOpen ? "rotate-90 bg-destructive hover:bg-destructive/90 text-white" : "bg-primary text-primary-foreground animate-bounce-subtle"
-                )}
-            >
-                {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
-            </Button>
-        </div >
+                </div>
+            )}
+        </AnimatePresence>
     );
 }

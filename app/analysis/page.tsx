@@ -126,106 +126,126 @@ export default function AnalysisPage() {
 
   // --- ENGINE WORKER ---
   // --- ENGINE WORKER ---
+  // --- ENGINE WORKER ---
   useEffect(() => {
-    if (!engine.current) {
-      // Using a reliable CDN for Stockfish.js
-      const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
+    async function initEngine() {
+      if (!engine.current) {
+        // Auth check for Superadmin Native Engine
+        const { supabase } = await import('@/lib/supabase');
+        const { data: { user } } = await supabase.auth.getUser();
+        const isSuperAdmin = user?.email === 'marc.pozanco@gmail.com';
 
-      // Create worker from blob to avoid cross-origin issues with some CDNs
-      fetch(stockfishUrl)
-        .then(response => response.text())
-        .then(code => {
-          const blob = new Blob([code], { type: 'application/javascript' });
-          const localWorkerUrl = URL.createObjectURL(blob);
-          engine.current = new Worker(localWorkerUrl);
+        if (isSuperAdmin) {
+          console.log("Initializing Native Server Engine for Superadmin");
+          const { ServerEngineAdapter } = await import('@/lib/analysis/server-engine-adapter');
+          // @ts-ignore - Adapter matches Worker interface enough for our usage
+          engine.current = new ServerEngineAdapter();
+        } else {
+          // Standard Web Worker implementation
+          const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
+          try {
+            const response = await fetch(stockfishUrl);
+            const code = await response.text();
+            const blob = new Blob([code], { type: 'application/javascript' });
+            const localWorkerUrl = URL.createObjectURL(blob);
+            engine.current = new Worker(localWorkerUrl);
+          } catch (err) {
+            console.error("Failed to load Stockfish:", err);
+            return;
+          }
+        }
 
-          // --- PERFORMANCE OPTIMIZATION ---
-          // Detect logical cores (default to 4 if unavailable)
-          const cores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4;
-          const threadsToUse = Math.max(1, cores - 1); // Leave 1 core for UI
-          const hashSize = 128; // 128 MB Hash
+        if (!engine.current) return;
 
-          console.log(`Initializing Stockfish with ${threadsToUse} threads and ${hashSize}MB Hash`);
+        // --- PERFORMANCE OPTIMIZATION ---
+        // Detect logical cores (default to 4 if unavailable)
+        const cores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4;
+        const threadsToUse = Math.max(1, cores - 1); // Leave 1 core for UI
+        const hashSize = 128; // 128 MB Hash
 
-          engine.current.postMessage('uci');
+        console.log(`Initializing Stockfish with ${threadsToUse} threads and ${hashSize}MB Hash`);
 
-          // Configure Engine Options for Max Performance
-          engine.current.postMessage(`setoption name Threads value ${threadsToUse}`);
-          engine.current.postMessage(`setoption name Hash value ${hashSize}`);
-          engine.current.postMessage('setoption name UCI_AnalyseMode value true');
-          engine.current.postMessage('setoption name Ponder value false');
+        engine.current.postMessage('uci');
 
-          // Wait for ready
-          engine.current.postMessage('isready');
+        // Configure Engine Options for Max Performance
+        engine.current.postMessage(`setoption name Threads value ${threadsToUse}`);
+        engine.current.postMessage(`setoption name Hash value ${hashSize}`);
+        engine.current.postMessage('setoption name UCI_AnalyseMode value true');
+        engine.current.postMessage('setoption name Ponder value false');
 
-          engine.current.onmessage = (event) => {
-            const msg = event.data;
-            // Parse info
-            if (msg.startsWith('info') && msg.includes('depth')) {
-              // Parse multipv ID (default to 1)
-              const multipvMatch = msg.match(/multipv (\d+)/);
-              const multipvId = multipvMatch ? parseInt(multipvMatch[1]) : 1;
+        // Wait for ready
+        engine.current.postMessage('isready');
 
-              const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
-              let evalData: Evaluation | null = null;
+        engine.current.onmessage = (event) => {
+          const msg = event.data;
+          // Parse info
+          if (msg.startsWith('info') && msg.includes('depth')) {
+            // Parse multipv ID (default to 1)
+            const multipvMatch = msg.match(/multipv (\d+)/);
+            const multipvId = multipvMatch ? parseInt(multipvMatch[1]) : 1;
 
-              if (scoreMatch) {
-                const type = scoreMatch[1] as 'cp' | 'mate';
-                let value = parseInt(scoreMatch[2]);
-                evalData = { type, value };
+            const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+            let evalData: Evaluation | null = null;
 
-                // Note: We don't set evaluation here immediately to avoid race conditions.
-                // We do it below after verifying legitimacy
-              }
+            if (scoreMatch) {
+              const type = scoreMatch[1] as 'cp' | 'mate';
+              let value = parseInt(scoreMatch[2]);
+              evalData = { type, value };
 
-              const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
-              if (pvMatch && evalData) {
-                const moves = pvMatch[1].trim().split(/\s+/);
-                if (moves.length > 0) {
-                  const bestMoveStr = moves[0];
+              // Note: We don't set evaluation here immediately to avoid race conditions.
+              // We do it below after verifying legitimacy
+            }
 
-                  // STALE DATA CHECK:
-                  // Verify if this move is legal in the CURRENT game state.
-                  try {
-                    const from = bestMoveStr.substring(0, 2);
-                    // Fast Validation: check if piece at 'from' exists and is correct color
-                    const piece = gameRef.current.get(from as any);
-                    if (!piece || piece.color !== gameRef.current.turn()) {
-                      // This message is for an old position (stale)
-                      return;
-                    }
-                  } catch (e) { return; }
+            const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
+            if (pvMatch && evalData) {
+              const moves = pvMatch[1].trim().split(/\s+/);
+              if (moves.length > 0) {
+                const bestMoveStr = moves[0];
 
-                  const newLine: EvaluationLine = {
-                    id: multipvId,
-                    evaluation: evalData,
-                    bestMove: moves[0],
-                    line: moves.slice(0, 10).join(' ')
-                  };
-
-                  setLines(prev => {
-                    const newLines = [...prev];
-                    const index = newLines.findIndex(l => l.id === multipvId);
-                    if (index !== -1) {
-                      newLines[index] = newLine;
-                    } else {
-                      newLines.push(newLine);
-                    }
-                    return newLines.sort((a, b) => a.id - b.id);
-                  });
-
-                  if (multipvId === 1) {
-                    setEvaluation(evalData);
-                    setBestMove(moves[0]);
-                    setBestLine(moves.slice(0, 5).join(' '));
+                // STALE DATA CHECK:
+                // Verify if this move is legal in the CURRENT game state.
+                try {
+                  const from = bestMoveStr.substring(0, 2);
+                  // Fast Validation: check if piece at 'from' exists and is correct color
+                  const piece = gameRef.current.get(from as any);
+                  if (!piece || piece.color !== gameRef.current.turn()) {
+                    // This message is for an old position (stale)
+                    return;
                   }
+                } catch (e) { return; }
+
+                const newLine: EvaluationLine = {
+                  id: multipvId,
+                  evaluation: evalData,
+                  bestMove: moves[0],
+                  line: moves.slice(0, 10).join(' ')
+                };
+
+                setLines(prev => {
+                  const newLines = [...prev];
+                  const index = newLines.findIndex(l => l.id === multipvId);
+                  if (index !== -1) {
+                    newLines[index] = newLine;
+                  } else {
+                    newLines.push(newLine);
+                  }
+                  return newLines.sort((a, b) => a.id - b.id);
+                });
+
+                if (multipvId === 1) {
+                  setEvaluation(evalData);
+                  setBestMove(moves[0]);
+                  setBestLine(moves.slice(0, 5).join(' '));
                 }
               }
             }
-          };
-        })
-        .catch(err => console.error("Failed to load Stockfish:", err));
+          }
+        };
+      }
     }
+
+    initEngine();
+
     return () => {
       engine.current?.terminate();
       engine.current = null;
@@ -235,6 +255,7 @@ export default function AnalysisPage() {
   // --- TRIGGER ANALYSIS ---
   useEffect(() => {
     if (!engine.current || !isClient) return;
+
 
     // IMMEDIATE CLEAR: When FEN changes, clear old data instantly
     setLines([]);

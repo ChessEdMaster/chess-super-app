@@ -27,10 +27,23 @@ export interface Club {
     owner_id: string;
     // Nous camps
     type: ClubType;
+    parent_id?: string | null; // For Super Clans / Schools
     settings: {
         allow_chat: boolean;
         require_approval: boolean;
         [key: string]: any;
     };
+    created_at: string;
+}
+
+export interface ClubStudent {
+    id: string;
+    club_id: string;
+    first_name: string;
+    last_name?: string;
+    group_identifier?: string;
+    notes?: string;
+    elo: number;
+    puzzle_rating: number;
     created_at: string;
 }

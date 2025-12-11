@@ -129,7 +129,8 @@ export default function AcademyPage() {
     }
 
     // Filter courses: Only show enrolled ones
-    const visibleCourses = courses.filter(c => enrolledCourseIds.has(c.id));
+    // const visibleCourses = courses.filter(c => enrolledCourseIds.has(c.id));
+    const visibleCourses = courses; // SHOW ALL FOR DEMO
 
     // Group courses by track
     const tracks = ['academic', 'pedagogical', 'sport', 'vocational'];

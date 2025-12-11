@@ -16,14 +16,17 @@ import { LessonContent } from '@/types/academy';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
+import { LearningDiary } from './academy/sa-view/learning-diary';
 
 interface LessonViewerProps {
     content: LessonContent;
     onComplete: (score: number) => void;
     lessonTitle: string;
+    userId?: string;
+    lessonId?: string;
 }
 
-export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerProps) {
+export function LessonViewer({ content, onComplete, lessonTitle, userId, lessonId }: LessonViewerProps) {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [game, setGame] = useState<Chess>(new Chess());
     const [fen, setFen] = useState('start');
@@ -429,17 +432,28 @@ export function LessonViewer({ content, onComplete, lessonTitle }: LessonViewerP
                     </div>
 
                     {isCompleted && (
-                        <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/50 rounded-xl p-4 text-center">
-                            <Trophy className="text-amber-400 mx-auto mb-2" size={32} />
-                            <h3 className="text-lg font-bold text-white mb-1.5">
-                                Lliçó Completada!
-                            </h3>
-                            <p className="text-slate-300 text-xs mb-2">
-                                Puntuació: {Math.round((correctMoves / Math.max(totalAttempts, 1)) * 100)}%
-                            </p>
-                            <div className="text-[10px] text-slate-400">
-                                Moviments correctes: {correctMoves} / {totalAttempts}
+                        <div className="space-y-4">
+                            <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/50 rounded-xl p-4 text-center">
+                                <Trophy className="text-amber-400 mx-auto mb-2" size={32} />
+                                <h3 className="text-lg font-bold text-white mb-1.5">
+                                    Lliçó Completada!
+                                </h3>
+                                <p className="text-slate-300 text-xs mb-2">
+                                    Puntuació: {Math.round((correctMoves / Math.max(totalAttempts, 1)) * 100)}%
+                                </p>
+                                <div className="text-[10px] text-slate-400">
+                                    Moviments correctes: {correctMoves} / {totalAttempts}
+                                </div>
                             </div>
+
+                            {/* Learning Diary Integration */}
+                            {(userId && lessonId) && (
+                                <LearningDiary
+                                    userId={userId}
+                                    lessonId={lessonId}
+                                    className="animate-in fade-in slide-in-from-bottom-4 duration-700"
+                                />
+                            )}
                         </div>
                     )}
                 </div>
