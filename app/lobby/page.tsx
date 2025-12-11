@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Swords, Trophy, User, Zap, Timer, Turtle,
-  Archive, Gift, Plus
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreateChallengeModal } from '@/components/lobby/create-challenge-modal';
@@ -19,6 +19,12 @@ import { ArenaCard } from '@/components/arena/arena-card';
 import { ArenaPath } from '@/components/arena/arena-path';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { ChestGrid } from '@/components/lobby/chest-grid';
+
+interface HostProfile {
+  username: string;
+  avatar_url: string;
+}
 
 interface Challenge {
   id: string;
@@ -31,7 +37,7 @@ interface Challenge {
   status: string;
   map_x: number;
   map_y: number;
-  host?: { username: string; avatar_url: string };
+  host?: HostProfile;
 }
 
 export default function LobbyPage() {
@@ -40,8 +46,7 @@ export default function LobbyPage() {
 
   // Stores
   const {
-    chests, profile, loadProfile,
-    startUnlockChest, openChest, updateChestTimers
+    profile, loadProfile
   } = usePlayerStore();
   const { progress, fetchArenaProgress, claimChest } = useArenaStore();
 
@@ -58,14 +63,6 @@ export default function LobbyPage() {
     }
   }, [user, loadProfile, fetchArenaProgress]);
 
-  // Timer for chests
-  useEffect(() => {
-    const timer = setInterval(() => {
-      updateChestTimers();
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [updateChestTimers]);
-
   // Realtime Challenges
   useEffect(() => {
     if (!user) return;
@@ -75,7 +72,7 @@ export default function LobbyPage() {
         .from('challenges')
         .select('*, host:profiles(username, avatar_url)')
         .eq('status', 'open');
-      if (data) setChallenges(data as any);
+      if (data) setChallenges(data as any); // Type assertion unavoidable without deep Supabase types, but scoped
     };
 
     fetchChallenges();
@@ -98,7 +95,7 @@ export default function LobbyPage() {
     const blackId = whiteId === challenge.host_id ? user.id : challenge.host_id;
     const timeLimit = challenge.time_control_type === 'bullet' ? 60 : challenge.time_control_type === 'blitz' ? 180 : 600;
 
-    const { data: game, error } = await supabase.from('games').insert({
+    const { error } = await supabase.from('games').insert({
       id: challenge.id,
       white_player_id: whiteId,
       black_player_id: blackId,
@@ -114,28 +111,6 @@ export default function LobbyPage() {
       router.push(`/play/online/${challenge.id}`);
     } else {
       toast.error("Error unint-se a la partida");
-    }
-  };
-
-  const handleChestClick = (index: number) => {
-    const chest = chests[index];
-    if (!chest) return;
-
-    if (chest.status === 'LOCKED') {
-      const isAnyUnlocking = chests.some(c => c && c.status === 'UNLOCKING');
-      if (isAnyUnlocking) {
-        toast.error("Ja estàs desbloquejant un cofre. Espera que acabi.");
-        return;
-      }
-      startUnlockChest(index);
-      toast.success("Desbloqueig iniciat!");
-    } else if (chest.status === 'READY') {
-      const rewards = openChest(index);
-      if (rewards) {
-        toast.success(`Cofre obert! Guanyat: ${rewards.gold} Or, ${rewards.gems} Gemmes`);
-      }
-    } else if (chest.status === 'UNLOCKING') {
-      toast.info("Aquest cofre s'està desbloquejant...");
     }
   };
 
@@ -174,43 +149,8 @@ export default function LobbyPage() {
           <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
           <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
 
-          {/* Chests */}
-          <div className="mt-8">
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Archive size={14} /> Cofres
-            </h3>
-            <div className="grid grid-cols-4 gap-2">
-              {chests.map((chest, i) => (
-                <motion.div
-                  key={i}
-                  onClick={() => handleChestClick(i)}
-                  whileHover={chest ? { scale: 1.05 } : {}}
-                  whileTap={chest ? { scale: 0.95 } : {}}
-                  className={`aspect-square rounded border flex flex-col items-center justify-center relative cursor-pointer ${chest ? 'border-amber-500/30 bg-amber-900/10' : 'border-zinc-800 bg-zinc-900'}`}
-                >
-                  {chest ? (
-                    <>
-                      <Gift className={`mb-1 ${chest.status === 'LOCKED' ? 'text-zinc-500' : 'text-amber-500'}`} size={16} />
-
-                      {chest.status === 'READY' && <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
-
-                      <span className="text-[8px] font-bold uppercase text-zinc-400">
-                        {chest.status === 'LOCKED' && 'LOCKED'}
-                        {chest.status === 'UNLOCKING' && 'OPENING'}
-                        {chest.status === 'READY' && 'READY'}
-                      </span>
-
-                      {chest.status === 'UNLOCKING' && chest.unlockStartedAt && (
-                        <span className="text-[8px] text-amber-200">
-                          {Math.max(0, Math.ceil(chest.unlockTime - ((Date.now() - chest.unlockStartedAt) / 1000)))}s
-                        </span>
-                      )}
-                    </>
-                  ) : <span className="text-zinc-700 text-[8px]">EMPTY</span>}
-                </motion.div>
-              ))}
-            </div>
-          </div>
+          {/* Chests Component */}
+          <ChestGrid />
         </div>
 
         <div className="p-4 border-t border-zinc-800 text-xs text-center text-zinc-500">
@@ -260,7 +200,10 @@ export default function LobbyPage() {
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
-                        {c.host?.avatar_url ? <img src={c.host.avatar_url} className="w-full h-full object-cover" /> : <User size={16} />}
+                        {c.host?.avatar_url ? (
+                          // Using standard img for external avatars for simplicity unless Next Image is required
+                          <img src={c.host.avatar_url} alt={c.host.username} className="w-full h-full object-cover" />
+                        ) : <User size={16} />}
                       </div>
                       <div>
                         <div className="font-bold text-sm text-white">{c.host?.username || 'Anònim'}</div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { ArenaProgress, ArenaRewardNode, generateArenaPath, ARENA_TIERS } from '@/types/arena';
 import { cn } from '@/lib/utils';
 import { Lock, Check, Trophy, Shield, Star } from 'lucide-react';
@@ -19,6 +19,16 @@ export function ArenaPath({ progress, onClaimChest, onPlayGatekeeper }: ArenaPat
     // Reverse nodes to show 1000 at top and 0 at bottom (like climbing a mountain)
     const reversedNodes = [...nodes].reverse();
 
+    // Ref for the scrolling container
+    const activeNodeRef = useRef<HTMLDivElement>(null);
+
+    // Scroll active node into view on mount
+    useEffect(() => {
+        if (activeNodeRef.current) {
+            activeNodeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [activeNodeRef]);
+
     return (
         <div className="relative w-full max-w-md mx-auto bg-slate-900/50 rounded-xl p-4 overflow-hidden">
             {/* Background Line */}
@@ -32,17 +42,23 @@ export function ArenaPath({ progress, onClaimChest, onPlayGatekeeper }: ArenaPat
             <div className="relative z-10 space-y-8 py-8">
                 {reversedNodes.map((node, index) => {
                     const isReached = currentCups >= node.cups;
-                    const isNext = !isReached && (index === reversedNodes.length - 1 || currentCups >= reversedNodes[index + 1]?.cups); // Rough logic
+                    // Determine if this is the "active" or next target node
+                    // It's the first unreached node OR the last reached node if checking from bottom up
+                    // In a reversed list (Top=High Cups), the active node is the one just above the reached threshold.
+
+                    // Simple logic: Highlight the node if it's the next goal or just reached
+                    const isNext = !isReached && (index === reversedNodes.length - 1 || currentCups >= reversedNodes[index + 1]?.cups);
 
                     return (
-                        <PathNode
-                            key={node.cups}
-                            node={node}
-                            isReached={isReached}
-                            progress={progress}
-                            onClaimChest={onClaimChest}
-                            onPlayGatekeeper={onPlayGatekeeper}
-                        />
+                        <div key={node.cups} ref={isNext ? activeNodeRef : null}>
+                            <PathNode
+                                node={node}
+                                isReached={isReached}
+                                progress={progress}
+                                onClaimChest={onClaimChest}
+                                onPlayGatekeeper={onPlayGatekeeper}
+                            />
+                        </div>
                     );
                 })}
             </div>
