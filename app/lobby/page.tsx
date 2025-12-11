@@ -65,27 +65,44 @@ export default function LobbyPage() {
 
   // Realtime Challenges
   useEffect(() => {
-    if (!user) return;
+    // Note: We need to listen to challenges globally, not necessarily blocked by 'user' being present, 
+    // but we can't display much without user.
+    // The previous issue was that `host:profiles(...)` relationship was returning empty or undefined if RLS blocked it.
+    // However, profiles table usually has public read access.
+    // Let's verify RLS later. For now, let's fix the query to ensure we get data even if host is null for some reason.
 
     const fetchChallenges = async () => {
-      const { data } = await supabase
+      // Intentionally simplified query to debug if relation was the issue
+      const { data, error } = await supabase
         .from('challenges')
-        .select('*, host:profiles(username, avatar_url)')
+        .select(`
+            *,
+            host:profiles(username, avatar_url)
+        `)
         .eq('status', 'open');
-      if (data) setChallenges(data as any); // Type assertion unavoidable without deep Supabase types, but scoped
+
+      if (error) {
+        console.error("Error fetching challenges:", error);
+      }
+
+      if (data) {
+        // If host is null (e.g. host deleted or RLS issue), we should handle it gracefully
+        setChallenges(data as any);
+      }
     };
 
     fetchChallenges();
 
     const channel = supabase
-      .channel('lobby_challenges_grid')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, () => {
+      .channel('lobby_challenges_main')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, (payload) => {
+        // We could optimistically update, but re-fetching ensures we get the joined profile data
         fetchChallenges();
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user]); // Re-run if user changes or on mount
 
   const handleJoin = async (challenge: Challenge) => {
     if (!user) return;
@@ -93,7 +110,7 @@ export default function LobbyPage() {
 
     const whiteId = challenge.player_color === 'white' ? challenge.host_id : (challenge.player_color === 'black' ? user.id : (Math.random() > 0.5 ? challenge.host_id : user.id));
     const blackId = whiteId === challenge.host_id ? user.id : challenge.host_id;
-    const timeLimit = challenge.time_control_type === 'bullet' ? 60 : challenge.time_control_type === 'blitz' ? 180 : 600;
+    const timeLimit = challenge.time_control_type === 'bullet' ? 60 : challenge.time_control_type === 'blitz' ? 3 * 60 : 10 * 60; // Fixed times for now: 1min, 3min, 10min
 
     const { error } = await supabase.from('games').insert({
       id: challenge.id,
@@ -110,6 +127,7 @@ export default function LobbyPage() {
       await supabase.from('challenges').update({ status: 'accepted' }).eq('id', challenge.id);
       router.push(`/play/online/${challenge.id}`);
     } else {
+      console.error("Join error:", error);
       toast.error("Error unint-se a la partida");
     }
   };

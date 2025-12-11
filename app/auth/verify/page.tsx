@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function VerifyAuthPage() {
     const router = useRouter();
-    const { user, signOut } = useAuth();
+    const { signOut } = useAuth();
     const [status, setStatus] = useState('Verificant...');
 
     useEffect(() => {
@@ -24,41 +24,69 @@ export default function VerifyAuthPage() {
             const currentUser = session.user;
 
             // Check if profile exists
-            const { data: profile } = await supabase
+            let { data: profile } = await supabase
                 .from('profiles')
-                .select('id')
+                .select('id, role:app_roles(name)')
                 .eq('id', currentUser.id)
                 .single();
+
+            // If profile doesn't exist, we might need to wait for the trigger or create it manually?
+            // The trigger `handle_new_user` handles automatic profile creation on `auth.users` insert.
+            // But since we just committed a fix for it, it should work.
+            // However, we should be resilient.
+
+            // Retry fetching profile a few times if it's missing (race condition)
+            if (!profile) {
+                for (let i = 0; i < 3; i++) {
+                    await new Promise(r => setTimeout(r, 1000));
+                    const { data: refetchedProfile } = await supabase
+                        .from('profiles')
+                        .select('id, role:app_roles(name)')
+                        .eq('id', currentUser.id)
+                        .single();
+                    if (refetchedProfile) {
+                        profile = refetchedProfile;
+                        break;
+                    }
+                }
+            }
 
             const profileExists = !!profile;
 
             if (intent === 'login') {
                 if (!profileExists) {
-                    // User tried to login but has no profile -> Block and redirect to register
                     await signOut();
                     alert('Aquest compte no està registrat. Si us plau, registra\'t primer.');
                     router.push('/register');
                     return;
                 }
-            } else if (intent === 'register') {
-                if (!profileExists) {
-                    // Create profile if it doesn't exist (Registration flow)
-                    // Usually handled by database triggers, but if not, we might need to wait or do it here.
-                    // Assuming triggers handle it or it's already done.
-                    // If triggers are used, profile might already exist by now.
-                }
-                // If profile exists, it's fine, maybe they registered before.
             }
 
-            // If we are here, access is granted.
-            // Redirect based on role.
-            const role = currentUser.app_metadata?.app_role;
+            // If it's a new registration (or successful login), proceed.
+            // If profile still doesn't exist after retries, something is wrong with the DB trigger, but we'll try to let them in or show an error.
+            if (!profileExists) {
+                console.error("Profile not found after registration.");
+                // Ideally show error or try to create it manually here as fallback?
+                // For now, let's redirect to Welcome which might handle missing profile setup.
+                router.push('/welcome');
+                return;
+            }
 
-            if (role === 'SuperAdmin') {
+            // Redirect based on role
+            // Careful: 'role' in profile might be an object due to join, or we use metadata
+            // Better use the profile data we just fetched if possible, or metadata
+            // profile.role might be { name: 'SuperAdmin' }
+
+            const roleName = (profile as any)?.role?.name || currentUser.app_metadata?.app_role;
+
+            if (roleName === 'SuperAdmin') {
                 router.push('/');
             } else {
-                // Normal users go to profile
-                router.push('/profile');
+                if (intent === 'register') {
+                    router.push('/welcome');
+                } else {
+                    router.push('/lobby'); // Changed from /profile to /lobby as it's more engaging for returning users
+                }
             }
         };
 
