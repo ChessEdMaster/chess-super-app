@@ -3,24 +3,24 @@
 
 import { useChat } from "@ai-sdk/react";
 import { Bot, X, Send } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChatMessage } from "./chat-message";
+import { ChatMessage, type Message } from "./chat-message";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUIStore } from "@/lib/store/ui-store";
 
 export function AssistantWidget() {
     const { isAssistantOpen, setAssistantOpen } = useUIStore();
     const scrollRef = useRef<HTMLDivElement>(null);
+    const [input, setInput] = useState("");
 
-    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-        api: '/api/chat',
+    const { messages, append, isLoading, error } = useChat({
         onError: (err) => {
             console.error("Chat Error:", err);
         },
-    });
+    }) as any;
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
@@ -28,6 +28,24 @@ export function AssistantWidget() {
             scrollRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages, isAssistantOpen, isLoading]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim() || isLoading) return;
+
+        const userMessage = input;
+        setInput(""); // Clear input optimistically
+
+        try {
+            await append({
+                role: 'user',
+                content: userMessage
+            });
+        } catch (err) {
+            console.error("Failed to send message:", err);
+            // Optionally restore input or show error
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -60,7 +78,7 @@ export function AssistantWidget() {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-4 p-4">
-                                        {messages.map((m) => (
+                                        {messages.map((m: Message) => (
                                             <ChatMessage key={m.id} message={m} />
                                         ))}
                                         {isLoading && (
@@ -81,7 +99,7 @@ export function AssistantWidget() {
                                 <form onSubmit={handleSubmit} className="flex w-full gap-2">
                                     <Input
                                         value={input}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => setInput(e.target.value)}
                                         placeholder="Ask something..."
                                         className="flex-1"
                                     />
