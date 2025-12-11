@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 
@@ -17,6 +17,7 @@ interface CreateChallengeModalProps {
 
 export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'blitz' }: CreateChallengeModalProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const { user } = useAuth();
     const [color, setColor] = useState<'white' | 'black' | 'random'>('random');
     const [timeControl, setTimeControl] = useState<string>(defaultTimeControl);
@@ -36,17 +37,16 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
                     time_control_type: timeControl,
                     rated: mode === 'rated',
                     status: 'open',
-                    map_x: Math.floor(Math.random() * 80) + 10, // Random pos 10-90%
+                    map_x: Math.floor(Math.random() * 80) + 10,
                     map_y: Math.floor(Math.random() * 80) + 10
                 });
 
             if (error) throw error;
 
-            // Success
-            router.push('/lobby');
+            if (pathname !== '/lobby') {
+                router.push('/lobby');
+            }
 
-            // Keep modal open briefly to show "Entering..." state or let unmount handle it
-            // But we should close it eventually if navigation is slow
             setTimeout(() => {
                 onClose();
                 setLoading(false);
@@ -55,10 +55,10 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
         } catch (e) {
             console.error(e);
             setLoading(false);
-            // Show error to user?
             alert('Error creating challenge. Please try again.');
         }
     };
+
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
