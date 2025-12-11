@@ -25,54 +25,41 @@ interface PlayerState {
 }
 
 const GENERATE_CARDS = (): ConceptCard[] => {
-    const categories = ['AGGRESSION', 'SOLIDITY', 'KNOWLEDGE', 'SPEED'] as const;
-    const rarities = ['COMMON', 'RARE', 'EPIC', 'LEGENDARY'] as const;
-    const cards: ConceptCard[] = [];
-
-    // Base cards
-    const bases = [
-        { title: 'La Forquilla', desc: 'Atacar dues peces alhora amb una sola peça.', puzzle: 'puzzle-fork' },
-        { title: 'La Clavada', desc: 'Immobilitzar una peça perquè no exposi una de més valor.', puzzle: 'puzzle-pin' },
-        { title: "L'Enfilada", desc: 'Atacar una peça valuosa i capturar la que hi ha darrere.', puzzle: 'puzzle-skewer' },
-        { title: 'Escac a la Descoberta', desc: 'Moure una peça per obrir línia d\'atac d\'una altra.', puzzle: 'puzzle-discovered' },
-        { title: 'Raigs X', desc: 'Atacar a través d\'una peça enemiga.', puzzle: 'puzzle-xray' },
-        { title: 'Sacrifici', desc: 'Entregar material per obtenir avantatge tàctic.', puzzle: 'puzzle-sacrifice' },
-        { title: 'Desviació', desc: 'Forçar una peça a abandonar una casella clau.', puzzle: 'puzzle-deflection' },
-        { title: 'Intercepció', desc: 'Tallar la línia d\'acció d\'una peça enemiga.', puzzle: 'puzzle-interception' },
-        { title: 'Zugzwang', desc: 'Qualsevol moviment empitjora la posició.', puzzle: 'puzzle-zugzwang' },
-        { title: 'Peó Passat', desc: 'Un peó sense oposició cap a la promoció.', puzzle: 'puzzle-passed-pawn' },
-        { title: 'Mate del Passadís', desc: 'Mate a la vuitena fila per bloqueig de peons.', puzzle: 'puzzle-back-rank' },
-        { title: 'Mate de l\'Ofegat', desc: 'El rei està atrapat per les seves pròpies peces.', puzzle: 'puzzle-smothered' },
-        { title: 'Obertura Italiana', desc: 'Control del centre i atac ràpid.', puzzle: 'puzzle-italian' },
-        { title: 'Defensa Siciliana', desc: 'Contraatac agressiu des del principi.', puzzle: 'puzzle-sicilian' },
-        { title: 'Gambit de Dama', desc: 'Sacrifici de peó per control central.', puzzle: 'puzzle-queens-gambit' },
-        { title: 'Ruy Lopez', desc: 'Pressió constant sobre el cavall i el centre.', puzzle: 'puzzle-ruy-lopez' },
-        { title: 'Defensa Francesa', desc: 'Estructura sòlida i contraatac al centre.', puzzle: 'puzzle-french' },
-        { title: 'Defensa Caro-Kann', desc: 'Solidesa extrema i finals favorables.', puzzle: 'puzzle-caro-kann' },
-        { title: 'Atac Indi de Rei', desc: 'Atac directe al rei enrocant.', puzzle: 'puzzle-kings-indian' },
-        { title: 'Sistema Londres', desc: 'Desenvolupament sòlid i universal.', puzzle: 'puzzle-london' }
+    // Unique list of cards based on themes available in DB
+    const cards: ConceptCard[] = [
+        { title: 'La Forquilla', desc: 'Atacar dues peces alhora amb una sola peça.', puzzle: 'puzzle-fork', rarity: 'COMMON', category: 'AGGRESSION', tags: ['fork'] },
+        { title: 'La Clavada', desc: 'Immobilitzar una peça perquè no exposi una de més valor.', puzzle: 'puzzle-pin', rarity: 'COMMON', category: 'SOLIDITY', tags: ['pin'] },
+        { title: "L'Enfilada", desc: 'Atacar una peça valuosa i capturar la que hi ha darrere.', puzzle: 'puzzle-skewer', rarity: 'RARE', category: 'AGGRESSION', tags: ['skewer'] },
+        { title: 'Escac a la Descoberta', desc: 'Moure una peça per obrir línia d\'atac d\'una altra.', puzzle: 'puzzle-discovered', rarity: 'RARE', category: 'KNOWLEDGE', tags: ['discoveredAttack'] },
+        { title: 'Raigs X', desc: 'Atacar a través d\'una peça enemiga.', puzzle: 'puzzle-xray', rarity: 'RARE', category: 'KNOWLEDGE', tags: ['xRayAttack'] },
+        { title: 'Sacrifici', desc: 'Entregar material per obtenir avantatge tàctic.', puzzle: 'puzzle-sacrifice', rarity: 'EPIC', category: 'AGGRESSION', tags: ['sacrifice'] },
+        { title: 'Desviació', desc: 'Forçar una peça a abandonar una casella clau.', puzzle: 'puzzle-deflection', rarity: 'EPIC', category: 'SPEED', tags: ['deflection'] },
+        { title: 'Intercepció', desc: 'Tallar la línia d\'acció d\'una peça enemiga.', puzzle: 'puzzle-interception', rarity: 'EPIC', category: 'SPEED', tags: ['interference'] },
+        { title: 'Zugzwang', desc: 'Qualsevol moviment empitjora la posició.', puzzle: 'puzzle-zugzwang', rarity: 'LEGENDARY', category: 'KNOWLEDGE', tags: ['zugzwang'] },
+        { title: 'Peó Passat', desc: 'Un peó sense oposició cap a la promoció.', puzzle: 'puzzle-passed-pawn', rarity: 'COMMON', category: 'SOLIDITY', tags: ['advancedPawn'] },
+        { title: 'Mate del Passadís', desc: 'Mate a la vuitena fila per bloqueig de peons.', puzzle: 'puzzle-back-rank', rarity: 'COMMON', category: 'SPEED', tags: ['backRankMate'] },
+        { title: 'Mate de l\'Ofegat', desc: 'El rei està atrapat per les seves pròpies peces.', puzzle: 'puzzle-smothered', rarity: 'RARE', category: 'AGGRESSION', tags: ['smotheredMate'] },
+        { title: 'Obertura Italiana', desc: 'Control del centre i atac ràpid.', puzzle: 'puzzle-italian', rarity: 'COMMON', category: 'KNOWLEDGE', tags: ['italian'] },
+        { title: 'Defensa Siciliana', desc: 'Contraatac agressiu des del principi.', puzzle: 'puzzle-sicilian', rarity: 'COMMON', category: 'AGGRESSION', tags: ['sicilian'] },
+        { title: 'Gambit de Dama', desc: 'Sacrifici de peó per control central.', puzzle: 'puzzle-queens-gambit', rarity: 'COMMON', category: 'KNOWLEDGE', tags: ['queensGambit'] },
+        { title: 'Ruy Lopez', desc: 'Pressió constant sobre el cavall i el centre.', puzzle: 'puzzle-ruy-lopez', rarity: 'COMMON', category: 'KNOWLEDGE', tags: ['ruyLopez'] },
+        { title: 'Defensa Francesa', desc: 'Estructura sòlida i contraatac al centre.', puzzle: 'puzzle-french', rarity: 'COMMON', category: 'SOLIDITY', tags: ['french'] },
+        { title: 'Defensa Caro-Kann', desc: 'Solidesa extrema i finals favorables.', puzzle: 'puzzle-caro-kann', rarity: 'COMMON', category: 'SOLIDITY', tags: ['caroKann'] },
+        { title: 'Atac Indi de Rei', desc: 'Atac directe al rei enrocant.', puzzle: 'puzzle-kings-indian', rarity: 'RARE', category: 'AGGRESSION', tags: ['kingsIndian'] },
+        { title: 'Sistema Londres', desc: 'Desenvolupament sòlid i universal.', puzzle: 'puzzle-london', rarity: 'COMMON', category: 'SOLIDITY', tags: ['london'] }
     ];
 
-    // Generate 100 cards based on bases variations
-    for (let i = 0; i < 100; i++) {
-        const base = bases[i % bases.length];
-        const category = categories[i % categories.length];
-        const rarity = rarities[Math.floor((i / bases.length) * 4) % 4]; // Distribute rarities
-
-        cards.push({
-            id: `c${i + 1}`,
-            title: `${base.title} ${Math.floor(i / bases.length) + 1 > 1 ? (Math.floor(i / bases.length) + 1) : ''}`, // Add suffix for variations
-            rarity: rarity,
-            category: category,
-            level: 1,
-            cardsOwned: 0,
-            cardsRequired: 10,
-            description: base.desc,
-            minigameId: base.puzzle
-        });
-    }
-
-    return cards;
+    return cards.map((c, i) => ({
+        id: `c_${c.puzzle}`, // Stable ID based on puzzle type
+        title: c.title,
+        rarity: c.rarity,
+        category: c.category,
+        level: 1,
+        cardsOwned: 0,
+        cardsRequired: 10,
+        description: c.desc,
+        minigameId: c.puzzle
+    }));
 };
 
 const DEFAULT_CARDS = GENERATE_CARDS();

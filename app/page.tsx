@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth-provider';
 import WelcomePage from './welcome/page';
-import { Zap, Timer, Turtle, Map, Swords } from 'lucide-react';
+import { Zap, Timer, Turtle, Map, Swords, Pickaxe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreateChallengeModal } from '@/components/lobby/create-challenge-modal';
 
@@ -43,15 +43,15 @@ export default function HomePage() {
 
         {/* Top Area: Story Mode & League Selector */}
         <div className="pt-4 px-4 flex flex-col gap-4 pointer-events-auto">
-          {/* Story Mode Button */}
-          <Link href="/adventure" className="self-end">
+          {/* Mina de Puzzles Button */}
+          <Link href="/puzzles" className="self-end">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-zinc-900/80 backdrop-blur-md border border-purple-500/50 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg"
             >
-              <Map size={16} className="text-purple-400" />
-              <span className="text-xs font-bold text-purple-100 uppercase tracking-wider">Story Mode</span>
+              <Pickaxe size={16} className="text-purple-400" />
+              <span className="text-xs font-bold text-purple-100 uppercase tracking-wider">Mina de Puzzles</span>
             </motion.div>
           </Link>
 
