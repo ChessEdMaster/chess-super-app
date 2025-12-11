@@ -128,7 +128,7 @@ export default function GroupDetailsPage() {
         // Only fetch stats for members with a user_id
         const userIds = members
             .map(m => m.club_members?.user_id)
-            .filter(id => id);
+            .filter((id): id is string => !!id);
 
         if (userIds.length === 0) return;
 

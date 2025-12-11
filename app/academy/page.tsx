@@ -23,7 +23,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { AcademyCourse, AcademyModule, UserAcademyStats } from '@/types/academy';
 
-const TRACK_ICONS: Record<string, React.ElementType> = {
+const TRACK_ICONS: Record<string, any> = {
     academic: GraduationCap,
     pedagogical: BrainCircuit,
     sport: Trophy,
@@ -256,7 +256,7 @@ export default function AcademyPage() {
     );
 }
 
-const SUBJECTS: Record<string, { label: string, icon: React.ElementType, color: string }> = {
+const SUBJECTS: Record<string, { label: string, icon: any, color: string }> = {
     chess: { label: 'Escacs', icon: Target, color: 'text-indigo-400' },
     language: { label: 'Llengua', icon: BookOpen, color: 'text-emerald-400' },
     math: { label: 'Matemàtiques', icon: Calculator, color: 'text-blue-400' },
