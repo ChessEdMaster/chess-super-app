@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSABuilder } from '../store';
+import { useSABuilder } from './store';
 import { Sparkles, Clock, Tag } from 'lucide-react';
 
 export function StepIdentification() {
@@ -61,8 +61,8 @@ export function StepIdentification() {
                                     });
                                 }}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${isSelected
-                                        ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.3)]'
-                                        : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-600'
+                                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.3)]'
+                                    : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-600'
                                     }`}
                             >
                                 {vector}

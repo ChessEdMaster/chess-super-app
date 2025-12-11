@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSABuilder } from '../store';
+import { useSABuilder } from './store';
 import { Target, MapPin, Box } from 'lucide-react';
 
 export function StepArchitecture() {

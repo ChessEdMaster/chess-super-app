@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSABuilder } from '../store';
+import { useSABuilder } from './store';
 import { Sparkles, ArrowRight, Loader2 } from 'lucide-react';
 import { SAHero } from '../sa-view/sa-hero';
 import { SARubric } from '../sa-view/sa-rubric';

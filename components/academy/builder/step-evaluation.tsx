@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSABuilder } from '../store';
+import { useSABuilder } from './store';
 import { Award, CheckCircle2, Circle, AlertCircle, HelpCircle } from 'lucide-react';
 
 const RUBRIC_LEVELS = [
