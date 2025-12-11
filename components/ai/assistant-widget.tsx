@@ -7,20 +7,22 @@ import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChatMessage, type Message } from "./chat-message";
+import { ChatMessage } from "./chat-message";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUIStore } from "@/lib/store/ui-store";
 
 export function AssistantWidget() {
     const { isAssistantOpen, setAssistantOpen } = useUIStore();
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [input, setInput] = useState("");
+    const [inputValue, setInputValue] = useState("");
 
-    const { messages, append, isLoading, error } = useChat({
+    const { messages, sendMessage, status, error } = useChat({
         onError: (err) => {
             console.error("Chat Error:", err);
         },
-    }) as any;
+    });
+
+    const isLoading = status === "streaming" || status === "submitted";
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
@@ -31,20 +33,27 @@ export function AssistantWidget() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.trim() || isLoading) return;
+        if (!inputValue.trim() || isLoading) return;
 
-        const userMessage = input;
-        setInput(""); // Clear input optimistically
+        const userMessage = inputValue;
+        setInputValue(""); // Clear input optimistically
 
         try {
-            await append({
-                role: 'user',
-                content: userMessage
+            await sendMessage({
+                text: userMessage
             });
         } catch (err) {
             console.error("Failed to send message:", err);
-            // Optionally restore input or show error
         }
+    };
+
+    // Helper to extract text content from message parts
+    const getMessageContent = (message: typeof messages[0]): string => {
+        if (!message.parts || message.parts.length === 0) return "";
+        return message.parts
+            .filter((part): part is { type: "text"; text: string } => part.type === "text")
+            .map(part => part.text)
+            .join("");
     };
 
     return (
@@ -73,13 +82,20 @@ export function AssistantWidget() {
                                 {(!messages || messages.length === 0) ? (
                                     <div className="flex flex-col items-center justify-center h-full text-center p-8 text-muted-foreground space-y-2">
                                         <Bot className="w-12 h-12 opacity-20" />
-                                        <p className="text-sm">Hi! I'm your Chess Assistant.</p>
+                                        <p className="text-sm">Hi! I&apos;m your Chess Assistant.</p>
                                         <p className="text-xs">Ask me about the game, features, or how to build this app!</p>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-4 p-4">
-                                        {messages.map((m: Message) => (
-                                            <ChatMessage key={m.id} message={m} />
+                                        {messages.map((m) => (
+                                            <ChatMessage
+                                                key={m.id}
+                                                message={{
+                                                    id: m.id,
+                                                    role: m.role,
+                                                    content: getMessageContent(m)
+                                                }}
+                                            />
                                         ))}
                                         {isLoading && (
                                             <div className="flex items-center gap-2 px-4 py-2 text-xs text-muted-foreground">
@@ -93,17 +109,17 @@ export function AssistantWidget() {
                             <CardFooter className="flex flex-col p-4 border-t gap-2 items-stretch">
                                 {error && (
                                     <div className="p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20 break-words mb-2">
-                                        Error: {error.message || "Something went wrong. check your API Key."}
+                                        Error: {error.message || "Something went wrong. Check your API Key."}
                                     </div>
                                 )}
                                 <form onSubmit={handleSubmit} className="flex w-full gap-2">
                                     <Input
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
                                         placeholder="Ask something..."
                                         className="flex-1"
                                     />
-                                    <Button type="submit" size="icon" disabled={!input.trim() || isLoading}>
+                                    <Button type="submit" size="icon" disabled={!inputValue.trim() || isLoading}>
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>
