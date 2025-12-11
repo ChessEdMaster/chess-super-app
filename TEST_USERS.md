@@ -1,60 +1,34 @@
-# 🎮 Usuaris de Prova - ChessHub
+# Test Users for Chess Super App
 
-## Credencials per Test
+This file contains the test users required for verifying different roles and functionalities within the application. All users use the `@chessclans.com` domain.
 
-Pots utilitzar aquests comptes per fer proves de l'aplicació:
+## Global Roles
 
----
+| Role | Email | Password | Description |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `superadmin@chessclans.com` | `password123` | Has full access to the system, including the business dashboard, user management, and all club types. Can manage Super Clans. |
+| **New User** | `newuser@chessclans.com` | `password123` | A newly registered user with no club affiliations or specific permissions. Useful for testing onboarding and "NewUser" role restrictions. |
 
-### 👤 Usuari 1 - "El Tàctic"
-- **Nom d'usuari:** ElTactic
-- **Email:** `eltactic.chess@gmail.com`
-- **Contrasenya:** `chess123`
-- **Perfil:** Especialista en tàctiques i combinacions
+## Club Management Roles (Owners)
 
----
+These users own different types of clubs to test specific dashboards and features.
 
-### 👤 Usuari 2 - "La Posicional"
-- **Nom d'usuari:** LaPosicional
-- **Email:** `laposicional.chess@gmail.com`
-- **Contrasenya:** `chess123`
-- **Perfil:** Expert en joc posicional i estratègia
+| Role | Email | Password | Description |
+| :--- | :--- | :--- | :--- |
+| **School Owner** | `school_owner@chessclans.com` | `password123` | Owns a club of type `school`. Access to School Dashboard, student management (shadow users), and curriculum tools. |
+| **Physical Club Owner** | `club_owner@chessclans.com` | `password123` | Owns a club of type `physical_club`. Access to Club Dashboard, managing physical location logic, and members. |
+| **Online Community Owner** | `online_owner@chessclans.com` | `password123` | Owns a club of type `online`. Access to Online Dashboard, focused on digital events and online community features. |
 
----
+## Member Roles
 
-### 👤 Usuari 3 - "El Ràpid"
-- **Nom d'usuari:** ElRapid
-- **Email:** `elrapid.chess@gmail.com`
-- **Contrasenya:** `chess123`
-- **Perfil:** Jugador de blitz i bullet
+Users who join clubs or schools as members/students.
 
----
+| Role | Email | Password | Description |
+| :--- | :--- | :--- | :--- |
+| **Student** | `student@chessclans.com` | `password123` | A registered user who is a member of a School. Used to test the student view of the Academy and progress tracking. |
+| **Club Member** | `member@chessclans.com` | `password123` | A registered user who is a member of a Physical or Online Club. Used to test member-specific features like chats, events, and club restricted content. |
 
-### 👤 Usuari 4 - "El Mestre"
-- **Nom d'usuari:** ElMestre
-- **Email:** `elmestre.chess@gmail.com`
-- **Contrasenya:** `chess123`
-- **Perfil:** Jugador avançat amb alt ELO
+## Notes
 
----
-
-## 📝 Notes Importants
-
-1. **Crear els comptes:** Ves a `/register` i crea cada compte amb les credencials de dalt
-2. **Autenticació via email:** Aquests usuaris usen email/password (no Google)
-3. **Contrasenya igual:** Tots tenen la mateixa contrasenya per facilitat (`chess123`)
-4. **Desenvolupament només:** Aquests comptes són només per a l'entorn de desenvolupament
-5. **Emails vàlids:** Utilitza aquests emails exactament com estan (amb @gmail.com)
-
-## 🔐 Iniciar Sessió
-
-Per entrar amb qualsevol d'aquests comptes:
-1. Ves a `/register` i crea el compte primer (si no existeix)
-2. Després ves a `/login`
-3. Introdueix l'email i contrasenya
-4. Fes clic a "Iniciar Sessió"
-
----
-
-**Darrera actualització:** 03/12/2025
-
+- **Password**: `password123` (Default for testing environments).
+- **Setup**: Ensure these users are created in the Supabase `auth.users` table and have the corresponding entries in the public `users`, `profiles`, or `clubs` tables as needed to reflect their roles (e.g., `owner_id` in `clubs` table).

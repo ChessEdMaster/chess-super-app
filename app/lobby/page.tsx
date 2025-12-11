@@ -20,25 +20,9 @@ import { ArenaPath } from '@/components/arena/arena-path';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ChestGrid } from '@/components/lobby/chest-grid';
+import { LobbyMap } from '@/components/lobby/lobby-map';
 
-interface HostProfile {
-  username: string;
-  avatar_url: string;
-}
-
-interface Challenge {
-  id: string;
-  host_id: string;
-  is_bot: boolean;
-  bot_difficulty: string | null;
-  player_color: string;
-  rated: boolean;
-  time_control_type: string;
-  status: string;
-  map_x: number;
-  map_y: number;
-  host?: HostProfile;
-}
+import { Challenge, HostProfile } from '@/types/lobby';
 
 export default function LobbyPage() {
   const { user, loading } = useAuth();
@@ -194,57 +178,10 @@ export default function LobbyPage() {
           </Button>
         </header>
 
-        {/* Matrix of Challenges */}
+        {/* Map Visualization */}
         <div className="flex-1 flex items-center justify-center p-8 z-10">
-          <div className="w-full max-w-[80vh] aspect-square bg-zinc-900/50 backdrop-blur border border-zinc-800 rounded-xl shadow-2xl p-6 relative overflow-hidden">
-            {challenges.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-zinc-500 gap-4">
-                <Swords size={48} className="opacity-20" />
-                <p>No hi ha reptes actius.</p>
-                <Button variant="outline" onClick={() => setIsChallengeModalOpen(true)}>Crear el primer repte</Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 h-full overflow-y-auto content-start pr-2">
-                {challenges.map(c => (
-                  <motion.button
-                    key={c.id}
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => handleJoin(c)}
-                    disabled={c.host_id === user.id}
-                    className={`
-                      flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden
-                      ${c.host_id === user.id ? 'bg-zinc-800/50 border-zinc-700 opacity-50 cursor-default' : 'bg-zinc-800 border-zinc-700 hover:border-indigo-500 hover:bg-zinc-750'}
-                    `}
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
-                        {c.host?.avatar_url ? (
-                          // Using standard img for external avatars for simplicity unless Next Image is required
-                          <img src={c.host.avatar_url} alt={c.host.username} className="w-full h-full object-cover" />
-                        ) : <User size={16} />}
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm text-white">{c.host?.username || 'Anònim'}</div>
-                        <div className="text-[10px] text-zinc-400">{c.rated ? 'Competitiu' : 'Amistós'}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-indigo-300 bg-indigo-900/20 px-2 py-1 rounded mb-2">
-                      {c.time_control_type === 'bullet' && <Zap size={12} />}
-                      {c.time_control_type === 'blitz' && <Timer size={12} />}
-                      {c.time_control_type === 'rapid' && <Turtle size={12} />}
-                      <span className="uppercase">{c.time_control_type}</span>
-                    </div>
-
-                    {c.host_id !== user.id && (
-                      <div className="mt-auto w-full pt-2 flex justify-end text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                        Acceptar <Swords size={12} className="ml-1" />
-                      </div>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            )}
+          <div className="w-full max-w-[80vh] aspect-square relative z-10">
+            <LobbyMap challenges={challenges} onJoin={handleJoin} />
           </div>
         </div>
       </div>
@@ -268,6 +205,6 @@ export default function LobbyPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }
