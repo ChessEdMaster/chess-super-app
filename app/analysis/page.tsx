@@ -131,6 +131,9 @@ export default function AnalysisPage() {
     async function initEngine() {
       if (!engine.current) {
         // Auth check for Superadmin Native Engine
+        const { supabase } = await import('@/lib/supabase');
+        const { data: { user } } = await supabase.auth.getUser();
+
         if (user) {
           console.log("Initializing Native Server Engine for Authenticated User");
           const { ServerEngineAdapter } = await import('@/lib/analysis/server-engine-adapter');
