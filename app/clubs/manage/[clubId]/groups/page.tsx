@@ -18,10 +18,15 @@ interface ClubGroup {
     description: string;
     level: 'beginner' | 'intermediate' | 'advanced' | 'master';
     capacity: number;
-    schedule_json: any;
+    schedule_json: unknown;
     _count?: {
         members: number;
     };
+}
+
+interface RawGroup extends Omit<ClubGroup, '_count'> {
+    members: { count: number }[];
+    _count?: { members: number };
 }
 
 export default function ClubGroupsPage() {
@@ -57,7 +62,7 @@ export default function ClubGroupsPage() {
             if (error) throw error;
 
             // Transform data to include member count more easily
-            const formattedGroups = data.map((group: any) => ({
+            const formattedGroups = (data as unknown as RawGroup[]).map((group) => ({
                 ...group,
                 _count: {
                     members: group.members?.[0]?.count || 0
@@ -105,9 +110,9 @@ export default function ClubGroupsPage() {
                 capacity: 10,
                 schedule_json: {}
             });
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error creating group:', error);
-            toast.error('Error creant el grup: ' + error.message);
+            toast.error('Error creant el grup: ' + (error as Error).message);
         }
     };
 
@@ -136,7 +141,7 @@ export default function ClubGroupsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white">Acadèmia i Grups</h1>
-                    <p className="text-neutral-400 mt-2">Gestiona els grups d'entrenament i les classes.</p>
+                    <p className="text-neutral-400 mt-2">Gestiona els grups d&apos;entrenament i les classes.</p>
                 </div>
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
@@ -147,7 +152,7 @@ export default function ClubGroupsPage() {
                     </DialogTrigger>
                     <DialogContent className="bg-neutral-900 border-neutral-800 text-white">
                         <DialogHeader>
-                            <DialogTitle>Crear Nou Grup d'Entrenament</DialogTitle>
+                            <DialogTitle>Crear Nou Grup d&apos;Entrenament</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
@@ -164,7 +169,7 @@ export default function ClubGroupsPage() {
                                 <Label htmlFor="level">Nivell</Label>
                                 <Select
                                     value={newGroup.level}
-                                    onValueChange={(value: any) => setNewGroup({ ...newGroup, level: value })}
+                                    onValueChange={(value: string) => setNewGroup({ ...newGroup, level: value as 'beginner' | 'intermediate' | 'advanced' | 'master' })}
                                 >
                                     <SelectTrigger className="bg-neutral-800 border-neutral-700">
                                         <SelectValue placeholder="Selecciona nivell" />
@@ -217,7 +222,7 @@ export default function ClubGroupsPage() {
                     </div>
                     <h3 className="text-xl font-bold text-white mb-2">No hi ha grups creats</h3>
                     <p className="text-neutral-400 max-w-md mx-auto mb-6">
-                        Crea el teu primer grup d'entrenament per començar a gestionar l'acadèmia.
+                        Crea el teu primer grup d&apos;entrenament per començar a gestionar l&apos;acadèmia.
                     </p>
                     <Button onClick={() => setIsCreateOpen(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white">
                         Crear el primer grup

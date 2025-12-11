@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { Shield, Users, Trophy, Calendar, ArrowRight, Loader2, Lock, Globe } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { toast } from 'sonner';
 
 interface ClubDetails {
@@ -85,7 +86,7 @@ export default function ClubPublicPage() {
                 .limit(12);
 
             if (membersError) throw membersError;
-            // @ts-ignore
+            // @ts-expect-error - Supabase join types are complex
             setMembers(membersData || []);
 
             // Check User Role
@@ -128,9 +129,9 @@ export default function ClubPublicPage() {
             toast.success(`Welcome to ${club.name}!`);
             setUserRole('member');
             fetchClubData(); // Refresh data
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error joining club:', error);
-            toast.error(error.message || 'Failed to join club');
+            toast.error((error as Error).message || 'Failed to join club');
         } finally {
             setJoining(false);
         }
@@ -159,7 +160,7 @@ export default function ClubPublicPage() {
             {/* Banner */}
             <div className="h-48 md:h-64 bg-gradient-to-r from-slate-900 to-slate-800 relative overflow-hidden">
                 {club.banner_url && (
-                    <img src={club.banner_url} alt="Banner" className="w-full h-full object-cover opacity-50" />
+                    <Image src={club.banner_url} alt="Banner" fill className="object-cover opacity-50" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
             </div>
@@ -169,7 +170,7 @@ export default function ClubPublicPage() {
                 <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
                     <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-900 rounded-2xl border-4 border-slate-950 shadow-xl flex items-center justify-center overflow-hidden shrink-0">
                         {club.image_url ? (
-                            <img src={club.image_url} alt={club.name} className="w-full h-full object-cover" />
+                            <Image src={club.image_url} alt={club.name} fill className="object-cover" />
                         ) : (
                             <Shield size={64} className="text-slate-700" />
                         )}
@@ -281,7 +282,7 @@ export default function ClubPublicPage() {
                                 {members.map((member) => (
                                     <div key={member.user_id} className="aspect-square bg-slate-800 rounded-lg overflow-hidden relative group" title={member.profile.username}>
                                         {member.profile.avatar_url ? (
-                                            <img src={member.profile.avatar_url} alt={member.profile.username} className="w-full h-full object-cover" />
+                                            <Image src={member.profile.avatar_url} alt={member.profile.username} fill className="object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-xs">
                                                 {member.profile.username[0].toUpperCase()}

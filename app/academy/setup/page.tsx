@@ -7,15 +7,15 @@ import { populateAcademyDatabase, checkExistingData, clearAcademyData } from '@/
 export default function SetupPage() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
-    const [existingData, setExistingData] = useState<any>(null);
+    const [existingData, setExistingData] = useState<{ modules: number; lessons: number; exercises: number } | null>(null);
 
     const handleCheckData = async () => {
         setLoading(true);
         try {
             const data = await checkExistingData();
             setExistingData(data);
-        } catch (error: any) {
-            setResult({ success: false, message: error.message });
+        } catch (error) {
+            setResult({ success: false, message: (error as Error).message });
         } finally {
             setLoading(false);
         }
@@ -31,8 +31,8 @@ export default function SetupPage() {
                 message: `✅ Base de dades poblada amb èxit!\n${data.modules?.length} mòduls, ${data.lessons?.length} lliçons, ${data.exercises?.length} exercicis, ${data.achievements?.length} assoliments`
             });
             await handleCheckData();
-        } catch (error: any) {
-            setResult({ success: false, message: `❌ Error: ${error.message}` });
+        } catch (error) {
+            setResult({ success: false, message: `❌ Error: ${(error as Error).message}` });
         } finally {
             setLoading(false);
         }
@@ -49,8 +49,8 @@ export default function SetupPage() {
             await clearAcademyData();
             setResult({ success: true, message: '✅ Totes les dades han estat esborrades' });
             setExistingData(null);
-        } catch (error: any) {
-            setResult({ success: false, message: `❌ Error: ${error.message}` });
+        } catch (error) {
+            setResult({ success: false, message: `❌ Error: ${(error as Error).message}` });
         } finally {
             setLoading(false);
         }
@@ -62,11 +62,11 @@ export default function SetupPage() {
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
                     <div className="flex items-center gap-3 mb-6">
                         <Database className="text-indigo-400" size={32} />
-                        <h1 className="text-3xl font-bold text-white">Configuració de l'Acadèmia</h1>
+                        <h1 className="text-3xl font-bold text-white">Configuració de l&apos;Acadèmia</h1>
                     </div>
 
                     <p className="text-slate-400 mb-8">
-                        Utilitza aquesta pàgina per poblar la base de dades amb les dades inicials de l'acadèmia.
+                        Utilitza aquesta pàgina per poblar la base de dades amb les dades inicials de l&apos;acadèmia.
                     </p>
 
                     {existingData && (
@@ -139,7 +139,7 @@ export default function SetupPage() {
 
                     <div className="mt-8 p-4 bg-amber-900/20 border border-amber-500/30 rounded-lg">
                         <p className="text-sm text-amber-200">
-                            <strong>Nota:</strong> Abans de poblar la base de dades, assegura't d'haver executat l'script SQL <code className="bg-slate-800 px-2 py-1 rounded">academy-setup.sql</code> al Supabase SQL Editor.
+                            <strong>Nota:</strong> Abans de poblar la base de dades, assegura&apos;t d&apos;haver executat l&apos;script SQL <code className="bg-slate-800 px-2 py-1 rounded">academy-setup.sql</code> al Supabase SQL Editor.
                         </p>
                     </div>
                 </div>

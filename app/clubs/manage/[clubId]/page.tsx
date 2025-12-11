@@ -8,7 +8,7 @@ import { ClubType } from "@/types/club";
 export default async function ClubManagePage({
     params,
 }: {
-    params: { clubId: string };
+    params: Promise<{ clubId: string }>;
 }) {
     const supabase = await createClient();
     const { clubId } = await params;

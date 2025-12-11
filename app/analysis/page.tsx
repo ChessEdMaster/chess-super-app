@@ -7,12 +7,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  RotateCcw,
   GitBranch,
   LayoutGrid,
-  Box,
-  Cpu,
-  Settings,
   Loader2
 } from 'lucide-react';
 import { CoachAgent } from '@/components/coach-agent';
@@ -137,7 +133,7 @@ export default function AnalysisPage() {
         if (user && user.email === process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
           console.log("Initializing Native Server Engine for Superadmin");
           const { ServerEngineAdapter } = await import('@/lib/analysis/server-engine-adapter');
-          // @ts-ignore - Adapter matches Worker interface enough for our usage
+          // @ts-expect-error - Adapter matches Worker interface enough for our usage
           engine.current = new ServerEngineAdapter();
         } else {
           // Standard Web Worker implementation
@@ -206,7 +202,7 @@ export default function AnalysisPage() {
                 try {
                   const from = bestMoveStr.substring(0, 2);
                   // Fast Validation: check if piece at 'from' exists and is correct color
-                  const piece = gameRef.current.get(from as any);
+                  const piece = gameRef.current.get(from as Square);
                   if (!piece || piece.color !== gameRef.current.turn()) {
                     // This message is for an old position (stale)
                     return;
@@ -331,7 +327,7 @@ export default function AnalysisPage() {
         setOptionSquares({});
         return;
       }
-       
+
       const moveResult = onDrop(moveFrom, square);
       if (moveResult) {
         setMoveFrom(null);
@@ -440,11 +436,11 @@ export default function AnalysisPage() {
         {/* Mobile: max-w-[95vw] to be wider. Desktop: max-w-[65vh] to be smaller and match Play page */}
         <div className="w-full max-w-[95vw] lg:max-w-[65vh] aspect-square relative z-0 shadow-2xl rounded-lg overflow-hidden border border-zinc-800">
           {viewMode === '3d' ? (
-            /* @ts-ignore - Arrows prop added dynamically */
+
             <ChessScene fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} arrows={analysisArrows} />
           ) : (
             <div className="w-full h-full">
-              {/* @ts-ignore - Arrows prop added dynamically */}
+
               <Chessboard2D fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} arrows={analysisArrows} />
             </div>
           )}

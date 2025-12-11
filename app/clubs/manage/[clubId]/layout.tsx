@@ -11,8 +11,6 @@ import {
     Trophy,
     ArrowLeft,
     Menu,
-    GraduationCap,
-    Lock,
     ShieldAlert
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +26,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
     const pathname = usePathname();
     const { user, loading: authLoading } = useAuth();
     const [clubName, setClubName] = useState<string>('Carregant...');
-    const [clubType, setClubType] = useState<string>('online'); // Use string to accept 'physical_club' if DB has it
+    const [clubType, setClubType] = useState<ClubType>('online'); // Use string to accept 'physical_club' if DB has it
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const router = useRouter();
@@ -62,7 +60,7 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
                 }
 
                 setClubName(club.name);
-                setClubType(club.type);
+                setClubType(club.type as ClubType);
 
                 // 2. Verificar membresía
                 const { data: member, error: memberError } = await supabase
@@ -79,22 +77,22 @@ export default function ClubManageLayout({ children }: { children: React.ReactNo
                 }
 
                 if (!member) {
-                    setAccessDenied('No ets membre d\'aquest club.');
+                    setAccessDenied('No ets membre d&apos;aquest club.');
                     return;
                 }
 
                 // 3. Verificar permisos de rol
                 if (!['owner', 'admin'].includes(member.role)) {
-                    setAccessDenied('No tens permisos d\'administrador per accedir a aquest panell.');
+                    setAccessDenied('No tens permisos d&apos;administrador per accedir a aquest panell.');
                     return;
                 }
 
                 // Success
                 setLoading(false);
 
-            } catch (err: any) {
+            } catch (err) {
                 console.error('[Club ERP] Unexpected error:', err);
-                setAccessDenied(err.message || 'Error desconegut.');
+                setAccessDenied((err as Error).message || 'Error desconegut.');
             }
         };
 

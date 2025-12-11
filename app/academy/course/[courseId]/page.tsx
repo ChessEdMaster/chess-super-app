@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     BookOpen,
     ArrowLeft,
@@ -31,75 +32,75 @@ export default function CoursePage() {
     }, [user, authLoading, router]);
 
     useEffect(() => {
-        if (user && courseId) {
-            loadCourseData();
-        }
-    }, [user, courseId]);
+        const loadCourseData = async () => {
+            if (!user || !courseId) return;
 
-    const loadCourseData = async () => {
-        try {
-            // Load course details
-            const { data: courseData, error: courseError } = await supabase
-                .from('academy_courses')
-                .select('*')
-                .eq('id', courseId)
-                .single();
+            try {
+                // Load course details
+                const { data: courseData, error: courseError } = await supabase
+                    .from('academy_courses')
+                    .select('*')
+                    .eq('id', courseId)
+                    .single();
 
-            if (courseError) throw courseError;
-            setCourse(courseData);
+                if (courseError) throw courseError;
+                setCourse(courseData);
 
-            // Load modules for this course
-            const { data: modulesData, error: modulesError } = await supabase
-                .from('academy_modules')
-                .select('*')
-                .eq('course_id', courseId)
-                .order('order', { ascending: true });
+                // Load modules for this course
+                const { data: modulesData, error: modulesError } = await supabase
+                    .from('academy_modules')
+                    .select('*')
+                    .eq('course_id', courseId)
+                    .order('order', { ascending: true });
 
-            if (modulesError) throw modulesError;
-            setModules(modulesData || []);
+                if (modulesError) throw modulesError;
+                setModules(modulesData || []);
 
-            // Calculate progress for each module
-            const progressMap: Record<string, ModuleProgress> = {};
+                // Calculate progress for each module
+                const progressMap: Record<string, ModuleProgress> = {};
 
-            for (const module of modulesData || []) {
-                // Count lessons
-                const { count: totalLessons } = await supabase
-                    .from('academy_lessons')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('module_id', module.id);
+                for (const courseModule of modulesData || []) {
+                    // Count lessons
+                    const { count: totalLessons } = await supabase
+                        .from('academy_lessons')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('module_id', courseModule.id);
 
-                // Count completed
-                const { data: completedLessons } = await supabase
-                    .from('user_lesson_progress')
-                    .select('lesson_id')
-                    .eq('user_id', user!.id)
-                    .eq('completed', true)
-                    .in('lesson_id',
-                        (await supabase
-                            .from('academy_lessons')
-                            .select('id')
-                            .eq('module_id', module.id)
-                        ).data?.map(l => l.id) || []
-                    );
+                    // Count completed
+                    const { data: completedLessons } = await supabase
+                        .from('user_lesson_progress')
+                        .select('lesson_id')
+                        .eq('user_id', user!.id)
+                        .eq('completed', true)
+                        .in('lesson_id',
+                            (await supabase
+                                .from('academy_lessons')
+                                .select('id')
+                                .eq('module_id', courseModule.id)
+                            ).data?.map(l => l.id) || []
+                        );
 
-                const completed = completedLessons?.length || 0;
-                const total = totalLessons || 0;
+                    const completed = completedLessons?.length || 0;
+                    const total = totalLessons || 0;
 
-                progressMap[module.id] = {
-                    module,
-                    totalLessons: total,
-                    completedLessons: completed,
-                    progressPercentage: total > 0 ? (completed / total) * 100 : 0
-                };
+                    progressMap[courseModule.id] = {
+                        module: courseModule,
+                        totalLessons: total,
+                        completedLessons: completed,
+                        progressPercentage: total > 0 ? (completed / total) * 100 : 0
+                    };
+                }
+                setModuleProgress(progressMap);
+
+            } catch (error) {
+                console.error('Error loading course:', error);
+            } finally {
+                setLoading(false);
             }
-            setModuleProgress(progressMap);
+        };
 
-        } catch (error) {
-            console.error('Error loading course:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        loadCourseData();
+    }, [user, courseId]);
 
     if (authLoading || loading || !course) {
         return (
@@ -120,7 +121,13 @@ export default function CoursePage() {
                 <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 mb-8">
                     <div className="absolute inset-0">
                         {course.image_url && (
-                            <img src={course.image_url} className="w-full h-full object-cover opacity-20" alt={course.title} />
+                            <Image
+                                src={course.image_url}
+                                className="object-cover opacity-20"
+                                alt={course.title}
+                                fill
+                                unoptimized
+                            />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-transparent" />
                     </div>

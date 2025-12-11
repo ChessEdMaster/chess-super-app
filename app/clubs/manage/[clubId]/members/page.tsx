@@ -64,7 +64,7 @@ export default function ClubMembersPage() {
             }
 
             console.log('Fetched members:', data);
-            if (data) setMembers(data as any);
+            if (data) setMembers(data as unknown as ClubMember[]);
         } catch (err) {
             console.error('Unexpected error:', err);
         } finally {
@@ -148,7 +148,7 @@ export default function ClubMembersPage() {
                                         className="bg-neutral-950 border-neutral-800"
                                     />
                                     <p className="text-xs text-neutral-500">
-                                        Aquest usuari no tindrà accés a l'app, però podràs gestionar el seu expedient.
+                                        Aquest usuari no tindrà accés a l&apos;app, però podràs gestionar el seu expedient.
                                     </p>
                                 </div>
                                 <Button
@@ -161,7 +161,7 @@ export default function ClubMembersPage() {
                             </TabsContent>
                             <TabsContent value="invite" className="space-y-4 py-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email o Nom d'usuari</Label>
+                                    <Label htmlFor="email">Email o Nom d&apos;usuari</Label>
                                     <Input
                                         id="email"
                                         placeholder="usuari@exemple.com"
@@ -204,7 +204,7 @@ export default function ClubMembersPage() {
                         <tr>
                             <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">Membre</th>
                             <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">Rol</th>
-                            <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">Data d'unió</th>
+                            <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">Data d&apos;unió</th>
                             <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">Estat</th>
                             <th className="px-6 py-4 text-right">Accions</th>
                         </tr>
@@ -251,7 +251,7 @@ export default function ClubMembersPage() {
                         {filteredMembers.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="px-6 py-12 text-center text-neutral-500">
-                                    No s'han trobat membres.
+                                    No s&apos;han trobat membres.
                                 </td>
                             </tr>
                         )}

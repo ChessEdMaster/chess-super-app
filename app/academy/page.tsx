@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
     BookOpen,
     GraduationCap,
-    Puzzle,
     Target,
     ArrowRight,
     Loader2,
@@ -23,7 +23,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { AcademyCourse, AcademyModule, UserAcademyStats } from '@/types/academy';
 
-const TRACK_ICONS: Record<string, any> = {
+const TRACK_ICONS: Record<string, React.ElementType> = {
     academic: GraduationCap,
     pedagogical: BrainCircuit,
     sport: Trophy,
@@ -150,7 +150,7 @@ export default function AcademyPage() {
                         <GraduationCap size={32} className="text-indigo-500" /> Acadèmia ChessHub
                     </h1>
                     <p className="text-slate-400 max-w-2xl text-base">
-                        El primer currículum d'escacs adaptat al Disseny Universal per l'Aprenentatge (DUA).
+                        El primer currículum d&apos;escacs adaptat al Disseny Universal per l&apos;Aprenentatge (DUA).
                         Des de P3 fins al Doctorat.
                     </p>
                 </div>
@@ -198,7 +198,7 @@ export default function AcademyPage() {
                         </p>
                         <div className="flex justify-center gap-4">
                             <Link href="/" className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-bold transition">
-                                Tornar a l'Inici
+                                Tornar a l&apos;Inici
                             </Link>
                         </div>
                     </div>
@@ -256,7 +256,7 @@ export default function AcademyPage() {
     );
 }
 
-const SUBJECTS: Record<string, { label: string, icon: any, color: string }> = {
+const SUBJECTS: Record<string, { label: string, icon: React.ElementType, color: string }> = {
     chess: { label: 'Escacs', icon: Target, color: 'text-indigo-400' },
     language: { label: 'Llengua', icon: BookOpen, color: 'text-emerald-400' },
     math: { label: 'Matemàtiques', icon: Calculator, color: 'text-blue-400' },
@@ -299,7 +299,13 @@ function CourseCard({ course }: { course: AcademyCourse }) {
                 {/* Cover Image */}
                 <div className="h-28 bg-slate-800 relative overflow-hidden">
                     {course.image_url ? (
-                        <img src={course.image_url} alt={course.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+                        <Image
+                            src={course.image_url}
+                            alt={course.title}
+                            fill
+                            className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                            unoptimized
+                        />
                     ) : (
                         <div className="w-full h-full bg-slate-800 flex items-center justify-center">
                             <School className="text-slate-700" size={32} />

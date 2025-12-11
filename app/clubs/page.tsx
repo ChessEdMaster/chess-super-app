@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -50,13 +51,7 @@ export default function ClubsPage() {
         }
     }, [user, authLoading, router]);
 
-    useEffect(() => {
-        if (user) {
-            loadClubs();
-        }
-    }, [user]);
-
-    const loadClubs = async () => {
+    const fetchClubs = useCallback(async (queryStr: string) => {
         try {
             setLoading(true);
             // Carregar clubs
@@ -66,8 +61,8 @@ export default function ClubsPage() {
                 .order('member_count', { ascending: false })
                 .order('created_at', { ascending: false });
 
-            if (searchQuery) {
-                query = query.ilike('name', `%${searchQuery}%`);
+            if (queryStr) {
+                query = query.ilike('name', `%${queryStr}%`);
             }
 
             const { data: clubsData, error: clubsError } = await query;
@@ -120,15 +115,21 @@ export default function ClubsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchClubs('');
+        }
+    }, [user, fetchClubs]);
 
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (user) loadClubs();
+            if (user) fetchClubs(searchQuery);
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchQuery]);
+    }, [searchQuery, user, fetchClubs]);
 
     return (
         <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
@@ -171,7 +172,7 @@ export default function ClubsPage() {
                     <div className="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800">
                         <Shield size={48} className="mx-auto text-slate-700 mb-4" />
                         <h3 className="text-xl font-bold text-slate-400 mb-2">Cap clan trobat</h3>
-                        <p className="text-slate-500">Prova d'ajustar la cerca o crea'n un de nou!</p>
+                        <p className="text-slate-500">Prova d&apos;ajustar la cerca o crea&apos;n un de nou!</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -196,7 +197,7 @@ export default function ClubsPage() {
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 overflow-hidden border border-slate-700">
                                             {club.image_url ? (
-                                                <img src={club.image_url} alt={club.name} className="w-full h-full object-cover" />
+                                                <Image src={club.image_url} alt={club.name} fill className="object-cover" />
                                             ) : (
                                                 <Shield size={32} />
                                             )}

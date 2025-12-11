@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit, Trash2, Check, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 
@@ -21,7 +21,7 @@ export default function ClubPlansPage() {
     const params = useParams();
     const clubId = params.clubId as string;
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-    const [loading, setLoading] = useState(true);
+
     const [isCreating, setIsCreating] = useState(false);
 
     // Form State
@@ -33,20 +33,20 @@ export default function ClubPlansPage() {
         features: []
     });
 
+
+
     useEffect(() => {
+        const fetchPlans = async () => {
+            const { data } = await supabase
+                .from('club_subscription_plans')
+                .select('*')
+                .eq('club_id', clubId)
+                .order('price', { ascending: true });
+
+            if (data) setPlans(data as unknown as SubscriptionPlan[]);
+        };
         fetchPlans();
     }, [clubId]);
-
-    const fetchPlans = async () => {
-        const { data, error } = await supabase
-            .from('club_subscription_plans')
-            .select('*')
-            .eq('club_id', clubId)
-            .order('price', { ascending: true });
-
-        if (data) setPlans(data);
-        setLoading(false);
-    };
 
     const handleCreatePlan = async () => {
         if (!newPlan.name || newPlan.price === undefined) {
@@ -113,7 +113,7 @@ export default function ClubPlansPage() {
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                 <p className="text-sm text-blue-400">
                     <strong>Nota:</strong> Actualment els plans es creen només a la base de dades local.
-                    La sincronització automàtica amb Stripe s'activarà quan es configuri l'API Key.
+                    La sincronització automàtica amb Stripe s&apos;activarà quan es configuri l&apos;API Key.
                 </p>
             </div>
 
@@ -140,7 +140,7 @@ export default function ClubPlansPage() {
                             <select
                                 className="bg-neutral-800 border-neutral-700 rounded-lg px-4 py-2 text-white"
                                 value={newPlan.interval}
-                                onChange={e => setNewPlan({ ...newPlan, interval: e.target.value as any })}
+                                onChange={e => setNewPlan({ ...newPlan, interval: e.target.value as 'month' | 'year' | 'one_time' })}
                             >
                                 <option value="month">/mes</option>
                                 <option value="year">/any</option>

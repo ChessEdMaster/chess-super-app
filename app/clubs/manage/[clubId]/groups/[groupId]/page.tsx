@@ -29,19 +29,59 @@ import {
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
+interface GroupDetails {
+    id: string;
+    name: string;
+    description: string;
+    capacity: number;
+}
+
+interface ClubMemberProfile {
+    id: string;
+    username: string;
+    full_name: string;
+    avatar_url: string;
+}
+
+interface GroupMember {
+    id: string;
+    club_member_id: string;
+    joined_at: string;
+    club_members?: {
+        id: string;
+        user_id: string | null;
+        shadow_name: string | null;
+        profiles?: ClubMemberProfile | null;
+    };
+}
+
+interface AvailableClubMember {
+    id: string;
+    shadow_name: string | null;
+    user_id: string | null;
+    profiles?: ClubMemberProfile | null;
+}
+
+interface Schedule {
+    id: string;
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+}
+
 export default function GroupDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const clubId = params.clubId as string;
     const groupId = params.groupId as string;
 
-    const [group, setGroup] = useState<any>(null);
-    const [members, setMembers] = useState<any[]>([]);
+    const [group, setGroup] = useState<GroupDetails | null>(null);
+    const [members, setMembers] = useState<GroupMember[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Add Member State
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-    const [clubMembers, setClubMembers] = useState<any[]>([]);
+    const [clubMembers, setClubMembers] = useState<AvailableClubMember[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
 
     // Attendance State
@@ -53,7 +93,7 @@ export default function GroupDetailsPage() {
     const [studentStats, setStudentStats] = useState<Record<string, { completed: number, lastActivity: string | null }>>({});
 
     // Schedule State
-    const [schedules, setSchedules] = useState<any[]>([]);
+    const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [newSchedule, setNewSchedule] = useState({
         day_of_week: '1',
         start_time: '18:00',
@@ -110,13 +150,14 @@ export default function GroupDetailsPage() {
             });
 
             // Aggregate
-            data?.forEach((record: any) => {
-                if (stats[record.user_id]) {
-                    stats[record.user_id].completed++;
-                    if (record.completed_at) {
-                        const currentLast = stats[record.user_id].lastActivity;
-                        if (!currentLast || new Date(record.completed_at) > new Date(currentLast)) {
-                            stats[record.user_id].lastActivity = record.completed_at;
+            data?.forEach((record: unknown) => {
+                const rec = record as { user_id: string; completed_at: string | null };
+                if (stats[rec.user_id]) {
+                    stats[rec.user_id].completed++;
+                    if (rec.completed_at) {
+                        const currentLast = stats[rec.user_id].lastActivity;
+                        if (!currentLast || new Date(rec.completed_at) > new Date(currentLast)) {
+                            stats[rec.user_id].lastActivity = rec.completed_at;
                         }
                     }
                 }
@@ -147,8 +188,9 @@ export default function GroupDetailsPage() {
                 // Create a map of user_id -> club_member_id from current members
                 const userIdToMemberId = new Map<string, string>();
                 members.forEach(m => {
-                    if (m.club_members?.user_id) {
-                        userIdToMemberId.set(m.club_members.user_id, m.club_member_id);
+                    const uid = m.club_members?.user_id;
+                    if (uid) {
+                        userIdToMemberId.set(uid as string, m.club_member_id);
                     }
                 });
 
@@ -222,9 +264,9 @@ export default function GroupDetailsPage() {
             if (error) throw error;
 
             toast.success('Assistència guardada correctament');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error saving attendance:', error);
-            toast.error('Error guardant assistència: ' + error.message);
+            toast.error('Error guardant assistència: ' + (error as Error).message);
         } finally {
             setSavingAttendance(false);
         }
@@ -259,7 +301,7 @@ export default function GroupDetailsPage() {
             `)
             .eq('group_id', groupId);
 
-        if (data) setMembers(data);
+        if (data) setMembers(data as unknown as GroupMember[]);
         setLoading(false);
     };
 
@@ -283,7 +325,7 @@ export default function GroupDetailsPage() {
         if (allClubMembers) {
             // Filter out existing group members
             const existingMemberIds = new Set(members.map(m => m.club_member_id));
-            const available = allClubMembers.filter(m => !existingMemberIds.has(m.id));
+            const available = allClubMembers.filter(m => !existingMemberIds.has(m.id)) as unknown as AvailableClubMember[];
             setClubMembers(available);
         }
     };
@@ -303,8 +345,8 @@ export default function GroupDetailsPage() {
             toast.success('Alumne afegit al grup');
             fetchGroupMembers();
             setIsAddMemberOpen(false);
-        } catch (error: any) {
-            toast.error('Error afegint alumne: ' + error.message);
+        } catch (error) {
+            toast.error('Error afegint alumne: ' + (error as Error).message);
         }
     };
 
@@ -322,8 +364,8 @@ export default function GroupDetailsPage() {
 
             toast.success('Alumne eliminat del grup');
             setMembers(members.filter(m => m.club_member_id !== clubMemberId));
-        } catch (error: any) {
-            toast.error('Error eliminant alumne: ' + error.message);
+        } catch (error) {
+            toast.error('Error eliminant alumne: ' + (error as Error).message);
         }
     };
 
@@ -334,7 +376,7 @@ export default function GroupDetailsPage() {
             .eq('group_id', groupId)
             .order('day_of_week', { ascending: true });
 
-        if (data) setSchedules(data);
+        if (data) setSchedules(data as unknown as Schedule[]);
     };
 
     const handleAddSchedule = async () => {
@@ -352,8 +394,8 @@ export default function GroupDetailsPage() {
 
             toast.success('Horari afegit');
             fetchSchedules();
-        } catch (error: any) {
-            toast.error('Error afegint horari: ' + error.message);
+        } catch (error) {
+            toast.error('Error afegint horari: ' + (error as Error).message);
         }
     };
 
@@ -368,8 +410,8 @@ export default function GroupDetailsPage() {
 
             toast.success('Horari eliminat');
             setSchedules(schedules.filter(s => s.id !== id));
-        } catch (error: any) {
-            toast.error('Error eliminant horari: ' + error.message);
+        } catch (error) {
+            toast.error('Error eliminant horari: ' + (error as Error).message);
         }
     };
 
@@ -417,7 +459,7 @@ export default function GroupDetailsPage() {
 
                 <TabsContent value="members" className="mt-6">
                     <div className="flex justify-between mb-4">
-                        <h3 className="text-xl font-bold text-white">Llistat d'Alumnes</h3>
+                        <h3 className="text-xl font-bold text-white">Llistat d&apos;Alumnes</h3>
                         <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
                             <DialogTrigger asChild>
                                 <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
@@ -460,7 +502,7 @@ export default function GroupDetailsPage() {
                                             </div>
                                         ))}
                                         {filteredClubMembers.length === 0 && (
-                                            <p className="text-center text-neutral-500 py-4">No s'han trobat socis disponibles.</p>
+                                            <p className="text-center text-neutral-500 py-4">No s&apos;han trobat socis disponibles.</p>
                                         )}
                                     </div>
                                 </div>
@@ -478,7 +520,7 @@ export default function GroupDetailsPage() {
                                 <thead className="bg-neutral-950 border-b border-neutral-800">
                                     <tr>
                                         <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase">Alumne</th>
-                                        <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase">Data d'Alta</th>
+                                        <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase">Data d&apos;Alta</th>
                                         <th className="px-6 py-4 text-xs font-medium text-neutral-500 uppercase">Estat</th>
                                         <th className="px-6 py-4 text-right">Accions</th>
                                     </tr>
@@ -530,8 +572,8 @@ export default function GroupDetailsPage() {
                     <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
                         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                             <div>
-                                <h3 className="text-xl font-bold text-white">Control d'Assistència</h3>
-                                <p className="text-neutral-400">Passa llista dels alumnes per a la sessió d'avui.</p>
+                                <h3 className="text-xl font-bold text-white">Control d&apos;Assistència</h3>
+                                <p className="text-neutral-400">Passa llista dels alumnes per a la sessió d&apos;avui.</p>
                             </div>
                             <div className="flex items-center gap-2 bg-neutral-800 p-1 rounded-lg border border-neutral-700">
                                 <Button
@@ -632,7 +674,7 @@ export default function GroupDetailsPage() {
                     <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
                         <div className="mb-6">
                             <h3 className="text-xl font-bold text-white">Expedient Acadèmic</h3>
-                            <p className="text-neutral-400">Seguiment del progrés dels alumnes a l'Acadèmia.</p>
+                            <p className="text-neutral-400">Seguiment del progrés dels alumnes a l&apos;Acadèmia.</p>
                         </div>
 
                         <div className="overflow-x-auto">
@@ -714,7 +756,7 @@ export default function GroupDetailsPage() {
                     <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
                         <div className="mb-6">
                             <h3 className="text-xl font-bold text-white">Horari del Grup</h3>
-                            <p className="text-neutral-400">Gestiona les sessions setmanals d'aquest grup.</p>
+                            <p className="text-neutral-400">Gestiona les sessions setmanals d&apos;aquest grup.</p>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -13,7 +13,7 @@ export default function ClubSettingsPage() {
     const { user } = useAuth();
     const clubId = params.clubId as string;
 
-    const [club, setClub] = useState<any>(null);
+    const [club, setClub] = useState<unknown>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -52,9 +52,9 @@ export default function ClubSettingsPage() {
                     slug: data.slug || ''
                 });
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error fetching club:', error);
-            alert('Error carregant la informació del club: ' + error.message);
+            alert('Error carregant la informació del club: ' + (error as Error).message);
         } finally {
             setLoading(false);
         }
@@ -82,9 +82,9 @@ export default function ClubSettingsPage() {
 
             alert('Configuració guardada correctament!');
             fetchClub(); // Recargar datos
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error saving club:', error);
-            alert('Error guardant la configuració: ' + error.message);
+            alert('Error guardant la configuració: ' + (error as Error).message);
         } finally {
             setSaving(false);
         }
@@ -110,9 +110,9 @@ export default function ClubSettingsPage() {
 
             alert('Club eliminat correctament');
             router.push('/clubs');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error deleting club:', error);
-            alert('Error eliminant el club: ' + error.message);
+            alert('Error eliminant el club: ' + (error as Error).message);
         } finally {
             setDeleting(false);
         }
@@ -217,7 +217,7 @@ export default function ClubSettingsPage() {
                     <div className="flex-1">
                         <h2 className="text-xl font-bold text-red-400 mb-2">Zona de Perill</h2>
                         <p className="text-sm text-red-300 mb-4">
-                            Les accions d'aquesta secció són permanents i no es poden desfer.
+                            Les accions d&apos;aquesta secció són permanents i no es poden desfer.
                         </p>
                         <Button
                             onClick={handleDelete}

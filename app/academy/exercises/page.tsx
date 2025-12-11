@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, ArrowLeft, Filter, Trophy, Tag } from 'lucide-react';
@@ -29,14 +29,8 @@ export default function ExercisesPage() {
         }
     }, [user, authLoading, router]);
 
-    useEffect(() => {
-        if (user) {
-            fetchNextExercise();
-            updateSolvedCount();
-        }
-    }, [user, difficulty, selectedTags]);
 
-    const updateSolvedCount = async () => {
+    const updateSolvedCount = useCallback(async () => {
         if (!user) return;
         const { count } = await supabase
             .from('user_exercise_progress')
@@ -44,12 +38,13 @@ export default function ExercisesPage() {
             .eq('user_id', user.id)
             .eq('solved', true);
         setSolvedCount(count || 0);
-    };
+    }, [user]);
 
-    const fetchNextExercise = async () => {
+    const fetchNextExercise = useCallback(async () => {
         setLoading(true);
         try {
             let exercise: AcademyExercise | null = null;
+            if (!user) return;
 
             // 1. Si tenim tags seleccionats, fem query normal (ja que el RPC no suporta tags)
             if (selectedTags.length > 0) {
@@ -57,7 +52,7 @@ export default function ExercisesPage() {
                 const { data: solved } = await supabase
                     .from('user_exercise_progress')
                     .select('exercise_id')
-                    .eq('user_id', user!.id)
+                    .eq('user_id', user.id)
                     .eq('solved', true);
 
                 const solvedIds = solved?.map(s => s.exercise_id) || [];
@@ -84,7 +79,7 @@ export default function ExercisesPage() {
             } else {
                 // 2. Si no hi ha tags, intentem usar RPC per eficiència
                 const { data, error } = await supabase.rpc('get_random_exercise', {
-                    p_user_id: user!.id,
+                    p_user_id: user.id,
                     p_difficulty: difficulty
                 });
 
@@ -97,7 +92,7 @@ export default function ExercisesPage() {
                     const { data: solved } = await supabase
                         .from('user_exercise_progress')
                         .select('exercise_id')
-                        .eq('user_id', user!.id)
+                        .eq('user_id', user.id)
                         .eq('solved', true);
 
                     const solvedIds = solved?.map(s => s.exercise_id) || [];
@@ -125,7 +120,14 @@ export default function ExercisesPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, difficulty, selectedTags]);
+
+    useEffect(() => {
+        if (user) {
+            fetchNextExercise();
+            updateSolvedCount();
+        }
+    }, [user, fetchNextExercise, updateSolvedCount]);
 
     const handleSolved = async (timeSpent: number, attempts: number, hintsUsed: number) => {
         if (!user || !currentExercise) return;
@@ -234,7 +236,7 @@ export default function ExercisesPage() {
                         className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
                     >
                         <ArrowLeft size={20} />
-                        Tornar a l'acadèmia
+                        Tornar a l&apos;acadèmia
                     </Link>
                     <div className="text-center text-white">
                         <h1 className="text-2xl font-bold mb-4">No hi ha exercicis disponibles</h1>
@@ -260,7 +262,7 @@ export default function ExercisesPage() {
                         className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition"
                     >
                         <ArrowLeft size={20} />
-                        Tornar a l'acadèmia
+                        Tornar a l&apos;acadèmia
                     </Link>
 
                     <div className="flex flex-wrap items-center gap-4 justify-center">
@@ -274,7 +276,7 @@ export default function ExercisesPage() {
                             <Filter size={20} className="text-slate-400" />
                             <select
                                 value={difficulty}
-                                onChange={(e) => setDifficulty(e.target.value as any)}
+                                onChange={(e) => setDifficulty(e.target.value as 'all' | 'easy' | 'medium' | 'hard')}
                                 className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                             >
                                 <option value="all">Tots</option>
