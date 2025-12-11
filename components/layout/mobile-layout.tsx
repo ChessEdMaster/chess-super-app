@@ -1,13 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { useUIStore } from '@/lib/store/ui-store';
+import { useAuth } from '@/components/auth-provider';
 
 interface MobileLayoutProps {
     children: React.ReactNode;
@@ -17,6 +18,8 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     const { profile } = usePlayerStore();
     const pathname = usePathname();
     const { toggleAssistant, isAssistantOpen } = useUIStore();
+    const { signOut, user } = useAuth();
+    const [profileOpen, setProfileOpen] = useState(false);
 
     const tabs = [
         { name: 'Battle', icon: Swords, href: '/' },
@@ -27,24 +30,66 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         { name: 'Social', icon: Users, href: '/social' },
     ];
 
+    if (!user) {
+        return <div className="h-dvh w-full">{children}</div>;
+    }
+
     return (
         <div className="h-dvh w-full flex flex-col text-white overflow-hidden">
             {/* Top Bar */}
             <header className="h-14 px-4 flex items-center justify-between bg-zinc-900/40 backdrop-blur-md border-b border-white/5 z-50 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center border border-white shadow-lg relative">
-                        {/* Placeholder Avatar */}
-                        <span className="text-[10px] font-bold">{profile.level}</span>
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-bold text-zinc-100">{profile.username}</span>
-                        <div className="h-1.5 w-20 bg-zinc-800 rounded-full overflow-hidden mt-0.5">
-                            <div
-                                className="h-full bg-blue-500"
-                                style={{ width: `${(profile.xp / 1000) * 100}%` }}
-                            />
+                <div className="flex items-center gap-3 relative">
+                    <button
+                        onClick={() => setProfileOpen(!profileOpen)}
+                        className="flex items-center gap-3 hover:bg-white/5 p-1 -ml-1 rounded-lg transition-colors text-left"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center border border-white shadow-lg relative shrink-0">
+                            {/* Placeholder Avatar */}
+                            <span className="text-[10px] font-bold text-white">{profile.level}</span>
                         </div>
-                    </div>
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-zinc-100">{profile.username}</span>
+                            <div className="h-1.5 w-20 bg-zinc-800 rounded-full overflow-hidden mt-0.5">
+                                <div
+                                    className="h-full bg-blue-500"
+                                    style={{ width: `${(profile.xp / 1000) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Profile Dropdown */}
+                    {profileOpen && (
+                        <>
+                            <div
+                                className="fixed inset-0 z-40 bg-transparent"
+                                onClick={() => setProfileOpen(false)}
+                            />
+                            <div className="absolute top-12 left-0 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl z-50 overflow-hidden py-1">
+                                <div className="px-4 py-2 border-b border-zinc-800 mb-1">
+                                    <p className="text-xs text-zinc-400">Autenticat com</p>
+                                    <p className="text-sm font-bold truncate">{profile.username}</p>
+                                </div>
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2"
+                                    onClick={() => {/* TODO: Settings Link */ }}
+                                >
+                                    <Settings size={14} />
+                                    Configuració
+                                </button>
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300 flex items-center gap-2"
+                                    onClick={() => {
+                                        setProfileOpen(false);
+                                        signOut();
+                                    }}
+                                >
+                                    <LogOut size={14} />
+                                    Tancar Sessió
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-3">
