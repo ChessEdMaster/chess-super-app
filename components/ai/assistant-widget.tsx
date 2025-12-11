@@ -2,59 +2,32 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { Bot, MessageSquare, X, Send } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Bot, X, Send } from "lucide-react";
+import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatMessage } from "./chat-message";
-import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUIStore } from "@/lib/store/ui-store";
 
 export function AssistantWidget() {
-    // const [isOpen, setIsOpen] = useState(false); // REPLACED by Global Store
     const { isAssistantOpen, setAssistantOpen } = useUIStore();
+    const scrollRef = useRef<HTMLDivElement>(null);
 
-    // cast to any to verify runtime behavior of the new SDK version
-    const chatHelpers = useChat({
-        onError: (err) => console.error("Chat Error:", err)
-    }) as any;
+    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+        api: '/api/chat',
+        onError: (err) => {
+            console.error("Chat Error:", err);
+        },
+    });
 
-    const { messages, append, isLoading, error } = chatHelpers;
-
-    const [localInput, setLocalInput] = useState("");
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
+    // Auto-scroll to bottom when messages change
     useEffect(() => {
-        scrollToBottom();
-    }, [messages, isAssistantOpen]);
-
-    useEffect(() => {
-        // Debug logging to verify what we actually get
-        console.log("Chat Helpers Object:", chatHelpers);
-    }, [chatHelpers]);
-
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!localInput.trim()) return;
-
-        // Standard append usage
-        if (typeof append === 'function') {
-            await append({
-                role: 'user',
-                content: localInput
-            });
-        } else {
-            console.error("append function not found in useChat result", chatHelpers);
+        if (scrollRef.current) {
+            scrollRef.current.scrollIntoView({ behavior: "smooth" });
         }
-
-        setLocalInput("");
-    };
+    }, [messages, isAssistantOpen, isLoading]);
 
     return (
         <AnimatePresence>
@@ -78,7 +51,7 @@ export function AssistantWidget() {
                                     <X className="w-4 h-4" />
                                 </Button>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-auto p-0 space-y-4">
+                            <CardContent className="flex-1 overflow-auto p-0 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
                                 {(!messages || messages.length === 0) ? (
                                     <div className="flex flex-col items-center justify-center h-full text-center p-8 text-muted-foreground space-y-2">
                                         <Bot className="w-12 h-12 opacity-20" />
@@ -86,8 +59,8 @@ export function AssistantWidget() {
                                         <p className="text-xs">Ask me about the game, features, or how to build this app!</p>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-2 p-4">
-                                        {messages.map((m: any) => (
+                                    <div className="flex flex-col gap-4 p-4">
+                                        {messages.map((m) => (
                                             <ChatMessage key={m.id} message={m} />
                                         ))}
                                         {isLoading && (
@@ -95,24 +68,24 @@ export function AssistantWidget() {
                                                 <span className="animate-pulse">Thinking...</span>
                                             </div>
                                         )}
-                                        <div ref={messagesEndRef} />
+                                        <div ref={scrollRef} />
                                     </div>
                                 )}
                             </CardContent>
                             <CardFooter className="flex flex-col p-4 border-t gap-2 items-stretch">
                                 {error && (
                                     <div className="p-2 bg-destructive/10 text-destructive text-xs rounded border border-destructive/20 break-words mb-2">
-                                        Error: {error.message || "Unknown error"}
+                                        Error: {error.message || "Something went wrong. check your API Key."}
                                     </div>
                                 )}
-                                <form onSubmit={handleFormSubmit} className="flex w-full gap-2">
+                                <form onSubmit={handleSubmit} className="flex w-full gap-2">
                                     <Input
-                                        value={localInput}
-                                        onChange={(e) => setLocalInput(e.target.value)}
+                                        value={input}
+                                        onChange={handleInputChange}
                                         placeholder="Ask something..."
                                         className="flex-1"
                                     />
-                                    <Button type="submit" size="icon" disabled={!localInput || !localInput.trim()}>
+                                    <Button type="submit" size="icon" disabled={!input.trim() || isLoading}>
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>
