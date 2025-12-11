@@ -73,6 +73,24 @@ export function UserManagementTable({ initialProfiles, roles }: UserManagementTa
         }
     }
 
+    const handleDelete = async (userId: string) => {
+        if (!confirm('Segur que vols eliminar aquest usuari? Aquesta acció no es pot desfer.')) return
+
+        setLoadingId(userId)
+        try {
+            const { error } = await supabase.from('profiles').delete().eq('id', userId)
+            if (error) throw error
+
+            setProfiles(profiles.filter(p => p.id !== userId))
+            toast.success('Usuari eliminat correctament')
+        } catch (error: any) {
+            console.error('Error deleting user:', error)
+            toast.error('Error al eliminar l\'usuari: ' + error.message)
+        } finally {
+            setLoadingId(null)
+        }
+    }
+
     const filteredProfiles = profiles.filter(profile =>
         (profile.username?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         profile.id.includes(searchTerm)
@@ -113,6 +131,7 @@ export function UserManagementTable({ initialProfiles, roles }: UserManagementTa
                                 <th className="px-6 py-4">Rol</th>
                                 <th className="px-6 py-4">Registrat</th>
                                 <th className="px-6 py-4">ID</th>
+                                <th className="px-6 py-4 text-right">Accions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
@@ -173,6 +192,15 @@ export function UserManagementTable({ initialProfiles, roles }: UserManagementTa
                                     </td>
                                     <td className="px-6 py-4 font-mono text-xs text-slate-600 truncate max-w-[100px]" title={profile.id}>
                                         {profile.id}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button
+                                            onClick={() => handleDelete(profile.id)}
+                                            className="text-slate-500 hover:text-red-400 transition-colors p-2 hover:bg-slate-800 rounded-full"
+                                            title="Eliminar usuari"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
