@@ -17,6 +17,9 @@ export interface PlayerProfile {
         language: 'ca' | 'es' | 'en';
         notifications: boolean;
     };
+    elo_bullet?: number;
+    elo_blitz?: number;
+    elo_rapid?: number;
 }
 
 export interface ConceptCard {

@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
 import { Copy, Loader2, Flag, Handshake, X, RotateCw, Search } from 'lucide-react';
+import { toast } from 'sonner';
 import { ChessClock } from '@/components/chess/chess-clock';
 import { ChatBox } from '@/components/chat-box';
 import { MoveHistory } from '@/components/chess/move-history';
@@ -487,30 +488,59 @@ export default function OnlineGamePage() {
   };
 
   const handleRematch = async () => {
-    // Lògica simple: Crear nova partida i redirigir (millorable amb invitació)
-    if (!user) return;
-    const { data, error } = await supabase
-      .from('games')
-      .insert({
-        white_player_id: user.id, // Qui demana revenja juga amb blanques (o es podria alternar)
-        black_player_id: null, // Esperem que l'altre s'uneixi (o podríem forçar-ho si tinguéssim API)
-        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-        pgn: '',
-        status: 'pending'
-      })
-      .select()
-      .single();
+    if (!user || !gameData) return;
 
-    if (data) {
-      // Enviar missatge al xat amb l'enllaç (opció ràpida)
-      await supabase.from('messages').insert({
-        game_id: id,
-        user_id: user.id,
-        content: `REVENJA: /play/online/${data.id}`
-      });
-      router.push(`/play/online/${data.id}`);
+    // Determine my color in this game to set the flag
+    const myColor = user.id === gameData.white_player_id ? 'white' : 'black';
+    const opponentColor = myColor === 'white' ? 'black' : 'white';
+
+    // Get current status
+    const currentStatus = (gameData as any).rematch_status || { white: false, black: false, next_game_id: null };
+
+    // Optimistic update
+    const newStatus = { ...currentStatus, [myColor]: true };
+
+    // Check if opponent already accepted
+    if (newStatus[opponentColor]) {
+      // Both accepted! create new game
+      // Only one should create to avoid duplicates. Let's say White (of PREVIOUS game) creates it.
+      // Or deeper logic: atomic check. simpler: trigger server function or use RLS. 
+      // For now: client side creation with a "lock" check via DB constraints is hard.
+      // We will just create it and update. If race condition, last write wins (might overwrite next_game_id, checking null helps)
+
+      if (!currentStatus.next_game_id) {
+        const { data: newGame, error } = await supabase
+          .from('games')
+          .insert({
+            white_player_id: gameData.black_player_id, // Swap colors
+            black_player_id: gameData.white_player_id,
+            fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+            pgn: '',
+            status: 'active', // Direct start since we have both
+            white_time: gameData.white_time || 600, // Preserve constraints
+            black_time: gameData.black_time || 600
+          })
+          .select()
+          .single();
+
+        if (newGame) {
+          newStatus.next_game_id = newGame.id;
+          await supabase.from('games').update({ rematch_status: newStatus }).eq('id', id);
+        }
+      }
+    } else {
+      // Just report my readiness
+      await supabase.from('games').update({ rematch_status: newStatus }).eq('id', id);
+      toast.success("Petició de revenja enviada! Esperant rival...");
     }
   };
+
+  // Effect to handle redirection when next_game_id appears
+  useEffect(() => {
+    if ((gameData as any)?.rematch_status?.next_game_id) {
+      router.push(`/play/online/${(gameData as any).rematch_status.next_game_id}`);
+    }
+  }, [gameData, router]);
 
   const goToAnalysis = () => {
     // Guardar PGN al localStorage per recuperar-lo a l'anàlisi
