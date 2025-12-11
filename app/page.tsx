@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Swords, Trophy, User, Zap, Timer, Turtle, Pickaxe,
-  Archive, Gift, Lock, Clock, Plus
+  Archive, Gift, Lock, Clock, Plus, Gamepad2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreateChallengeModal } from '@/components/lobby/create-challenge-modal';
@@ -160,8 +160,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Link to Puzzles */}
-        <div className="p-4 border-t border-zinc-800">
+        <div className="p-4 border-t border-zinc-800 space-y-2">
+          {/* Link to Puzzles */}
           <Link href="/puzzles" className="block">
             <div className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-3 flex items-center gap-3 hover:bg-purple-900/30 transition-colors group">
               <div className="p-2 bg-purple-500/10 rounded-lg group-hover:scale-110 transition-transform">
@@ -170,6 +170,19 @@ export default function HomePage() {
               <div>
                 <div className="font-bold text-white text-sm">Mina de Puzzles</div>
                 <div className="text-xs text-purple-300">Entrenar Tàctica</div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Link to Mini Games */}
+          <Link href="/minigames" className="block">
+            <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-xl p-3 flex items-center gap-3 hover:bg-indigo-900/30 transition-colors group">
+              <div className="p-2 bg-indigo-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                <Gamepad2 className="text-indigo-400" size={20} />
+              </div>
+              <div>
+                <div className="font-bold text-white text-sm">Minijocs</div>
+                <div className="text-xs text-indigo-300">Arcade Chess</div>
               </div>
             </div>
           </Link>
