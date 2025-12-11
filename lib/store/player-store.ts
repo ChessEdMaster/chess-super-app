@@ -123,7 +123,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         }
 
         // SuperAdmin Bonus Check
-        let currencies = {
+        const currencies = {
             gold: data.gold || 0,
             gems: data.gems || 0,
         };

@@ -53,7 +53,7 @@ export async function importStudentsAction(clubId: string, students: any[]): Pro
             // Per ara, crearem una entrada a la taula de membres directament.
 
             // Busquem si l'usuari ja existeix a la plataforma pel seu email (si en té)
-            let userId = null;
+            const userId = null;
             if (email) {
                 // Lògica per buscar userId per email...
                 // Si no trobem userId, potser creem un "Shadow User" o placeholder

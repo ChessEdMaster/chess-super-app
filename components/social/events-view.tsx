@@ -117,7 +117,7 @@ export function EventsView() {
         try {
             // 1. Calculate next occurrence date
             const now = new Date();
-            let targetDate = new Date();
+            const targetDate = new Date();
             const [hours, minutes] = sysEvent.time.split(':').map(Number);
             targetDate.setHours(hours, minutes, 0, 0);
 

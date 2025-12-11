@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Swords, Zap, Timer, Turtle } from 'lucide-react';
 import { Challenge } from '@/types/lobby';
@@ -70,7 +71,14 @@ export function LobbyMap({ challenges, onJoin }: LobbyMapProps) {
                                             <div className="flex items-center justify-center gap-2 mb-2">
                                                 <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden border border-zinc-600">
                                                     {challenge.host?.avatar_url ? (
-                                                        <img src={challenge.host.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                                        <Image
+                                                            src={challenge.host.avatar_url}
+                                                            alt="Avatar"
+                                                            width={32}
+                                                            height={32}
+                                                            className="w-full h-full object-cover"
+                                                            unoptimized
+                                                        />
                                                     ) : (
                                                         <User size={16} className="text-zinc-400 m-auto mt-1" />
                                                     )}

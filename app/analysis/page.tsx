@@ -188,7 +188,7 @@ export default function AnalysisPage() {
 
             if (scoreMatch) {
               const type = scoreMatch[1] as 'cp' | 'mate';
-              let value = parseInt(scoreMatch[2]);
+              const value = parseInt(scoreMatch[2]);
               evalData = { type, value };
 
               // Note: We don't set evaluation here immediately to avoid race conditions.
@@ -331,7 +331,7 @@ export default function AnalysisPage() {
         setOptionSquares({});
         return;
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const moveResult = onDrop(moveFrom, square);
       if (moveResult) {
         setMoveFrom(null);

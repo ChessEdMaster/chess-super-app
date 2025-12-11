@@ -71,7 +71,7 @@ export default function LobbyPage() {
 
       if (data) {
         // If host is null (e.g. host deleted or RLS issue), we should handle it gracefully
-        setChallenges(data as any);
+        setChallenges(data as unknown as Challenge[]);
       }
     };
 
@@ -79,7 +79,7 @@ export default function LobbyPage() {
 
     const channel = supabase
       .channel('lobby_challenges_main')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, () => {
         // We could optimistically update, but re-fetching ensures we get the joined profile data
         fetchChallenges();
       })
@@ -116,11 +116,13 @@ export default function LobbyPage() {
     }
   };
 
-  if (loading) return <div className="h-screen bg-zinc-950 flex items-center justify-center"><div className="animate-pulse text-zinc-500">Loading ChessHub...</div></div>;
-  if (!user) {
-    if (typeof window !== 'undefined') window.location.href = '/';
-    return null;
-  }
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) return <div className="h-screen bg-zinc-950 flex items-center justify-center"><div className="animate-pulse text-zinc-500">Loading ChessHub...</div></div>;
 
   return (
     <div className="h-screen w-full bg-zinc-950 flex overflow-hidden font-sans text-slate-200">
@@ -156,7 +158,7 @@ export default function LobbyPage() {
         </div>
 
         <div className="p-4 border-t border-zinc-800 text-xs text-center text-zinc-500">
-          <Link href="/" className="hover:text-white transition-colors">← Tornar a la Sala d'Espera</Link>
+          <Link href="/" className="hover:text-white transition-colors">← Tornar a la Sala d&apos;Espera</Link>
         </div>
       </div>
 
