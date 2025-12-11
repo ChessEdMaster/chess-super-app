@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -70,6 +70,16 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                     <p className="text-xs text-zinc-400">Autenticat com</p>
                                     <p className="text-sm font-bold truncate">{profile.username}</p>
                                 </div>
+                                {profile.role === 'SuperAdmin' && (
+                                    <Link
+                                        href="/admin/users"
+                                        className="w-full text-left px-4 py-2 text-sm text-indigo-400 hover:bg-zinc-800 hover:text-indigo-300 flex items-center gap-2"
+                                        onClick={() => setProfileOpen(false)}
+                                    >
+                                        <Shield size={14} />
+                                        Panel Admin
+                                    </Link>
+                                )}
                                 <button
                                     className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2"
                                     onClick={() => {/* TODO: Settings Link */ }}
