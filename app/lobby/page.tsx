@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArenaVariant } from '@/types/arena';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { useArenaStore } from '@/lib/store/arena-store';
 import { useAuth } from '@/components/auth-provider';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Swords, Trophy, User, Zap, Timer, Turtle, Pickaxe,
-  Archive, Gift, Lock, Clock, Plus
+  Swords, Trophy, User, Zap, Timer, Turtle,
+  Archive, Gift, Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreateChallengeModal } from '@/components/lobby/create-challenge-modal';
-import WelcomePage from '@/app/welcome/page'; // Adjusted path if needed, assuming default export
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ArenaCard } from '@/components/arena/arena-card';
@@ -40,7 +39,10 @@ export default function LobbyPage() {
   const router = useRouter();
 
   // Stores
-  const { chests, profile, loadProfile } = usePlayerStore();
+  const {
+    chests, profile, loadProfile,
+    startUnlockChest, openChest, updateChestTimers
+  } = usePlayerStore();
   const { progress, fetchArenaProgress, claimChest } = useArenaStore();
 
   // State
@@ -56,6 +58,14 @@ export default function LobbyPage() {
     }
   }, [user, loadProfile, fetchArenaProgress]);
 
+  // Timer for chests
+  useEffect(() => {
+    const timer = setInterval(() => {
+      updateChestTimers();
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [updateChestTimers]);
+
   // Realtime Challenges
   useEffect(() => {
     if (!user) return;
@@ -63,7 +73,7 @@ export default function LobbyPage() {
     const fetchChallenges = async () => {
       const { data } = await supabase
         .from('challenges')
-        .select('*, host:profiles(username, avatar_url)') // Join with profiles
+        .select('*, host:profiles(username, avatar_url)')
         .eq('status', 'open');
       if (data) setChallenges(data as any);
     };
@@ -73,7 +83,7 @@ export default function LobbyPage() {
     const channel = supabase
       .channel('lobby_challenges_grid')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, () => {
-        fetchChallenges(); // Re-fetch on any change for simplicity with joins
+        fetchChallenges();
       })
       .subscribe();
 
@@ -82,9 +92,8 @@ export default function LobbyPage() {
 
   const handleJoin = async (challenge: Challenge) => {
     if (!user) return;
-    if (challenge.host_id === user.id) return; // Cannot join own
+    if (challenge.host_id === user.id) return;
 
-    // Logic from LobbyPage
     const whiteId = challenge.player_color === 'white' ? challenge.host_id : (challenge.player_color === 'black' ? user.id : (Math.random() > 0.5 ? challenge.host_id : user.id));
     const blackId = whiteId === challenge.host_id ? user.id : challenge.host_id;
     const timeLimit = challenge.time_control_type === 'bullet' ? 60 : challenge.time_control_type === 'blitz' ? 180 : 600;
@@ -105,6 +114,28 @@ export default function LobbyPage() {
       router.push(`/play/online/${challenge.id}`);
     } else {
       toast.error("Error unint-se a la partida");
+    }
+  };
+
+  const handleChestClick = (index: number) => {
+    const chest = chests[index];
+    if (!chest) return;
+
+    if (chest.status === 'LOCKED') {
+      const isAnyUnlocking = chests.some(c => c && c.status === 'UNLOCKING');
+      if (isAnyUnlocking) {
+        toast.error("Ja estàs desbloquejant un cofre. Espera que acabi.");
+        return;
+      }
+      startUnlockChest(index);
+      toast.success("Desbloqueig iniciat!");
+    } else if (chest.status === 'READY') {
+      const rewards = openChest(index);
+      if (rewards) {
+        toast.success(`Cofre obert! Guanyat: ${rewards.gold} Or, ${rewards.gems} Gemmes`);
+      }
+    } else if (chest.status === 'UNLOCKING') {
+      toast.info("Aquest cofre s'està desbloquejant...");
     }
   };
 
@@ -137,7 +168,7 @@ export default function LobbyPage() {
           </div>
         </div>
 
-        {/* Arena Cards */}
+        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <ArenaCard variant="bullet" progress={progress.bullet} onClick={() => setSelectedArena('bullet')} />
           <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
@@ -150,14 +181,33 @@ export default function LobbyPage() {
             </h3>
             <div className="grid grid-cols-4 gap-2">
               {chests.map((chest, i) => (
-                <div key={i} className={`aspect-square rounded border flex items-center justify-center relative ${chest ? 'border-amber-500/30 bg-amber-900/10' : 'border-zinc-800 bg-zinc-900'}`}>
+                <motion.div
+                  key={i}
+                  onClick={() => handleChestClick(i)}
+                  whileHover={chest ? { scale: 1.05 } : {}}
+                  whileTap={chest ? { scale: 0.95 } : {}}
+                  className={`aspect-square rounded border flex flex-col items-center justify-center relative cursor-pointer ${chest ? 'border-amber-500/30 bg-amber-900/10' : 'border-zinc-800 bg-zinc-900'}`}
+                >
                   {chest ? (
                     <>
-                      <Gift className="text-amber-500" size={16} />
-                      {chest.status === 'READY' && <span className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
+                      <Gift className={`mb-1 ${chest.status === 'LOCKED' ? 'text-zinc-500' : 'text-amber-500'}`} size={16} />
+
+                      {chest.status === 'READY' && <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
+
+                      <span className="text-[8px] font-bold uppercase text-zinc-400">
+                        {chest.status === 'LOCKED' && 'LOCKED'}
+                        {chest.status === 'UNLOCKING' && 'OPENING'}
+                        {chest.status === 'READY' && 'READY'}
+                      </span>
+
+                      {chest.status === 'UNLOCKING' && chest.unlockStartedAt && (
+                        <span className="text-[8px] text-amber-200">
+                          {Math.max(0, Math.ceil(chest.unlockTime - ((Date.now() - chest.unlockStartedAt) / 1000)))}s
+                        </span>
+                      )}
                     </>
                   ) : <span className="text-zinc-700 text-[8px]">EMPTY</span>}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -188,7 +238,6 @@ export default function LobbyPage() {
 
         {/* Matrix of Challenges */}
         <div className="flex-1 flex items-center justify-center p-8 z-10">
-          {/* The "Board" Container for Challenges */}
           <div className="w-full max-w-[80vh] aspect-square bg-zinc-900/50 backdrop-blur border border-zinc-800 rounded-xl shadow-2xl p-6 relative overflow-hidden">
             {challenges.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-zinc-500 gap-4">
@@ -205,9 +254,9 @@ export default function LobbyPage() {
                     onClick={() => handleJoin(c)}
                     disabled={c.host_id === user.id}
                     className={`
-                                          flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden
-                                          ${c.host_id === user.id ? 'bg-zinc-800/50 border-zinc-700 opacity-50 cursor-default' : 'bg-zinc-800 border-zinc-700 hover:border-indigo-500 hover:bg-zinc-750'}
-                                      `}
+                      flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden
+                      ${c.host_id === user.id ? 'bg-zinc-800/50 border-zinc-700 opacity-50 cursor-default' : 'bg-zinc-800 border-zinc-700 hover:border-indigo-500 hover:bg-zinc-750'}
+                    `}
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
@@ -248,7 +297,7 @@ export default function LobbyPage() {
       <Dialog open={!!selectedArena} onOpenChange={(open) => !open && setSelectedArena(null)}>
         <DialogContent className="bg-zinc-950 border-zinc-900 text-white max-w-4xl h-[80vh] flex flex-col p-0 overflow-hidden">
           {selectedArena && progress[selectedArena as ArenaVariant] && (
-            <div className="h-full mt-4">
+            <div className="h-full mt-4 overflow-y-auto p-4">
               <ArenaPath
                 progress={progress[selectedArena as ArenaVariant]!}
                 onClaimChest={(id) => claimChest(user.id, selectedArena as ArenaVariant, id)}

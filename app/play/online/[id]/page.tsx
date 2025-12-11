@@ -28,7 +28,7 @@ export default function OnlineGamePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { addXp, addGold } = usePlayerStore();
+  const { addXp, addGold, addChest } = usePlayerStore();
 
   const [isClient, setIsClient] = useState(false);
 
@@ -616,9 +616,15 @@ export default function OnlineGamePage() {
         addXp(xp);
         addGold(gold);
         // Chance for chest
-        if (Math.random() > 0.5) {
-          // addChest('WOODEN'); // Need to implement addChest in store if not present, or just ignore for now
-          alert(`Victòria! Has guanyat ${xp} XP i ${gold} d'Or! 🏆`);
+        // Chance for chest
+        if (Math.random() > 0.3) { // Increased chance for testing
+          addChest({
+            id: Math.random().toString(36).substring(7),
+            type: 'WOODEN',
+            status: 'LOCKED',
+            unlockTime: 60, // 1 minute
+          });
+          alert(`Victòria! Has guanyat ${xp} XP, ${gold} d'Or i un Cofre de Fusta! 🏆`);
         } else {
           alert(`Victòria! Has guanyat ${xp} XP i ${gold} d'Or! 🏆`);
         }
