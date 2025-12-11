@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { streamText, convertToCoreMessages } from 'ai';
+import { streamText, UIMessage, convertToModelMessages } from 'ai';
 
 export const maxDuration = 30;
 
@@ -14,8 +14,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const body = await req.json();
-        const { messages } = body;
+        const { messages }: { messages: UIMessage[] } = await req.json();
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(
@@ -53,10 +52,10 @@ If a search of the app's internal database provides relevant information, this i
         const result = streamText({
             model: google('gemini-1.5-flash'),
             system: systemPrompt,
-            messages: convertToCoreMessages(messages),
+            messages: convertToModelMessages(messages),
         });
 
-        return result.toTextStreamResponse();
+        return result.toUIMessageStreamResponse();
     } catch (error) {
         console.error("Chat API Error:", error);
         return new Response(
