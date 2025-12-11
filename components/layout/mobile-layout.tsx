@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, Users, Trophy, Castle } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { useUIStore } from '@/lib/store/ui-store';
 
 interface MobileLayoutProps {
     children: React.ReactNode;
@@ -15,11 +16,13 @@ interface MobileLayoutProps {
 export function MobileLayout({ children }: MobileLayoutProps) {
     const { profile } = usePlayerStore();
     const pathname = usePathname();
+    const { toggleAssistant, isAssistantOpen } = useUIStore();
 
     const tabs = [
         { name: 'Battle', icon: Swords, href: '/' },
         { name: 'Kingdom', icon: Castle, href: '/kingdom' },
         { name: 'Cards', icon: Layers, href: '/cards' },
+        { name: 'Academy', icon: GraduationCap, href: '/academy' },
         { name: 'Improve', icon: Trophy, href: '/improve' },
         { name: 'Social', icon: Users, href: '/social' },
     ];
@@ -53,6 +56,18 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                         <div className="w-3 h-3 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
                         <span className="text-xs font-bold text-green-100">{profile.currencies.gems}</span>
                     </div>
+
+                    <button
+                        onClick={toggleAssistant}
+                        className={`p-2 rounded-full transition-colors relative ${isAssistantOpen ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-zinc-400 hover:text-indigo-400 hover:bg-zinc-800'
+                            }`}
+                    >
+                        <Bot size={20} />
+                        {!isAssistantOpen && (
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        )}
+                    </button>
+
                     <Link href="/shop" className="text-zinc-400 hover:text-white transition-colors relative">
                         <div className="bg-zinc-800/50 p-2 rounded-full border border-white/5 hover:bg-zinc-700/50">
                             <ShoppingBag size={18} />
