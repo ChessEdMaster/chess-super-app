@@ -50,7 +50,7 @@ If a search of the app's internal database provides relevant information, this i
 `.trim();
 
         const result = streamText({
-            model: google('gemini-1.5-flash'),
+            model: google('gemini-2.0-flash'),
             system: systemPrompt,
             messages: convertToModelMessages(messages),
         });
