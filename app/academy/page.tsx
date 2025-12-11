@@ -52,6 +52,7 @@ export default function AcademyPage() {
         achievementsUnlocked: 0
     });
     const [loading, setLoading] = useState(true);
+    const [selectedSubject, setSelectedSubject] = useState('chess');
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -68,11 +69,12 @@ export default function AcademyPage() {
     const loadAcademyData = async () => {
         try {
             // 1. Load All Public Courses
+            // We fetch ALL courses and filter client side for better UX when switching tabs
             const { data: coursesData, error: coursesError } = await supabase
                 .from('academy_courses')
                 .select('*')
                 .eq('published', true)
-                .order('target_grade');
+                .order('target_grade'); // Sort by grade naturally P3 -> ...
 
             if (coursesData) setCourses(coursesData);
 
@@ -128,9 +130,8 @@ export default function AcademyPage() {
         );
     }
 
-    // Filter courses: Only show enrolled ones
-    // const visibleCourses = courses.filter(c => enrolledCourseIds.has(c.id));
-    const visibleCourses = courses; // SHOW ALL FOR DEMO
+    // Filter courses by subject
+    const visibleCourses = courses.filter(c => (c.subject || 'chess') === selectedSubject);
 
     // Group courses by track
     const tracks = ['academic', 'pedagogical', 'sport', 'vocational'];
@@ -183,55 +184,113 @@ export default function AcademyPage() {
                     </div>
                 )}
 
+                {/* SUBJECT SELECTOR */}
+                <SubjectSelector selected={selectedSubject} onSelect={setSelectedSubject} />
+
                 {/* EMPTY STATE */}
                 {visibleCourses.length === 0 && (
-                    <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-slate-800 mb-20">
+                    <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-slate-800 mb-20 animate-in fade-in zoom-in duration-500">
                         <Lock className="mx-auto text-slate-700 mb-6" size={64} />
-                        <h2 className="text-2xl font-bold text-white mb-4">No tens cursos actius</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">No hi ha cursos disponibles de {SUBJECTS[selectedSubject]?.label}</h2>
                         <p className="text-slate-400 max-w-lg mx-auto mb-8">
-                            Actualment no estàs inscrit a cap curs oficial.
-                            Demana al teu professor o administrador del club que t'assigni un curs.
+                            Encara no hem publicat el currículum per aquesta assignatura.
+                            Estem treballant en els continguts de {SUBJECTS[selectedSubject]?.label}.
                         </p>
-                        <Link href="/clubs" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition">
-                            <School size={20} /> Anar al meu Club/Escola
-                        </Link>
+                        <div className="flex justify-center gap-4">
+                            <Link href="/" className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-bold transition">
+                                Tornar a l'Inici
+                            </Link>
+                        </div>
                     </div>
                 )}
 
-                {/* TRACK SECTIONS */}
-                <div className="space-y-12">
-                    {tracks.map(track => {
-                        const trackCourses = groupedCourses[track];
-                        if (!trackCourses || trackCourses.length === 0) return null;
-
-                        const TrackIcon = TRACK_ICONS[track] || BookOpen;
-
-                        return (
-                            <section key={track} className="relative">
+                {/* TRACK SECTIONS (Only for Chess or if tracks exist) */}
+                {visibleCourses.length > 0 && (
+                    <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
+                        {selectedSubject === 'chess' ? (
+                            tracks.map(track => {
+                                const trackCourses = groupedCourses[track];
+                                if (!trackCourses || trackCourses.length === 0) return null;
+                                const TrackIcon = TRACK_ICONS[track] || BookOpen;
+                                return (
+                                    <section key={track} className="relative">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-2 bg-indigo-500/10 rounded-lg">
+                                                <TrackIcon className="text-indigo-400" size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-bold text-white">{TRACK_TITLES[track]}</h2>
+                                                <p className="text-slate-400 text-xs">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                            {trackCourses.map(course => (
+                                                <CourseCard key={course.id} course={course} />
+                                            ))}
+                                        </div>
+                                    </section>
+                                );
+                            })
+                        ) : (
+                            <section className="relative">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="p-2 bg-indigo-500/10 rounded-lg">
-                                        <TrackIcon className="text-indigo-400" size={24} />
+                                        <GraduationCap className="text-indigo-400" size={24} />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-white">{TRACK_TITLES[track]}</h2>
-                                        <p className="text-slate-400 text-xs">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
+                                        <h2 className="text-xl font-bold text-white">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
+                                        <p className="text-slate-400 text-xs">Des de P3 fins al Doctorat</p>
                                     </div>
                                 </div>
-
-                                {/* Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                    {trackCourses.map(course => (
+                                    {visibleCourses.map(course => (
                                         <CourseCard key={course.id} course={course} />
                                     ))}
                                 </div>
                             </section>
-                        );
-                    })}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
 }
+
+const SUBJECTS: Record<string, { label: string, icon: any, color: string }> = {
+    chess: { label: 'Escacs', icon: Target, color: 'text-indigo-400' },
+    language: { label: 'Llengua', icon: BookOpen, color: 'text-emerald-400' },
+    math: { label: 'Matemàtiques', icon: Calculator, color: 'text-blue-400' },
+    history: { label: 'Història', icon: History, color: 'text-amber-400' },
+    art: { label: 'Art', icon: Palette, color: 'text-pink-400' },
+    football: { label: 'Futbol', icon: Trophy, color: 'text-green-400' },
+};
+
+function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (s: string) => void }) {
+    return (
+        <div className="flex overflow-x-auto gap-2 pb-6 mb-2 no-scrollbar">
+            {Object.entries(SUBJECTS).map(([key, data]) => {
+                const Icon = data.icon;
+                const isSelected = selected === key;
+                return (
+                    <button
+                        key={key}
+                        onClick={() => onSelect(key)}
+                        className={`
+                            flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all border
+                            ${isSelected
+                                ? 'bg-slate-800 border-indigo-500 shadow-lg shadow-indigo-500/10 text-white'
+                                : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200'}
+                        `}
+                    >
+                        <Icon size={16} className={isSelected ? data.color : 'opacity-50'} />
+                        <span className={`text-sm font-bold ${isSelected ? '' : 'font-medium'}`}>{data.label}</span>
+                    </button>
+                )
+            })}
+        </div>
+    )
+}
+
 
 function CourseCard({ course }: { course: AcademyCourse }) {
     return (

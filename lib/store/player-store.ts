@@ -25,8 +25,17 @@ interface PlayerState {
 }
 
 const GENERATE_CARDS = (): ConceptCard[] => {
+    type CardDef = {
+        title: string;
+        desc: string;
+        puzzle: string;
+        rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+        category: 'AGGRESSION' | 'SOLIDITY' | 'KNOWLEDGE' | 'SPEED';
+        tags: string[];
+    };
+
     // Unique list of cards based on themes available in DB
-    const cards: ConceptCard[] = [
+    const cards: CardDef[] = [
         { title: 'La Forquilla', desc: 'Atacar dues peces alhora amb una sola peça.', puzzle: 'puzzle-fork', rarity: 'COMMON', category: 'AGGRESSION', tags: ['fork'] },
         { title: 'La Clavada', desc: 'Immobilitzar una peça perquè no exposi una de més valor.', puzzle: 'puzzle-pin', rarity: 'COMMON', category: 'SOLIDITY', tags: ['pin'] },
         { title: "L'Enfilada", desc: 'Atacar una peça valuosa i capturar la que hi ha darrere.', puzzle: 'puzzle-skewer', rarity: 'RARE', category: 'AGGRESSION', tags: ['skewer'] },
@@ -58,7 +67,8 @@ const GENERATE_CARDS = (): ConceptCard[] => {
         cardsOwned: 0,
         cardsRequired: 10,
         description: c.desc,
-        minigameId: c.puzzle
+        minigameId: c.puzzle,
+        tags: c.tags
     }));
 };
 

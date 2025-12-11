@@ -29,6 +29,7 @@ export interface ConceptCard {
     cardsRequired: number;
     description: string;
     minigameId: string;  // The puzzle set ID to "mine" this card
+    tags?: string[];
 }
 
 export interface Chest {

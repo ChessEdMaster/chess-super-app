@@ -22,6 +22,7 @@ export interface AcademyCourse {
     published?: boolean;
     created_at?: string;
     is_enrolled?: boolean; // UI helper
+    subject?: string;
 }
 
 export interface AcademyModule {
