@@ -131,12 +131,8 @@ export default function AnalysisPage() {
     async function initEngine() {
       if (!engine.current) {
         // Auth check for Superadmin Native Engine
-        const { supabase } = await import('@/lib/supabase');
-        const { data: { user } } = await supabase.auth.getUser();
-        const isSuperAdmin = user?.email === 'marc.pozanco@gmail.com';
-
-        if (isSuperAdmin) {
-          console.log("Initializing Native Server Engine for Superadmin");
+        if (user) {
+          console.log("Initializing Native Server Engine for Authenticated User");
           const { ServerEngineAdapter } = await import('@/lib/analysis/server-engine-adapter');
           // @ts-ignore - Adapter matches Worker interface enough for our usage
           engine.current = new ServerEngineAdapter();
