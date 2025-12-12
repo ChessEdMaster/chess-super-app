@@ -152,6 +152,7 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
             maxBoundsViscosity={1.0}
             style={{ height: '100%', width: '100%', background: '#020617' }} // slate-950 (Void/Sea)
             className="z-0"
+            attributionControl={false}
         >
             {/* No TileLayer - Custom Vector Map */}
 
@@ -191,8 +192,6 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
                     </Popup>
                 </Marker>
             ))}
-
-            <MapUpdater locations={filteredLocations} />
         </MapContainer>
     );
 }
