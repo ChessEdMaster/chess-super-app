@@ -92,9 +92,9 @@ export function FiltresMapa({ locations, onFilterChange }: FiltresMapaProps) {
 
                 <div className="space-y-2">
                     <Label>Comarca</Label>
-                    <Select value={comarca} onValueChange={(val) => { setComarca(val); setMunicipi('all'); }} disabled={provincia === 'all' && comarques.length > 100}>
+                    <Select value={comarca} onValueChange={(val) => { setComarca(val); setMunicipi('all'); }}>
                         {/* Disable logic not strictly needed but good for UX if list is huge. */}
-                        <SelectTrigger>
+                        <SelectTrigger disabled={provincia === 'all' && comarques.length > 100}>
                             <SelectValue placeholder="Totes" />
                         </SelectTrigger>
                         <SelectContent>
