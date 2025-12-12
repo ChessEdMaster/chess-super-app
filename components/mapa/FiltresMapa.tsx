@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Layers, Calendar, Filter, Map as MapIcon, ChevronDown, ChevronUp } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
 
 interface FiltresMapaProps {
     locations: ChessLocation[];
