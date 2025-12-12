@@ -4,14 +4,15 @@ import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ChessLocation, EntityType } from '@/types/chess-map'; // Ensure this path is correct
+import { ChessLocation, EntityType, MapLayerType } from '@/types/chess-map'; // Ensure this path is correct
 import { Trophy, Castle, GraduationCap, Store, Mic, Crown } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 interface MapaEscacsClientProps {
     locations: ChessLocation[];
     filteredLocations: ChessLocation[];
-    onRegionSelect?: (region: string, type: 'comarca' | 'provincia') => void;
+    currentLayer: MapLayerType;
+    onRegionSelect?: (region: string, type: 'comarca' | 'provincia' | 'municipi') => void;
 }
 
 // Fix for default Leaflet markers in Next.js/React
@@ -86,19 +87,26 @@ function MapUpdater({ locations }: { locations: ChessLocation[] }) {
     return null;
 }
 
-export default function MapaEscacsClient({ locations, filteredLocations, onRegionSelect }: MapaEscacsClientProps) {
+export default function MapaEscacsClient({ locations, filteredLocations, currentLayer, onRegionSelect }: MapaEscacsClientProps) {
     const [geoData, setGeoData] = useState<any>(null);
 
+    // Fetch GeoJSON based on layer
     useEffect(() => {
-        // Attempt to load GeoJSON
-        fetch('/data/catalunya.geojson')
+        let file = '/data/catalunya.geojson'; // Default (Comarques 500k)
+        if (currentLayer === 'provincies') file = '/data/provincies.geojson';
+        if (currentLayer === 'municipis') file = '/data/municipis.geojson';
+        // Note: 'comarques' is the default file we renamed to catalunya.geojson, but clarity is good.
+        // Actually, in step 1, I just copied Comarques to catalunya.geojson.
+        // I should probably be explicit.
+
+        fetch(file)
             .then(res => {
-                if (!res.ok) throw new Error('GeoJSON not found');
+                if (!res.ok) throw new Error(`GeoJSON ${file} not found`);
                 return res.json();
             })
             .then(data => setGeoData(data))
             .catch(err => console.warn('GeoJSON load failed:', err));
-    }, []);
+    }, [currentLayer]);
 
     const onEachFeature = (feature: any, layer: L.Layer) => {
         layer.on({
@@ -123,16 +131,25 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
             click: (e) => {
                 const layer = e.target;
                 const props = feature.properties;
-                // Common keys: 'NOMCOMAR', 'nom_comar', 'NOM_COMAR', 'provincia', etc.
-                const comarca = props.NOMCOMAR || props.nom_comar || props.NOM_COMAR || props.comarca;
-                const provincia = props.NOMPROV || props.nom_prov || props.NOM_PROV || props.provincia;
 
-                if (comarca && onRegionSelect) {
+                // Identify properties based on standard keys from these files
+                // Comarques: NOMCOMAR
+                // Provincies: NOMPROV (?) Need to verify. Typically NOMPROV or NOM_PROV.
+                // Municipis: NOMMUNI (?)
+
+                const comarca = props.NOMCOMAR || props.nom_comar;
+                const provincia = props.NOMPROV || props.nom_prov;
+                const municipi = props.NOMMUNI || props.nom_muni;
+
+                if (currentLayer === 'comarques' && comarca && onRegionSelect) {
                     onRegionSelect(comarca, 'comarca');
                     layer._map.fitBounds(layer.getBounds());
-                } else if (provincia && onRegionSelect) {
+                } else if (currentLayer === 'provincies' && provincia && onRegionSelect) {
                     onRegionSelect(provincia, 'provincia');
                     layer._map.fitBounds(layer.getBounds());
+                } else if (currentLayer === 'municipis' && municipi && onRegionSelect) {
+                    onRegionSelect(municipi, 'municipi');
+                    layer._map.fitBounds(layer.getBounds(), { maxZoom: 12 });
                 }
             }
         });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChessLocation, MapFilters } from '@/types/chess-map';
+import { ChessLocation, MapFilters, MapLayerType } from '@/types/chess-map';
 import { FiltresMapa } from './FiltresMapa';
 import { MapaEscacs } from './MapaEscacs';
 import { TaulaLlocs } from './TaulaLlocs';
@@ -12,6 +12,7 @@ interface MapaEscacsContainerProps {
 
 export default function MapaEscacsContainer({ initialLocations }: MapaEscacsContainerProps) {
     const [locations] = useState<ChessLocation[]>(initialLocations); // Raw data
+    const [currentLayer, setCurrentLayer] = useState<MapLayerType>('comarques');
     const [filters, setFilters] = useState<MapFilters>({
         types: ['Club', 'Tournament', 'School', 'Business', 'Conference', 'Official_Act'],
         onlyUpcoming: false
@@ -40,14 +41,14 @@ export default function MapaEscacsContainer({ initialLocations }: MapaEscacsCont
         });
     }, [locations, filters]);
 
-    const handleRegionSelect = (region: string, type: 'comarca' | 'provincia') => {
+    const handleRegionSelect = (region: string, type: 'comarca' | 'provincia' | 'municipi') => {
         setFilters(prev => ({
             ...prev,
             [type]: region,
-            // If selecting province, reset comarca/municipi?
-            // Actually the current filter logic might need adjustment if we want smart reset.
-            // For now, let's just set the specific one.
-            ...(type === 'provincia' ? { comarca: 'all', municipi: 'all' } : { municipi: 'all' })
+            // Smart reset logic
+            ...(type === 'provincia' ? { comarca: 'all', municipi: 'all' } :
+                type === 'comarca' ? { municipi: 'all' } :
+                    {})
         }));
     };
 
@@ -56,6 +57,8 @@ export default function MapaEscacsContainer({ initialLocations }: MapaEscacsCont
             {/* 1. Panell de Filtres */}
             <FiltresMapa
                 locations={locations}
+                currentLayer={currentLayer}
+                onLayerChange={setCurrentLayer}
                 onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
             />
 
@@ -64,6 +67,7 @@ export default function MapaEscacsContainer({ initialLocations }: MapaEscacsCont
                 <MapaEscacs
                     locations={locations}
                     filteredLocations={filteredLocations}
+                    currentLayer={currentLayer}
                     onRegionSelect={handleRegionSelect}
                 />
             </div>

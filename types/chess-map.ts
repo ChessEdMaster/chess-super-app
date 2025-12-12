@@ -7,6 +7,8 @@ export type EntityType =
     | 'Conference'
     | 'Official_Act';
 
+export type MapLayerType = 'provincies' | 'comarques' | 'municipis';
+
 export interface ChessLocation {
     id: string;
     name: string;
@@ -19,10 +21,15 @@ export interface ChessLocation {
     comarca_nom?: string;
     provincia_nom?: string;
     country_code?: string;
-    start_date?: string; // ISO string for timestamps
+    start_date?: string;
     end_date?: string;
     url?: string;
     metadata?: Record<string, any>;
+
+    // Extended fields for Tournaments
+    time_control?: string;
+    registered_players?: number;
+    rules_url?: string;
 }
 
 export interface MapFilters {

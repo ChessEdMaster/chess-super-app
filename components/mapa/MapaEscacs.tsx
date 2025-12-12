@@ -19,7 +19,8 @@ const MapaEscacsClient = dynamic(
 interface MapaEscacsProps {
     locations: ChessLocation[];
     filteredLocations: ChessLocation[];
-    onRegionSelect?: (region: string, type: 'comarca' | 'provincia') => void;
+    currentLayer: MapLayerType;
+    onRegionSelect?: (region: string, type: 'comarca' | 'provincia' | 'municipi') => void;
 }
 
 export function MapaEscacs(props: MapaEscacsProps) {
