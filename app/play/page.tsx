@@ -24,6 +24,7 @@ import { ArenaCard } from '@/components/arena/arena-card';
 import { ArenaPath } from '@/components/arena/arena-path';
 import { ArenaVariant } from '@/types/arena';
 import { ChestOpeningModal } from '@/components/cards/chest-opening-modal';
+import { GameResultModal } from '@/components/game/game-result-modal';
 import { Chest } from '@/types/rpg';
 
 type GameMode = 'bullet' | 'blitz' | 'rapid';
@@ -59,6 +60,8 @@ export default function PlayPage() {
   const { fen, makeMove: engineMakeMove, setGameFromFen, game, resetGame } = useChessEngine();
   const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [winner, setWinner] = useState<'white' | 'black' | 'draw' | 'win' | 'loss' | null>(null);
+  const [lastEloChange, setLastEloChange] = useState(0);
+  const [lastStreak, setLastStreak] = useState(0);
 
   // Click to move state for 3D board
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
@@ -293,9 +296,9 @@ export default function PlayPage() {
         if (error) {
           toast.error('Error guardant resultat: ' + error.message);
         } else {
-          const points = data.points !== undefined ? data.points : data.new_elo;
-          const label = data.status === 'qualified' ? 'CLASSIFICAT!' : 'Punts actualitzats';
-          toast.success(`${label}: ${points}`);
+          // Capture ELO change and streak for the result modal
+          setLastEloChange(data.points_diff || 0);
+          setLastStreak(data.streak || 0);
 
           // Refresh profile to show new stats
           const { data: newProfile } = await supabase.from('profiles').select('*').eq('id', userProfile.id).single();
@@ -580,55 +583,36 @@ export default function PlayPage() {
             )}
           </div>
 
-          {/* Game Over Overlay */}
-          {gameState === 'finished' && winner && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center text-white p-8 text-center animate-in fade-in zoom-in duration-300 border border-white/10 shadow-2xl max-w-sm w-full mx-4">
-                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
-                  {winner === 'win' ? '🏆 Victòria!' : winner === 'loss' ? '💀 Derrota' : '🤝 Taules'}
-                </h2>
-                <p className="text-slate-300 mb-6 text-sm">
-                  {winner === 'win' ? 'Has guanyat punts de lliga!' : 'Segueix practicant per millorar.'}
-                </p>
-                <div className="flex flex-col gap-2 w-full">
-                  <Button
-                    size="lg"
-                    className="w-full bg-white text-black hover:bg-slate-200 font-bold rounded-xl"
-                    onClick={() => {
-                      setGameState('searching');
-                      setWinner(null);
-                      // Swap colors for rematch logic if needed, or just search again
-                      const nextColor = orientation === 'white' ? 'black' : 'white';
-                      setOrientation(nextColor);
-                      startBotGame(botDifficulty); // Immediate rematch with same bot settings
-                    }}
-                  >
-                    🔄 Revenja
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl"
-                    onClick={() => {
-                      // Save current game PGN to local storage (or pass via URL state)
-                      const pgn = game.pgn();
-                      localStorage.setItem('analysis_pgn', pgn);
-                      window.location.href = '/analysis';
-                    }}
-                  >
-                    🔍 Analitzar Partida
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    className="w-full text-slate-400 hover:text-white"
-                    onClick={() => setGameState('idle')}
-                  >
-                    Tornar al menú
-                  </Button>
-                </div>
-              </div>
-            </div>
+          {/* Game Over Modal */}
+          {gameState === 'finished' && winner && (winner === 'win' || winner === 'loss' || winner === 'draw') && (
+            <GameResultModal
+              result={winner as 'win' | 'loss' | 'draw'}
+              eloChange={lastEloChange}
+              streak={lastStreak}
+              onNewGame={() => {
+                setGameState('idle');
+                setWinner(null);
+                resetGame();
+              }}
+              onRematch={() => {
+                setWinner(null);
+                const nextColor = orientation === 'white' ? 'black' : 'white';
+                setOrientation(nextColor);
+                startBotGame(botDifficulty);
+              }}
+              onAnalyze={() => {
+                const pgn = game.pgn();
+                localStorage.setItem('analysis_pgn', pgn);
+                window.location.href = '/analysis';
+              }}
+              onExit={() => {
+                window.location.href = '/';
+              }}
+              onClose={() => {
+                setGameState('idle');
+                setWinner(null);
+              }}
+            />
           )}
         </div>
       </div>
