@@ -124,7 +124,7 @@ export default function AcademyPage() {
 
     if (authLoading || loading || !user) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <Loader2 className="animate-spin text-indigo-500" size={48} />
             </div>
         );
@@ -141,7 +141,7 @@ export default function AcademyPage() {
     }, {} as Record<string, AcademyCourse[]>);
 
     return (
-        <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
+        <div className="min-h-screen p-6 font-sans text-slate-200">
             <div className="max-w-7xl mx-auto">
 
                 {/* HEADER */}

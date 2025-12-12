@@ -133,13 +133,13 @@ export default function LobbyPage() {
     if (!loading && !user) router.push('/');
   }, [user, loading, router]);
 
-  if (loading || !user) return <div className="h-screen bg-zinc-950 flex items-center justify-center"><div className="animate-pulse text-zinc-500">Loading...</div></div>;
+  if (loading || !user) return <div className="h-screen flex items-center justify-center"><div className="animate-pulse text-zinc-500">Loading...</div></div>;
 
   return (
-    <div className="h-full w-full bg-zinc-950 flex flex-col lg:flex-row overflow-hidden font-sans text-slate-200">
+    <div className="h-full w-full flex flex-col lg:flex-row overflow-hidden font-sans text-slate-200">
 
       {/* MOBILE: Top bar with menu toggle */}
-      <div className="lg:hidden flex items-center justify-between p-3 bg-zinc-900 border-b border-zinc-800">
+      <div className="lg:hidden flex items-center justify-between p-3 bg-zinc-900/70 backdrop-blur-md border-b border-zinc-800/50">
         <button
           onClick={() => setIsSidebarOpen(true)}
           className="p-2 bg-zinc-800 rounded-lg"
@@ -189,7 +189,7 @@ export default function LobbyPage() {
       </AnimatePresence>
 
       {/* DESKTOP: Sidebar */}
-      <div className="hidden lg:flex w-64 flex-none bg-zinc-900 border-r border-zinc-800 flex-col">
+      <div className="hidden lg:flex w-64 flex-none bg-zinc-900/80 backdrop-blur-md border-r border-zinc-800/50 flex-col">
         <SidebarContent
           profile={profile}
           progress={progress}
@@ -198,7 +198,7 @@ export default function LobbyPage() {
       </div>
 
       {/* CENTER: LOBBY MAP */}
-      <div className="flex-1 bg-black flex flex-col relative overflow-hidden">
+      <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
