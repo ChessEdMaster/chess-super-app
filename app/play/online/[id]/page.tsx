@@ -135,77 +135,100 @@ export default function OnlineGamePage() {
       }
 
       // B. Determinar qui sóc i si m'he d'unir
-      let currentBlackId = initialGame.black_player_id;
+      // B. Determine role (White, Black, or Spectator) and Join if necessary
       let finalGameData = initialGame;
+      let myColor: 'white' | 'black' | null = null;
+      let isParticipant = false;
 
-      // Si sóc el creador -> Sóc Blanques
-      if (user.id === initialGame.white_player_id) {
-        setOrientation('white');
+      // 1. Check if I am already a participant
+      if (initialGame.white_player_id === user.id) {
+        myColor = 'white';
+        isParticipant = true;
+      } else if (initialGame.black_player_id === user.id) {
+        myColor = 'black';
+        isParticipant = true;
       }
-      // Si no sóc el creador i no hi ha rival -> M'uneixo com a Negres
-      else if (!currentBlackId) {
-        const { error: joinError } = await supabase
-          .from('games')
-          .update({
-            black_player_id: user.id,
-            status: 'active'
-          })
-          .eq('id', id);
 
-        if (!joinError) {
-          // IMPORTANT: Recarregar la partida completa després d'unir-se
-          const { data: updatedGame } = await supabase
+      // 2. If not participant, try to claim an open seat
+      if (!isParticipant) {
+        let seatToClaim: 'white_player_id' | 'black_player_id' | null = null;
+        let orientationToSet: 'white' | 'black' = 'white';
+
+        if (!initialGame.white_player_id) {
+          seatToClaim = 'white_player_id';
+          orientationToSet = 'white';
+        } else if (!initialGame.black_player_id) {
+          seatToClaim = 'black_player_id';
+          orientationToSet = 'black';
+        }
+
+        if (seatToClaim) {
+          // Attempt to claim the seat
+          const { error: joinError } = await supabase
             .from('games')
-            .select('*')
-            .eq('id', id)
-            .single();
+            .update({
+              [seatToClaim]: user.id,
+              status: 'active' // If both seats are filled, game becomes active. If one remains empty (unlikely logic here but safe), it might stay pending.
+              // Ideally update status only if both are full. But typically 2nd person joining makes it full.
+            })
+            .eq('id', id);
 
-          if (updatedGame) {
-            // Recarregar perfils amb el nou jugador negre
-            const whiteProfile = updatedGame.white_player_id ? await supabase
-              .from('profiles')
-              .select('username, avatar_url')
-              .eq('id', updatedGame.white_player_id)
-              .single() : null;
+          if (!joinError) {
+            // Reload game to be sure we have clean state (and profile data later)
+            const { data: updatedGame } = await supabase
+              .from('games')
+              .select('*')
+              .eq('id', id)
+              .single();
 
-            const blackProfile = updatedGame.black_player_id ? await supabase
-              .from('profiles')
-              .select('username, avatar_url')
-              .eq('id', updatedGame.black_player_id)
-              .single() : null;
-
-            updatedGame.white = whiteProfile?.data || null;
-            updatedGame.black = blackProfile?.data || null;
-
-            // Actualitzar estat local amb les dades completes
-            finalGameData = updatedGame;
-            currentBlackId = user.id;
+            if (updatedGame) {
+              finalGameData = updatedGame;
+              myColor = orientationToSet;
+              isParticipant = true;
+              playSound('game_start');
+            }
+          } else {
+            console.error("Failed to join game:", joinError);
+            alert("Error al unir-se a la partida.");
+            router.push('/lobby');
+            return;
           }
-
-          setOrientation('black');
-          playSound('game_start');
         } else {
-          console.error('Error unint-se a la partida:', joinError);
-          alert('Error al unir-se a la partida');
-          router.push('/lobby');
-          return;
+          // Both seats taken, I am a spectator
+          myColor = 'white'; // Spectate from white perspective by default
+          alert("Mode espectador");
         }
       }
-      // Si ja hi ha rival i sóc jo -> Sóc Negres
-      else if (currentBlackId === user.id) {
-        setOrientation('black');
+
+      // 3. Set Orientation
+      // If I am active player, set my color. If spectator, default to white.
+      if (myColor) {
+        setOrientation(myColor);
       }
-      // Si ja està plena i no sóc ningú -> Espectador
-      else {
-        setOrientation('white');
-        alert("Mode espectador");
+
+      // 4. Fetch Profiles again if we just joined or if we need to refresh opponent
+      if (finalGameData) { // Always refresh profiles just in case
+        const whiteProfile = finalGameData.white_player_id ? await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', finalGameData.white_player_id)
+          .single() : null;
+
+        const blackProfile = finalGameData.black_player_id ? await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', finalGameData.black_player_id)
+          .single() : null;
+
+        finalGameData.white = whiteProfile?.data || null;
+        finalGameData.black = blackProfile?.data || null;
       }
 
       // C. Actualitzar estat local (ara amb dades completes)
       setGameData(finalGameData as GameData);
       setPlayers({
         white: finalGameData.white?.username || user.user_metadata?.full_name || 'Jugador 1',
-        black: finalGameData.black?.username || (currentBlackId ? 'Jugador 2' : 'Esperant rival...')
+        black: finalGameData.black?.username || (finalGameData.black_player_id ? 'Jugador 2' : 'Esperant rival...')
       });
 
       // Sincronitzar tauler
@@ -665,6 +688,15 @@ export default function OnlineGamePage() {
               onSquareClick={onSquareClick}
               customSquareStyles={optionSquares}
             />
+            {gameData.status === 'pending' && (
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div className="text-center">
+                  <Loader2 className="animate-spin text-white mb-2 mx-auto" size={48} />
+                  <h3 className="text-xl font-bold text-white">Esperant oponent...</h3>
+                  <p className="text-sm text-slate-300">Has compartit l{"'"}enllaç o creat un repte?</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Controls */}
