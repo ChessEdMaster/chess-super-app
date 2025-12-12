@@ -241,42 +241,66 @@ export default function OnlineGamePage() {
         const channel = supabase
           .channel(`game_${id}`)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${id}` }, async (payload) => {
-            const newData = payload.new;
+            console.log("Realtime update received:", payload);
 
-            // Si s'ha unit un jugador, recarregar perfils
-            if (newData.black_player_id && !gameData?.black_player_id) {
-              const blackProfile = await supabase
-                .from('profiles')
-                .select('username, avatar_url')
-                .eq('id', newData.black_player_id)
-                .single();
+            // Robustness: Always refetch the latest state to avoid partial updates or race conditions
+            const { data: freshGame, error: fetchError } = await supabase
+              .from('games')
+              .select('*')
+              .eq('id', id)
+              .single();
 
-              newData.black = blackProfile?.data || null;
-
-              // Actualitzar noms dels jugadors
-              setPlayers(prev => ({
-                ...prev,
-                black: newData.black?.username || 'Jugador 2'
-              }));
-              playSound('game_start');
+            if (fetchError || !freshGame) {
+              console.error("Error fetching fresh game data:", fetchError);
+              return;
             }
 
-            // Quan rebem un canvi des de la DB (l'altre ha mogut):
-            const incomeGame = new Chess(newData.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+            // Check if we need to fetch profiles (e.g. opponent joined)
+            // We can just optimistically fetch profiles if IDs exist and we don't have them, or just rely on IDs
+            let updatedGame = freshGame as GameData;
 
-            // Detectar si hi ha hagut moviment per fer so
+            // Fetch profiles if they are missing from our current state but exist in fresh data
+            // Or simplistically, just fetch them if player IDs are present.
+            // Optimize: Only fetch if different from current IDs. But current state 'gameData' might be stale in closure.
+            // We can rely on a functional update or just fetch to be safe. 
+            // Since this event doesn't happen often (moves are frequent, but joins are once), let's be safe.
+
+            if (updatedGame.white_player_id) {
+              const p = await supabase.from('profiles').select('username, avatar_url').eq('id', updatedGame.white_player_id).single();
+              updatedGame.white = p.data || undefined;
+            }
+
+            if (updatedGame.black_player_id) {
+              const p = await supabase.from('profiles').select('username, avatar_url').eq('id', updatedGame.black_player_id).single();
+              updatedGame.black = p.data || undefined;
+            }
+
+            // Update Notification Sounds
+            const incomeGame = new Chess(updatedGame.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
             if (incomeGame.fen() !== fen) {
+              // Logic to detect move type
               if (incomeGame.isCheckmate()) playSound('game_end');
               else if (incomeGame.isCheck()) playSound('check');
               else if (incomeGame.history({ verbose: true }).pop()?.captured) playSound('capture');
               else playSound('move');
             }
 
-            setGameFromFen(newData.fen || incomeGame.fen());
-            setGameData(newData as GameData);
-            setDrawOffer(newData.draw_offer_by);
+            // Play start sound if status changed to active
+            // We can check previous status via payload.old if available, or just check if we were pending
+            // But since we don't have reliable access to 'current state' here, we can play it if game is active and we are at start
+            if (updatedGame.status === 'active' && payload.old?.status === 'pending') {
+              playSound('game_start');
+            }
 
-            updateStatus(incomeGame, newData);
+            // Batch updates
+            setGameFromFen(updatedGame.fen);
+            setGameData(updatedGame);
+            setDrawOffer(updatedGame.draw_offer_by || null);
+            setPlayers({
+              white: updatedGame.white?.username || 'Jugador 1',
+              black: updatedGame.black?.username || (updatedGame.black_player_id ? 'Jugador 2' : 'Esperant rival...')
+            });
+            updateStatus(incomeGame, updatedGame);
           })
           .subscribe();
 
