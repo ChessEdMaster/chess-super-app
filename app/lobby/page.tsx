@@ -95,20 +95,30 @@ export default function LobbyPage() {
     if (!user) return;
     if (challenge.host_id === user.id) return;
 
-    const whiteId = challenge.player_color === 'white' ? challenge.host_id : (challenge.player_color === 'black' ? user.id : (Math.random() > 0.5 ? challenge.host_id : user.id));
-    const blackId = whiteId === challenge.host_id ? user.id : challenge.host_id;
-    const timeLimit = challenge.time_control_type === 'bullet' ? 60 : challenge.time_control_type === 'blitz' ? 3 * 60 : 10 * 60;
+    // Get existing game to see which color is available
+    const { data: existingGame } = await supabase
+      .from('games')
+      .select('*')
+      .eq('id', challenge.id)
+      .single();
 
-    const { error } = await supabase.from('games').insert({
-      id: challenge.id,
-      white_player_id: whiteId,
-      black_player_id: blackId,
-      status: 'active',
-      fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-      white_time: timeLimit,
-      black_time: timeLimit,
-      pgn: ''
-    }).select().single();
+    if (!existingGame) {
+      toast.error("Error: El joc no existeix");
+      return;
+    }
+
+    // Determine which color the joiner gets
+    const joinAsWhite = existingGame.white_player_id === null;
+
+    // Update the game to add the opponent and set status to active
+    const { error } = await supabase
+      .from('games')
+      .update({
+        white_player_id: joinAsWhite ? user.id : existingGame.white_player_id,
+        black_player_id: joinAsWhite ? existingGame.black_player_id : user.id,
+        status: 'active'
+      })
+      .eq('id', challenge.id);
 
     if (!error) {
       await supabase.from('challenges').update({ status: 'accepted' }).eq('id', challenge.id);
@@ -205,7 +215,14 @@ export default function LobbyPage() {
         {/* Map Visualization - Takes full space */}
         <div className="flex-1 flex items-center justify-center p-4 lg:p-8 z-10">
           <div className="w-full h-full max-w-[min(90vw,70vh)] max-h-[min(90vw,70vh)] aspect-square relative">
-            <LobbyMap challenges={challenges} onJoin={handleJoin} />
+            <LobbyMap
+              challenges={challenges}
+              onJoin={handleJoin}
+              onEnterOwnChallenge={(challenge) => {
+                // Host clicks their own challenge - go to waiting game page
+                router.push(`/play/online/${challenge.id}`);
+              }}
+            />
           </div>
         </div>
       </div>

@@ -10,9 +10,10 @@ import { useAuth } from '@/components/auth-provider';
 interface LobbyMapProps {
     challenges: Challenge[];
     onJoin: (challenge: Challenge) => void;
+    onEnterOwnChallenge: (challenge: Challenge) => void;
 }
 
-export function LobbyMap({ challenges, onJoin }: LobbyMapProps) {
+export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapProps) {
     const { user } = useAuth();
 
     return (
@@ -53,12 +54,11 @@ export function LobbyMap({ challenges, onJoin }: LobbyMapProps) {
 
                                     {/* Node */}
                                     <button
-                                        onClick={() => onJoin(challenge)}
-                                        disabled={isMyChallenge}
+                                        onClick={() => isMyChallenge ? onEnterOwnChallenge(challenge) : onJoin(challenge)}
                                         className={`
-                      relative z-10 w-4 h-4 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-150
+                      relative z-10 w-4 h-4 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-150 cursor-pointer
                       ${challenge.rated ? 'bg-yellow-400 shadow-yellow-500/50' : 'bg-emerald-400 shadow-emerald-500/50'}
-                      ${isMyChallenge ? 'cursor-default ring-2 ring-white' : 'cursor-pointer hover:ring-4 ring-white/20'}
+                      ${isMyChallenge ? 'ring-2 ring-white animate-pulse' : 'hover:ring-4 ring-white/20'}
                     `}
                                     />
 
@@ -103,7 +103,7 @@ export function LobbyMap({ challenges, onJoin }: LobbyMapProps) {
                                                     Jugar <Swords size={10} />
                                                 </div>
                                             ) : (
-                                                <div className="text-zinc-500 text-[10px]">La teva partida</div>
+                                                <div className="bg-indigo-600 text-white text-[10px] font-bold py-1 px-2 rounded uppercase tracking-widest">Entrar ⏳</div>
                                             )}
                                         </div>
                                     </div>
