@@ -131,7 +131,7 @@ export default function LobbyPage() {
       <div className="w-80 flex-none bg-zinc-900 border-r border-zinc-800 flex flex-col">
         {/* Header / Profile Summary */}
         <div className="p-4 border-b border-zinc-800 bg-zinc-900/50">
-          <h2 className="text-lg font-black text-white italic flex items-center gap-2 mb-2">
+          <h2 className="text-lg font-black text-white italic flex items-center gap-2 mb-2 font-display">
             <Trophy className="text-yellow-500" size={20} /> ARENA
           </h2>
           <div className="flex gap-2 text-xs">
@@ -148,7 +148,7 @@ export default function LobbyPage() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4">
           <ArenaCard variant="bullet" progress={progress.bullet} onClick={() => setSelectedArena('bullet')} />
           <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
           <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
@@ -169,7 +169,7 @@ export default function LobbyPage() {
 
         <header className="p-6 flex justify-between items-center z-10">
           <div>
-            <h1 className="text-3xl font-black text-white leading-none">LOBBY DE JOC</h1>
+            <h1 className="text-3xl font-black text-white leading-none font-display">LOBBY DE JOC</h1>
             <p className="text-zinc-500 text-sm mt-1">Troba un oponent o crea un repte</p>
           </div>
           <Button

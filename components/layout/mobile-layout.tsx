@@ -35,7 +35,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     }
 
     return (
-        <div className="h-dvh w-full flex flex-col text-white overflow-hidden">
+        <div className="h-dvh w-full flex flex-col text-white overflow-hidden fixed inset-0">
             {/* Top Bar */}
             <header className="h-14 px-4 flex items-center justify-between bg-zinc-900/40 backdrop-blur-md border-b border-white/5 z-50 shrink-0">
                 <div className="flex items-center gap-3 relative">
@@ -133,7 +133,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 relative overflow-y-auto">
+            <main className="flex-1 relative overflow-y-auto scrollbar-hide">
                 {children}
             </main>
 

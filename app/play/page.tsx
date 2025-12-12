@@ -373,7 +373,7 @@ export default function PlayPage() {
 
       {/* Header - Compact */}
       <header className="flex-none py-4 px-6 border-b border-white/10 bg-slate-900/50 backdrop-blur-md flex items-center justify-between z-20">
-        <h1 className="text-2xl font-bold tracking-tighter flex items-center gap-2 text-white">
+        <h1 className="text-2xl font-bold tracking-tighter flex items-center gap-2 text-white font-display">
           <Sword className="h-6 w-6 text-amber-500" />
           Arena Competitiva
         </h1>
@@ -396,7 +396,7 @@ export default function PlayPage() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
 
         {/* Left Sidebar: Controls */}
-        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/10 bg-slate-900/30 overflow-y-auto z-10">
+        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/10 bg-slate-900/30 overflow-y-auto scrollbar-hide z-10">
           <div className="space-y-4">
             {gameState === 'idle' && (
               <div className="space-y-3">

@@ -111,7 +111,7 @@ export default function HomePage() {
                 repeat: Infinity,
                 repeatType: "loop"
               }}
-              className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2"
+              className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2 font-display"
             >
               <Swords size={24} />
               BATTLE
