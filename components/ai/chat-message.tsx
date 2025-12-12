@@ -1,6 +1,8 @@
+"use client";
 
 import { cn } from "@/lib/utils";
-import { Bot, User } from "lucide-react";
+import { Bot, User, Volume2, StopCircle } from "lucide-react";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 
 export interface Message {
     id: string;
@@ -10,6 +12,7 @@ export interface Message {
 
 export function ChatMessage({ message }: { message: Message }) {
     const isUser = message.role === "user";
+    const { speak, stop, isSpeaking } = useTextToSpeech();
 
     return (
         <div
@@ -39,6 +42,19 @@ export function ChatMessage({ message }: { message: Message }) {
                     </p>
                 </div>
             </div>
+            {!isUser && (
+                <button
+                    onClick={() => (isSpeaking ? stop() : speak(message.content))}
+                    className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    title="Llegir en veu alta"
+                >
+                    {isSpeaking ? (
+                        <StopCircle className="h-4 w-4" />
+                    ) : (
+                        <Volume2 className="h-4 w-4" />
+                    )}
+                </button>
+            )}
         </div>
     );
 }
