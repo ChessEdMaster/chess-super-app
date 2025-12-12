@@ -105,17 +105,19 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
             mouseover: (e) => {
                 const layer = e.target;
                 layer.setStyle({
-                    weight: 3,
-                    color: '#facc15', // yellow-400
-                    fillOpacity: 0.3
+                    weight: 2,
+                    color: '#fbbf24', // amber-400 (Highlight Border)
+                    fillColor: '#334155', // slate-700 (Highlight Fill)
+                    fillOpacity: 1
                 });
             },
             mouseout: (e) => {
                 const layer = e.target;
                 layer.setStyle({
-                    weight: 1,
-                    color: '#3388ff',
-                    fillOpacity: 0.1
+                    weight: 0.5,
+                    color: '#64748b', // slate-500 (Reset Border)
+                    fillColor: '#1e293b', // slate-800 (Reset Fill)
+                    fillOpacity: 1
                 });
             },
             click: (e) => {
@@ -143,27 +145,24 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
 
     return (
         <MapContainer
-            center={[41.8, 1.5]} // Center of Catalonia approx
+            center={[41.8, 1.5]}
             zoom={8}
             minZoom={7}
             maxBounds={cataloniaBounds as L.LatLngBoundsExpression}
             maxBoundsViscosity={1.0}
-            style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
+            style={{ height: '100%', width: '100%', background: '#020617' }} // slate-950 (Void/Sea)
             className="z-0"
         >
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            />
+            {/* No TileLayer - Custom Vector Map */}
 
             {geoData && (
                 <GeoJSON
                     data={geoData}
                     style={{
-                        color: '#3b82f6', // blue-500
-                        weight: 1,
-                        fillColor: '#1e3a8a', // blue-900
-                        fillOpacity: 0.2
+                        color: '#64748b', // slate-500 (Borders)
+                        weight: 0.5,
+                        fillColor: '#1e293b', // slate-800 (Land)
+                        fillOpacity: 1
                     }}
                     onEachFeature={onEachFeature}
                 />
