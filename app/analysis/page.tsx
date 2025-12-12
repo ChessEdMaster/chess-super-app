@@ -15,6 +15,8 @@ import { CoachAgent } from '@/components/coach-agent';
 import { PGNEditor } from '@/components/chess/pgn-editor';
 import { OpeningExplorer } from '@/components/analysis/opening-explorer';
 import { AnalysisControls } from '@/components/analysis/analysis-controls';
+import { DatabaseManager } from '@/components/analysis/DatabaseManager';
+import { BoardSetup } from '@/components/analysis/BoardSetup';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { PGNTree } from '@/lib/pgn/tree';
@@ -38,8 +40,12 @@ export default function AnalysisPage() {
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   const [isClient, setIsClient] = useState(false);
   const [createVariation, setCreateVariation] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analysis' | 'database'>('analysis');
+  const [activeTab, setActiveTab] = useState<'analysis' | 'database' | 'setup'>('analysis');
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+
+  // Setup State
+  const [isSetupMode, setIsSetupMode] = useState(false);
+  const [setupSelectedPiece, setSetupSelectedPiece] = useState<string | null>('wP'); // Default to White Pawn
 
   // Click to move state
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -276,8 +282,35 @@ export default function AnalysisPage() {
   }, [fen, isClient, isAnalyzing, engineDepth, multipv]);
 
 
+  const handleSetupClick = (square: string) => {
+    if (!setupSelectedPiece) return;
+
+    const gameSpec = new Chess(fen);
+    // Chess.js is tricky for arbitrary edits. We parse FEN manually for simple edits or use put/remove if supported by library version.
+    // Chess.js v1 (which we seem to use) has .put() and .remove().
+    // Note: .put() might return false if invalid, but for setup we usually force it.
+    // However, recreating FEN string is often safer for "illegal" intermediate states.
+
+    // Let's rely on .put and .remove wrapper
+    try {
+      if (setupSelectedPiece === 'trash') {
+        gameSpec.remove(square as Square);
+      } else {
+        // setupSelectedPiece e.g. 'wP'
+        const color = setupSelectedPiece[0] as 'w' | 'b';
+        const type = setupSelectedPiece[1].toLowerCase() as any;
+        gameSpec.put({ type, color }, square as Square);
+      }
+      setFen(gameSpec.fen());
+      setGame(gameSpec);
+    } catch (e) {
+      console.error("Setup error", e);
+    }
+  };
+
   // --- GAME LOGIC ---
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
+    if (activeTab === 'setup') return false; // Disable normal moves in setup
     if (!targetSquare) return false;
     const gameCopy = new Chess(fen);
     let move = null;
@@ -321,6 +354,11 @@ export default function AnalysisPage() {
   }
 
   function onSquareClick(square: string) {
+    if (activeTab === 'setup') {
+      handleSetupClick(square);
+      return;
+    }
+
     if (moveFrom) {
       if (moveFrom === square) {
         setMoveFrom(null);
@@ -474,6 +512,7 @@ export default function AnalysisPage() {
           </h2>
           <div className="flex bg-zinc-800 rounded-lg p-1">
             <button onClick={() => setActiveTab('analysis')} className={`px-3 py-1 rounded text-xs font-bold ${activeTab === 'analysis' ? 'bg-zinc-700 text-white' : 'text-zinc-400'}`}>Anàlisi</button>
+            <button onClick={() => setActiveTab('setup')} className={`px-3 py-1 rounded text-xs font-bold ${activeTab === 'setup' ? 'bg-zinc-700 text-white' : 'text-zinc-400'}`}>Taulell</button>
             <button onClick={() => setActiveTab('database')} className={`px-3 py-1 rounded text-xs font-bold ${activeTab === 'database' ? 'bg-zinc-700 text-white' : 'text-zinc-400'}`}>Base de Dades</button>
           </div>
         </div>
@@ -521,10 +560,27 @@ export default function AnalysisPage() {
                 <PGNEditor tree={pgnTree} onTreeChange={setPgnTree} onPositionChange={handlePositionChange} currentMove={currentNode?.move || undefined} autoAnnotate={true} engineEval={evaluation} />
               </div>
             </div>
+          ) : activeTab === 'setup' ? (
+            <BoardSetup
+              fen={fen}
+              onFenChange={handlePositionChange} // Reuse this
+              selectedPiece={setupSelectedPiece}
+              onSelectPiece={setSetupSelectedPiece}
+              onClear={() => handlePositionChange('8/8/8/8/8/8/8/8 w - - 0 1')}
+              onReset={() => handlePositionChange('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')}
+              onStartAnalysis={() => setActiveTab('analysis')}
+            />
+          ) : activeTab === 'database' ? (
+            <DatabaseManager
+              onLoadGame={(pgn) => {
+                loadPGN(pgn);
+                setActiveTab('analysis');
+              }}
+              currentPgn={pgnTree.toString()} // TODO: ensure clean PGN export
+            />
           ) : (
             <div className="h-full">
               <OpeningExplorer fen={fen} onSelectMove={(uci) => {
-                // Simple wrapper to call onDrop logic for explorer moves
                 const from = uci.substring(0, 2);
                 const to = uci.substring(2, 4);
                 onDrop(from, to);

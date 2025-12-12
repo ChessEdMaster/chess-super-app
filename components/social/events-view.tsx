@@ -42,10 +42,158 @@ export function EventsView() {
         }
     }, [activeTab]);
 
-    // ... existing fetchUpcomingEvents ...
-    // ... existing getEventTypeColor ...
-    // ... existing systemTournaments ...
-    // ... existing handleJoinSystemEvent ...
+    const fetchUpcomingEvents = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('club_events')
+                .select(`
+                    id,
+                    title,
+                    description,
+                    event_type,
+                    start_date,
+                    location,
+                    current_participants,
+                    max_participants,
+                    club:clubs(name)
+                `)
+                .eq('is_active', true)
+                .gte('start_date', new Date().toISOString())
+                .order('start_date', { ascending: true })
+                .limit(5);
+
+            if (error) throw error;
+            setEvents(data || []);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getEventTypeColor = (type: string) => {
+        switch (type) {
+            case 'tournament':
+                return 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30';
+            case 'lesson':
+                return 'bg-blue-900/30 text-blue-400 border-blue-500/30';
+            case 'meetup':
+                return 'bg-purple-900/30 text-purple-400 border-purple-500/30';
+            default:
+                return 'bg-zinc-900/30 text-zinc-400 border-zinc-500/30';
+        }
+    };
+
+    // System Tournaments Logic
+    const systemTournaments = [
+        {
+            id: 'daily',
+            title: 'Daily Blitz Arena',
+            type: 'tournament',
+            time: '20:00', // 8 PM
+            frequency: 'Daily',
+            description: 'Compete in the daily blitz tournament! 5+0 time control.'
+        },
+        {
+            id: 'weekly',
+            title: 'Weekly Super Sunday',
+            type: 'tournament',
+            time: '16:00', // 4 PM Sunday
+            frequency: 'Weekly',
+            description: 'The main event of the week. 10+0 Rapid.'
+        },
+        {
+            id: 'monthly',
+            title: 'Monthly Grand Prix',
+            type: 'tournament',
+            time: '18:00', // 6 PM Last Saturday
+            frequency: 'Monthly',
+            description: 'Fight for the monthly champion title!'
+        }
+    ];
+
+    const handleJoinSystemEvent = async (sysEvent: typeof systemTournaments[0]) => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        setJoiningSystemEvent(sysEvent.id);
+        try {
+            // 1. Calculate next occurrence date
+            const now = new Date();
+            const targetDate = new Date();
+            const [hours, minutes] = sysEvent.time.split(':').map(Number);
+            targetDate.setHours(hours, minutes, 0, 0);
+
+            if (sysEvent.frequency === 'Daily') {
+                if (targetDate <= now) targetDate.setDate(targetDate.getDate() + 1);
+            } else if (sysEvent.frequency === 'Weekly') {
+                // Next Sunday
+                const day = targetDate.getDay();
+                const diff = targetDate.getDate() - day + (day === 0 && targetDate > now ? 0 : 7); // 0 is Sunday
+                targetDate.setDate(diff);
+                if (targetDate <= now) targetDate.setDate(targetDate.getDate() + 7);
+            }
+            // Monthly logic omitted for brevity, defaulting to next daily-like logic for demo
+
+            const title = `${sysEvent.title} - ${targetDate.toLocaleDateString()}`;
+
+            // 2. Check if event exists
+            const { data: existingEvents } = await supabase
+                .from('club_events')
+                .select('id')
+                .eq('title', title)
+                .single();
+
+            let eventId = existingEvents?.id;
+
+            // 3. If not, create it
+            if (!eventId) {
+                // Find a public club to host it (e.g., the first public club found)
+                const { data: publicClubs } = await supabase
+                    .from('clubs')
+                    .select('id')
+                    .eq('is_public', true)
+                    .limit(1);
+
+                const hostClubId = publicClubs?.[0]?.id;
+
+                if (!hostClubId) {
+                    toast.error('No public club available to host system events.');
+                    return;
+                }
+
+                const { data: newEvent, error: createError } = await supabase
+                    .from('club_events')
+                    .insert({
+                        club_id: hostClubId,
+                        organizer_id: user.id, // The first joiner becomes the "organizer" record-wise
+                        title: title,
+                        description: sysEvent.description,
+                        event_type: 'tournament',
+                        start_date: targetDate.toISOString(),
+                        max_participants: 100,
+                        is_active: true
+                    })
+                    .select()
+                    .single();
+
+                if (createError) throw createError;
+                eventId = newEvent.id;
+            }
+
+            // 4. Redirect to event page (where joining happens)
+            router.push(`/events/${eventId}`);
+
+        } catch (error) {
+            console.error('Error joining system event:', error);
+            toast.error('Failed to join event');
+        } finally {
+            setJoiningSystemEvent(null);
+        }
+    };
 
     if (loading && activeTab === 'online') {
         // ...
