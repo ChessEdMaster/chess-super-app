@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { MobileLayout } from "@/components/layout/mobile-layout";
 import { PlayerStoreSync } from "@/components/player-store-sync";
