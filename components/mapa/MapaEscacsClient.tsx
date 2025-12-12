@@ -71,7 +71,15 @@ function MapUpdater({ locations }: { locations: ChessLocation[] }) {
 
         const bounds = L.latLngBounds(locations.map(l => [l.latitude, l.longitude]));
         if (bounds.isValid()) {
-            map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+            // Check if bounds are wildly large (e.g. world level), if so, stick to Catalonia defaults
+            const cataloniaBounds = L.latLngBounds([[40.5, 0.15], [42.9, 3.32]]);
+            if (cataloniaBounds.contains(bounds)) {
+                map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+            } else {
+                // For now, always default to Catalonia center if data is sparse or weird
+                map.setView([41.5912, 1.5209], 8);
+            }
+
         }
     }, [locations, map]);
 
@@ -83,8 +91,6 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
 
     useEffect(() => {
         // Attempt to load GeoJSON
-        // Note: Assuming file is in public/data/catalunya.geojson
-        // If not found, we just handle the error gracefully
         fetch('/data/catalunya.geojson')
             .then(res => {
                 if (!res.ok) throw new Error('GeoJSON not found');
@@ -105,7 +111,6 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
                 });
             },
             mouseout: (e) => {
-                // Reset style (would need reference to original style)
                 const layer = e.target;
                 layer.setStyle({
                     weight: 1,
@@ -116,7 +121,6 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
             click: (e) => {
                 const layer = e.target;
                 const props = feature.properties;
-                // Try to identify comarca or provincia from properties
                 // Common keys: 'NOMCOMAR', 'nom_comar', 'NOM_COMAR', 'provincia', etc.
                 const comarca = props.NOMCOMAR || props.nom_comar || props.NOM_COMAR || props.comarca;
                 const provincia = props.NOMPROV || props.nom_prov || props.NOM_PROV || props.provincia;
@@ -132,26 +136,34 @@ export default function MapaEscacsClient({ locations, filteredLocations, onRegio
         });
     };
 
+    const cataloniaBounds = [
+        [40.4, 0.0], // South-West
+        [43.0, 3.5]  // North-East
+    ];
+
     return (
         <MapContainer
-            center={[41.5912, 1.5209]} // Center of Catalonia approx
+            center={[41.8, 1.5]} // Center of Catalonia approx
             zoom={8}
-            style={{ height: '100%', width: '100%' }}
-            className="z-0" // Ensure it stays behind modals/dropdowns if needed
+            minZoom={7}
+            maxBounds={cataloniaBounds as L.LatLngBoundsExpression}
+            maxBoundsViscosity={1.0}
+            style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
+            className="z-0"
         >
             <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
             />
 
             {geoData && (
                 <GeoJSON
                     data={geoData}
                     style={{
-                        color: '#3388ff',
+                        color: '#3b82f6', // blue-500
                         weight: 1,
-                        fillColor: '#3388ff',
-                        fillOpacity: 0.1
+                        fillColor: '#1e3a8a', // blue-900
+                        fillOpacity: 0.2
                     }}
                     onEachFeature={onEachFeature}
                 />

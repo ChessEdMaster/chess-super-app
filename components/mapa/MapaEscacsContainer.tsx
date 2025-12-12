@@ -60,7 +60,7 @@ export default function MapaEscacsContainer({ initialLocations }: MapaEscacsCont
             />
 
             {/* 2. Secció del Mapa */}
-            <div className="flex-1 w-full h-[50vh] lg:h-[70vh] rounded-xl shadow-2xl overflow-hidden relative z-0">
+            <div className="flex-1 w-full h-[80vh] min-h-[600px] rounded-xl shadow-2xl overflow-hidden relative z-0">
                 <MapaEscacs
                     locations={locations}
                     filteredLocations={filteredLocations}
