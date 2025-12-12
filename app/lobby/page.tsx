@@ -68,6 +68,29 @@ export default function LobbyPage() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
+  // Listen for MY challenge being accepted (so host gets redirected)
+  useEffect(() => {
+    if (!user) return;
+
+    const hostChannel = supabase
+      .channel(`host_challenge_${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'challenges',
+        filter: `host_id=eq.${user.id}`
+      }, (payload) => {
+        const updated = payload.new as any;
+        if (updated.status === 'accepted') {
+          toast.success("Oponent trobat! Començant partida...");
+          router.push(`/play/online/${updated.id}`);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(hostChannel); };
+  }, [user, router]);
+
   const handleJoin = async (challenge: Challenge) => {
     if (!user) return;
     if (challenge.host_id === user.id) return;
