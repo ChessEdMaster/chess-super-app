@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { ChessLocation } from '@/types/chess-map';
+import { ChessLocation, MapLayerType } from '@/types/chess-map';
 
 // Dynamically import the map component with SSR disabled
 const MapaEscacsClient = dynamic(
