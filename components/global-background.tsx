@@ -39,8 +39,8 @@ export function GlobalBackground() {
                     quality={100}
                 />
             </div>
-            {/* Gradient Overlay - Lighter for more transparency */}
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/10 to-slate-950/40" />
+            {/* Gradient Overlay - Darker for premium feel */}
+            <div className="absolute inset-0 bg-zinc-950/80" />
         </div>
     );
 }

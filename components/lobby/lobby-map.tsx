@@ -49,7 +49,7 @@ export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapPr
                             >
                                 <div className="group relative">
                                     {/* Pulse Effect */}
-                                    <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${challenge.rated ? 'bg-yellow-500' : 'bg-emerald-500'
+                                    <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${challenge.rated ? 'bg-amber-500' : 'bg-emerald-500'
                                         }`} />
 
                                     {/* Node */}
@@ -57,7 +57,7 @@ export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapPr
                                         onClick={() => isMyChallenge ? onEnterOwnChallenge(challenge) : onJoin(challenge)}
                                         className={`
                       relative z-10 w-4 h-4 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-150 cursor-pointer
-                      ${challenge.rated ? 'bg-yellow-400 shadow-yellow-500/50' : 'bg-emerald-400 shadow-emerald-500/50'}
+                      ${challenge.rated ? 'bg-amber-400 shadow-amber-500/50' : 'bg-emerald-400 shadow-emerald-500/50'}
                       ${isMyChallenge ? 'ring-2 ring-white animate-pulse' : 'hover:ring-4 ring-white/20'}
                     `}
                                     />
@@ -93,7 +93,7 @@ export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapPr
 
                                             <div className="flex items-center justify-center gap-2 bg-zinc-800/50 rounded p-1 mb-2">
                                                 {challenge.time_control_type === 'bullet' && <Zap size={14} className="text-orange-400" />}
-                                                {challenge.time_control_type === 'blitz' && <Timer size={14} className="text-yellow-400" />}
+                                                {challenge.time_control_type === 'blitz' && <Timer size={14} className="text-amber-400" />}
                                                 {challenge.time_control_type === 'rapid' && <Turtle size={14} className="text-emerald-400" />}
                                                 <span className="text-xs font-mono font-bold text-zinc-300 uppercase">{challenge.time_control_type}</span>
                                             </div>

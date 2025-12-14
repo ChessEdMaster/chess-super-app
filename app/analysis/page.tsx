@@ -497,113 +497,154 @@ export default function AnalysisPage() {
           <div className="flex bg-zinc-800 rounded-lg p-1 ml-auto">
             <button onClick={() => setViewMode('2d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '2d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>2D</button>
             <button onClick={() => setViewMode('3d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '3d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>3D</button>
-          </div>
-        </div>
-      </div>
+            {/* Main Content - Full Height minus Header */}
+            <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-6rem)] w-full max-w-7xl mx-auto px-4 box-border">
 
-      {/* RIGHT: ANALYSIS PANEL */}
-      <div className="flex flex-col border-l border-zinc-800 bg-zinc-900 h-full overflow-hidden relative">
-
-        {/* Header */}
-        <div className="flex-none p-4 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur z-10 flex justify-between items-center shrink-0">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <LayoutGrid size={18} className="text-emerald-500" />
-            Laboratori
-          </h2>
-          <div className="flex bg-zinc-800 rounded-lg p-1">
-            <button onClick={() => setActiveTab('analysis')} className={`px-3 py-1 rounded text-xs font-bold ${activeTab === 'analysis' ? 'bg-zinc-700 text-white' : 'text-zinc-400'}`}>Anàlisi</button>
-            <button onClick={() => setActiveTab('setup')} className={`px-3 py-1 rounded text-xs font-bold ${activeTab === 'setup' ? 'bg-zinc-700 text-white' : 'text-zinc-400'}`}>Taulell</button>
-            <button onClick={() => setActiveTab('database')} className={`px-3 py-1 rounded text-xs font-bold ${activeTab === 'database' ? 'bg-zinc-700 text-white' : 'text-zinc-400'}`}>Base de Dades</button>
-          </div>
-        </div>
-
-        {/* Scrollable Content - Hide Scrollbar */}
-        <div className="flex-1 overflow-y-auto p-0 scrollbar-hide">
-          {activeTab === 'analysis' ? (
-            <div className="flex flex-col min-h-full">
-              <div className="p-4 space-y-4 flex-1">
-                <CoachAgent evaluation={evaluation} previousEval={currentNode?.parent?.annotation?.evaluation || null} currentMove={currentNode?.move || null} turn={game.turn()} />
-
-                {/* Best Line Info */}
-                {/* Analysis Lines */}
-                <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg overflow-hidden flex flex-col max-h-48 overflow-y-auto">
-                  <div className="px-3 py-2 bg-zinc-900/50 text-xs text-zinc-500 font-bold uppercase tracking-wider border-b border-zinc-800">
-                    Anàlisi del Motor ({isAnalyzing ? `Calculant...` : 'Aturat'})
-                  </div>
-
-                  {lines.length > 0 ? (
-                    <div>
-                      {lines.map((line) => (
-                        <div key={line.id} className="p-2 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-900/50 transition flex items-start gap-3 text-sm font-mono group">
-                          <div className={`w-12 shrink-0 font-bold text-right ${line.evaluation.value > 0
-                            ? 'text-emerald-400'
-                            : line.evaluation.value < 0
-                              ? 'text-rose-400'
-                              : 'text-zinc-400'
-                            }`}>
-                            {getEvalText(line.evaluation)}
-                          </div>
-                          <div className="text-zinc-300 break-all leading-relaxed">
-                            <span className="text-indigo-400 font-bold mr-2">{line.bestMove}</span>
-                            <span className="text-zinc-500">{line.line.substring(line.bestMove.length)}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+              {/* LEFT COLUMN: Board (Flexible) */}
+              <div className="flex-1 flex items-center justify-center min-h-0 relative">
+                <div className="w-full h-full max-h-[80vh] aspect-square shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20 p-1 flex items-center justify-center">
+                  {isSetupMode ? (
+                    <BoardSetup
+                      fen={fen} // Use current FEN
+                      onFenChange={(newFen) => {
+                        setFen(newFen);
+                        const newGame = new Chess(newFen);
+                        setGame(newGame);
+                        // Update engine logic here directly if possible or trigger effect
+                        if (engine.current && isAnalyzing) {
+                          engine.current.postMessage(`position fen ${newFen}`);
+                          engine.current.postMessage('go depth 20'); // Simplified
+                        }
+                      }}
+                      selectedPiece={setupSelectedPiece}
+                      onSelectPiece={setSetupSelectedPiece}
+                    />
+                  ) : viewMode === '3d' ? (
+                    <ChessScene
+                      fen={fen}
+                      // onMove={(from, to) => handleMove({ from, to })} // Todo: adapt handleMove signature
+                      orientation={'white'}
+                    />
                   ) : (
-                    <div className="p-4 text-center text-zinc-500 text-xs py-8 italic">
-                      {isAnalyzing ? <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={14} /> Buscant les millors jugades...</span> : 'Motor aturat. Prem "Analitzar" per començar.'}
-                    </div>
+                    <Chessboard2D
+                      fen={fen}
+                      onPieceDrop={onDrop}
+                      orientation={game.turn() === 'b' ? 'black' : 'white'} // or user pref
+                      customSquareStyles={optionSquares}
+                    />
                   )}
                 </div>
+              </div>
 
-                <PGNEditor tree={pgnTree} onTreeChange={setPgnTree} onPositionChange={handlePositionChange} currentMove={currentNode?.move || undefined} autoAnnotate={true} engineEval={evaluation} />
+              {/* RIGHT COLUMN: Tools & Analysis (Fixed Width) */}
+              <div className="w-full lg:w-[450px] flex flex-col gap-4 h-full min-h-0 glass-panel rounded-xl p-4 bg-zinc-950/40 border-white/5">
+
+                {/* ENGINE STATUS BAR - Compact */}
+                <div className="glass-panel p-3 rounded-lg flex items-center justify-between shrink-0 bg-zinc-900/60">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
+                    <div>
+                      <span className="text-xs font-bold text-zinc-300 font-display uppercase tracking-wider block">Stockfish 16</span>
+                      <span className="text-[10px] text-zinc-500 font-mono">
+                        {isAnalyzing ? `Depth: ${evaluation?.depth || 0}` : 'Ready'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className={`text-xl font-black font-mono tracking-tighter ${(evaluation?.score ?? 0) > 0 ? 'text-emerald-400' :
+                        (evaluation?.score ?? 0) < 0 ? 'text-red-400' : 'text-zinc-400'
+                      }`}>
+                      {evaluation?.score?.toFixed(2) || '0.00'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* TABS & TOOLS */}
+                <div className="flex bg-zinc-900/60 p-1 rounded-lg shrink-0">
+                  <button
+                    onClick={() => { setActiveTab('analysis'); setIsSetupMode(false); }}
+                    className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'analysis' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Analysis
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
+                    className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'database' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Database
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
+                    className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'setup' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Setup
+                  </button>
+                </div>
+
+                {/* TAB CONTENT */}
+                <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle bg-zinc-900/20 rounded-lg p-2 border border-white/5 relative">
+
+                  {activeTab === 'analysis' && (
+                    <div className="flex flex-col gap-3 h-full">
+                      {/* Evaluation Graph Placeholder */}
+                      <div className="h-16 bg-zinc-900/40 rounded border border-white/5 flex items-end px-1 gap-0.5 opacity-50 relative overflow-hidden shrink-0">
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <span className="text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Evaluation History</span>
+                        </div>
+                      </div>
+
+                      {/* Move History */}
+                      <div className="flex-1 bg-zinc-900/30 rounded-lg border border-white/5 overflow-y-auto scrollbar-subtle p-2">
+                        <PGNEditor
+                          tree={pgnTree}
+                          onTreeChange={setPgnTree}
+                          onPositionChange={handlePositionChange}
+                          currentMove={currentNode?.move || undefined}
+                          autoAnnotate={true}
+                          engineEval={evaluation}
+                        />
+                      </div>
+
+                      {/* Controls */}
+                      <AnalysisControls
+                        isAnalyzing={isAnalyzing}
+                        setIsAnalyzing={setIsAnalyzing}
+                        depth={engineDepth}
+                        setDepth={setEngineDepth}
+                        multipv={multipv}
+                        setMultipv={setMultipv}
+                      />
+                    </div>
+                  )}
+
+                  {activeTab === 'database' && (
+                    <DatabaseManager
+                      onLoadGame={(pgn) => {
+                        loadPGN(pgn);
+                        setActiveTab('analysis');
+                      }}
+                      currentPgn={pgnTree.toString()}
+                    />
+                  )}
+
+                  {activeTab === 'setup' && (
+                    <div className="flex flex-col items-center justify-center h-full text-zinc-500 text-sm italic">
+                      <BoardSetup
+                        fen={fen}
+                        onFenChange={handlePositionChange}
+                        selectedPiece={setupSelectedPiece}
+                        onSelectPiece={setSetupSelectedPiece}
+                        onClear={() => handlePositionChange('8/8/8/8/8/8/8/8 w - - 0 1')}
+                        onReset={() => handlePositionChange('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')}
+                        onStartAnalysis={() => setActiveTab('analysis')}
+                      />
+                    </div>
+                  )}
+
+                </div>
+
               </div>
             </div>
-          ) : activeTab === 'setup' ? (
-            <BoardSetup
-              fen={fen}
-              onFenChange={handlePositionChange} // Reuse this
-              selectedPiece={setupSelectedPiece}
-              onSelectPiece={setSetupSelectedPiece}
-              onClear={() => handlePositionChange('8/8/8/8/8/8/8/8 w - - 0 1')}
-              onReset={() => handlePositionChange('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')}
-              onStartAnalysis={() => setActiveTab('analysis')}
-            />
-          ) : activeTab === 'database' ? (
-            <DatabaseManager
-              onLoadGame={(pgn) => {
-                loadPGN(pgn);
-                setActiveTab('analysis');
-              }}
-              currentPgn={pgnTree.toString()} // TODO: ensure clean PGN export
-            />
-          ) : (
-            <div className="h-full">
-              <OpeningExplorer fen={fen} onSelectMove={(uci) => {
-                const from = uci.substring(0, 2);
-                const to = uci.substring(2, 4);
-                onDrop(from, to);
-              }} />
-            </div>
-          )}
-        </div>
-
-        {/* Fixed Footer Controls */}
-        <div className="flex-none z-20 bg-zinc-900 border-t border-zinc-800">
-          <AnalysisControls
-            isAnalyzing={isAnalyzing}
-            setIsAnalyzing={setIsAnalyzing}
-            depth={engineDepth}
-            setDepth={setEngineDepth}
-            multipv={multipv}
-            setMultipv={setMultipv}
-          />
-        </div>
-
-      </div>
-    </div>
-  );
-}
 
 

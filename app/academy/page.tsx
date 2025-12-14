@@ -141,117 +141,102 @@ export default function AcademyPage() {
     }, {} as Record<string, AcademyCourse[]>);
 
     return (
-        <div className="min-h-screen p-6 font-sans text-slate-200">
-            <div className="max-w-7xl mx-auto">
+        <div className="h-full w-full p-6 overflow-y-auto scrollbar-subtle max-w-7xl mx-auto pb-24">
 
-                {/* HEADER */}
-                <div className="flex flex-col items-center justify-center mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-white mb-3 flex items-center gap-3">
-                        <GraduationCap size={32} className="text-indigo-500" /> Acadèmia ChessHub
+            {/* HEADER */}
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+                <div>
+                    <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 uppercase tracking-widest italic font-display drop-shadow-lg mb-2">
+                        Acadèmia
                     </h1>
-                    <p className="text-slate-400 max-w-2xl text-base">
-                        El primer currículum d&apos;escacs adaptat al Disseny Universal per l&apos;Aprenentatge (DUA).
-                        Des de P3 fins al Doctorat.
+                    <p className="text-zinc-400 font-light flex items-center gap-2 text-sm">
+                        <GraduationCap size={18} className="text-emerald-500" />
+                        Mestratge i Sabiduria
                     </p>
                 </div>
 
-                {/* PROGRESS OVERVIEW */}
                 {stats.totalLessonsCompleted > 0 && (
-                    <div className="mb-8">
-                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-                            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                                <TrendingUp className="text-indigo-400" size={18} /> El teu Progrés Global
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Lliçons</div>
-                                    <div className="text-xl font-bold text-white">{stats.totalLessonsCompleted}</div>
-                                </div>
-                                <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Exercicis</div>
-                                    <div className="text-xl font-bold text-white">{stats.totalExercisesSolved}</div>
-                                </div>
-                                <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Temps</div>
-                                    <div className="text-xl font-bold text-white">{Math.round(stats.totalTimeSpent / 60)} min</div>
-                                </div>
-                                <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-slate-400 text-[10px] uppercase font-bold mb-1">Assoliments</div>
-                                    <div className="text-xl font-bold text-white">{stats.achievementsUnlocked}</div>
-                                </div>
-                            </div>
+                    <div className="glass-panel px-4 py-2 rounded-lg flex items-center gap-4 bg-zinc-900/60">
+                        <div className="flex flex-col items-center">
+                            <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Lliçons</span>
+                            <span className="text-xl font-black text-white font-display">{stats.totalLessonsCompleted}</span>
                         </div>
-                    </div>
-                )}
-
-                {/* SUBJECT SELECTOR */}
-                <SubjectSelector selected={selectedSubject} onSelect={setSelectedSubject} />
-
-                {/* EMPTY STATE */}
-                {visibleCourses.length === 0 && (
-                    <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-slate-800 mb-20 animate-in fade-in zoom-in duration-500">
-                        <Lock className="mx-auto text-slate-700 mb-6" size={64} />
-                        <h2 className="text-2xl font-bold text-white mb-4">No hi ha cursos disponibles de {SUBJECTS[selectedSubject]?.label}</h2>
-                        <p className="text-slate-400 max-w-lg mx-auto mb-8">
-                            Encara no hem publicat el currículum per aquesta assignatura.
-                            Estem treballant en els continguts de {SUBJECTS[selectedSubject]?.label}.
-                        </p>
-                        <div className="flex justify-center gap-4">
-                            <Link href="/" className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-bold transition">
-                                Tornar a l&apos;Inici
-                            </Link>
+                        <div className="w-px h-8 bg-white/10" />
+                        <div className="flex flex-col items-center">
+                            <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Exercicis</span>
+                            <span className="text-xl font-black text-white font-display">{stats.totalExercisesSolved}</span>
                         </div>
-                    </div>
-                )}
-
-                {/* TRACK SECTIONS (Only for Chess or if tracks exist) */}
-                {visibleCourses.length > 0 && (
-                    <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
-                        {selectedSubject === 'chess' ? (
-                            tracks.map(track => {
-                                const trackCourses = groupedCourses[track];
-                                if (!trackCourses || trackCourses.length === 0) return null;
-                                const TrackIcon = TRACK_ICONS[track] || BookOpen;
-                                return (
-                                    <section key={track} className="relative">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-2 bg-indigo-500/10 rounded-lg">
-                                                <TrackIcon className="text-indigo-400" size={24} />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-xl font-bold text-white">{TRACK_TITLES[track]}</h2>
-                                                <p className="text-slate-400 text-xs">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                            {trackCourses.map(course => (
-                                                <CourseCard key={course.id} course={course} />
-                                            ))}
-                                        </div>
-                                    </section>
-                                );
-                            })
-                        ) : (
-                            <section className="relative">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="p-2 bg-indigo-500/10 rounded-lg">
-                                        <GraduationCap className="text-indigo-400" size={24} />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-white">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
-                                        <p className="text-slate-400 text-xs">Des de P3 fins al Doctorat</p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                    {visibleCourses.map(course => (
-                                        <CourseCard key={course.id} course={course} />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
                     </div>
                 )}
             </div>
+
+            {/* SUBJECT SELECTOR */}
+            <SubjectSelector selected={selectedSubject} onSelect={setSelectedSubject} />
+
+            {/* EMPTY STATE */}
+            {visibleCourses.length === 0 && (
+                <div className="text-center py-20 bg-zinc-900/30 rounded-3xl border border-dashed border-zinc-800 mb-20 animate-in fade-in zoom-in duration-500">
+                    <Lock className="mx-auto text-zinc-700 mb-6" size={64} />
+                    <h2 className="text-2xl font-bold text-white mb-4 font-display uppercase tracking-wide">No hi ha cursos disponibles</h2>
+                    <p className="text-zinc-400 max-w-lg mx-auto mb-8 text-sm">
+                        De l'assignatura <span className="text-emerald-400 font-bold">{SUBJECTS[selectedSubject]?.label}</span>.
+                        Estem treballant en els continguts.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                        <Link href="/" className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-bold transition font-display uppercase text-xs tracking-wider">
+                            Tornar a l&apos;Inici
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* TRACK SECTIONS (Only for Chess or if tracks exist) */}
+            {visibleCourses.length > 0 && (
+                <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
+                    {selectedSubject === 'chess' ? (
+                        tracks.map(track => {
+                            const trackCourses = groupedCourses[track];
+                            if (!trackCourses || trackCourses.length === 0) return null;
+                            const TrackIcon = TRACK_ICONS[track] || BookOpen;
+                            return (
+                                <section key={track} className="relative">
+                                    <div className="flex items-center gap-3 mb-4 pl-1">
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                            <TrackIcon className="text-emerald-400" size={20} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-white font-display uppercase tracking-wide">{TRACK_TITLES[track]}</h2>
+                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {trackCourses.map(course => (
+                                            <CourseCard key={course.id} course={course} />
+                                        ))}
+                                    </div>
+                                </section>
+                            );
+                        })
+                    ) : (
+                        <section className="relative">
+                            <div className="flex items-center gap-3 mb-4 pl-1">
+                                <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                    <GraduationCap className="text-emerald-400" size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-white font-display uppercase tracking-wide">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
+                                    <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Des de P3 fins al Doctorat</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {visibleCourses.map(course => (
+                                    <CourseCard key={course.id} course={course} />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
@@ -267,7 +252,7 @@ const SUBJECTS: Record<string, { label: string, icon: any, color: string }> = {
 
 function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (s: string) => void }) {
     return (
-        <div className="flex overflow-x-auto gap-2 pb-6 mb-2 no-scrollbar">
+        <div className="flex overflow-x-auto gap-2 pb-6 mb-2 no-scrollbar pl-1">
             {Object.entries(SUBJECTS).map(([key, data]) => {
                 const Icon = data.icon;
                 const isSelected = selected === key;
@@ -276,14 +261,14 @@ function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (
                         key={key}
                         onClick={() => onSelect(key)}
                         className={`
-                            flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all border
+                            glass-panel px-4 py-2 rounded-lg flex items-center gap-2 transition-all
                             ${isSelected
-                                ? 'bg-slate-800 border-indigo-500 shadow-lg shadow-indigo-500/10 text-white'
-                                : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200'}
+                                ? 'bg-zinc-800 border-emerald-500/50 text-white shadow-lg'
+                                : 'hover:bg-zinc-800/50 text-zinc-400 hover:text-white'}
                         `}
                     >
-                        <Icon size={16} className={isSelected ? data.color : 'opacity-50'} />
-                        <span className={`text-sm font-bold ${isSelected ? '' : 'font-medium'}`}>{data.label}</span>
+                        <Icon size={16} className={isSelected ? 'text-emerald-400' : 'opacity-50'} />
+                        <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? 'text-emerald-100' : ''}`}>{data.label}</span>
                     </button>
                 )
             })}
@@ -294,46 +279,47 @@ function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (
 
 function CourseCard({ course }: { course: AcademyCourse }) {
     return (
-        <Link href={`/academy/course/${course.id}`} className="block h-full">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-900/20 flex flex-col h-full group">
+        <Link href={`/academy/course/${course.id}`} className="block h-full group">
+            <div className="glass-panel p-0 rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-300 group-hover:border-emerald-500/30 group-hover:shadow-lg group-hover:shadow-emerald-900/20 group-hover:-translate-y-1">
                 {/* Cover Image */}
-                <div className="h-28 bg-slate-800 relative overflow-hidden">
+                <div className="h-32 bg-zinc-900 relative overflow-hidden">
                     {course.image_url ? (
                         <Image
                             src={course.image_url}
                             alt={course.title}
                             fill
-                            className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                            className="object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 group-hover:scale-105"
                             unoptimized
                         />
                     ) : (
-                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                            <School className="text-slate-700" size={32} />
+                        <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+                            <School className="text-zinc-800 group-hover:text-emerald-900/50 transition-colors duration-500" size={48} />
                         </div>
                     )}
 
                     {/* Grade Badge */}
                     <div className="absolute top-2 left-2">
-                        <span className="bg-black/60 backdrop-blur border border-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                        <span className="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider font-display shadow-sm">
                             {course.target_grade}
                         </span>
                     </div>
                 </div>
 
-                <div className="p-4 flex flex-col flex-1">
-                    <h3 className="text-base font-bold text-white mb-1 leading-tight group-hover:text-indigo-400 transition-colors">
+                <div className="p-5 flex flex-col flex-1 bg-zinc-950/20">
+                    <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide">
                         {course.title}
                     </h3>
-                    <p className="text-slate-400 text-xs line-clamp-3 mb-3 flex-1">
+                    <p className="text-zinc-400 text-xs line-clamp-3 mb-4 flex-1 leading-relaxed">
                         {course.description}
                     </p>
 
-                    <div className="border-t border-slate-800 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-medium">
-                        <span className="flex items-center gap-1">
-                            <Target size={12} /> {course.difficulty_level === 'beginner' ? 'Principiant' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
+                    <div className="border-t border-white/5 pt-3 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                        <span className="flex items-center gap-1.5">
+                            <Target size={12} className="text-emerald-500" />
+                            {course.difficulty_level === 'beginner' ? 'Novell' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
                         </span>
-                        <span className="text-indigo-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                            Veure curs <ArrowRight size={12} />
+                        <span className="text-emerald-500/80 flex items-center gap-1 group-hover:translate-x-1 transition-transform group-hover:text-emerald-400">
+                            Entrar <ArrowRight size={12} />
                         </span>
                     </div>
                 </div>

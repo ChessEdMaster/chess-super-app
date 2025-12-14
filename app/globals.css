@@ -1,17 +1,20 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090b;
+  /* zinc-950 */
+  --foreground: #fafafa;
+  /* zinc-50 */
 
   /* Premium Colors */
   --color-gold-400: #fbbf24;
   --color-gold-500: #f59e0b;
   --color-gold-600: #d97706;
 
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(9, 9, 11, 0.6);
+  /* darker for premium feel */
 }
 
 @theme inline {
@@ -24,18 +27,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #09090b;
+    --foreground: #fafafa;
   }
 }
 
 html,
 body {
-  background: transparent !important;
-  color: #e2e8f0;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: 'Exo 2', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
+  /* Slightly larger base for readability */
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Gaming Display Font */
@@ -46,15 +51,32 @@ body {
 /* Glassmorphism Utilities */
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.glass-card {
+  background: rgba(24, 24, 27, 0.5);
+  /* zinc-900/50 */
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(39, 39, 42, 0.6);
+  /* zinc-800/60 */
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .text-gold-gradient {
-  background: linear-gradient(to bottom, #fbbf24, #d97706);
+  background: linear-gradient(to bottom, #fcd34d, #f59e0b);
+  /* amber-300 to amber-500 */
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
 }
 
 /* === SCROLLBAR UTILITIES === */
@@ -85,7 +107,7 @@ body {
 
 .scrollbar-subtle::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .scrollbar-subtle::-webkit-scrollbar-thumb:hover {

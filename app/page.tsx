@@ -44,21 +44,21 @@ export default function HomePage() {
         {/* Top Area: Story Mode & Minigames & League Selector */}
         <div className="pt-4 px-4 flex flex-col gap-4 pointer-events-auto">
           {/* Top Area: League Selector */}
-          {/* League Selector (Mostly visual here, as real selection happens in Lobby/Modal) */}
-          <div className="self-center bg-black/40 backdrop-blur-md rounded-full p-1 flex gap-1 border border-white/10 opacity-70 hover:opacity-100 transition-opacity">
+          {/* League Selector (Visual) */}
+          <div className="self-center glass-panel rounded-full p-1.5 flex gap-1 transform hover:scale-105 transition-transform duration-300">
             {leagues.map((league) => (
               <button
                 key={league.id}
                 onClick={() => setSelectedLeague(league.id)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all",
+                  "px-4 py-2 rounded-full flex items-center gap-2 transition-all font-display uppercase tracking-wider text-[10px]",
                   selectedLeague === league.id
-                    ? "bg-zinc-800 text-white shadow-md"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
                 )}
               >
                 <league.icon size={14} className={selectedLeague === league.id ? league.color : "currentColor"} />
-                <span className={cn("text-[10px] font-bold uppercase", selectedLeague !== league.id && "hidden sm:inline")}>
+                <span className={cn(selectedLeague !== league.id && "hidden sm:inline")}>
                   {league.label}
                 </span>
               </button>
@@ -69,8 +69,8 @@ export default function HomePage() {
           <div className="flex-1" />
 
           {/* Battle Button Area */}
-          <div className="flex flex-col items-center gap-2 py-4 pointer-events-auto">
-            <div className="text-white/80 text-[10px] font-bold uppercase tracking-widest drop-shadow-md">
+          <div className="flex flex-col items-center gap-4 py-6 pointer-events-auto">
+            <div className="text-amber-400/80 text-[10px] font-bold uppercase tracking-[0.3em] font-display drop-shadow-md">
               Enter the Arena
             </div>
             <Link href="/lobby">
@@ -78,37 +78,42 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 animate={{
-                  boxShadow: ["0px 0px 0px 0px rgba(234, 179, 8, 0.7)", "0px 0px 20px 10px rgba(234, 179, 8, 0)"]
+                  boxShadow: ["0px 0px 0px 0px rgba(234, 179, 8, 0.4)", "0px 0px 30px 10px rgba(234, 179, 8, 0)"]
                 }}
                 transition={{
-                  duration: 1.5,
+                  duration: 2,
                   repeat: Infinity,
                   repeatType: "loop"
                 }}
-                className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2 font-display"
+                className="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-700 text-black font-black text-2xl px-12 py-5 rounded-2xl border-2 border-amber-300 shadow-2xl relative overflow-hidden group font-display tracking-widest"
               >
-                <Swords size={24} />
-                BATTLE
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 skew-y-12" />
+                <div className="flex items-center gap-3 relative z-10">
+                  <Swords size={28} className="text-amber-950" />
+                  <span>BATTLE</span>
+                </div>
               </motion.button>
             </Link>
           </div>
 
           {/* Chest Slots */}
-          <div className="h-24 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 flex items-end justify-center gap-2 pointer-events-auto">
+          <div className="h-28 bg-gradient-to-t from-black/90 to-transparent px-4 pb-6 flex items-end justify-center gap-3 pointer-events-auto">
             {chests.map((chest, index) => (
               <div
                 key={index}
-                className="w-1/4 h-16 bg-zinc-800/80 backdrop-blur-sm rounded-lg border border-zinc-700 flex flex-col items-center justify-center relative overflow-hidden"
+                className="w-1/4 h-20 glass-panel rounded-xl flex flex-col items-center justify-center relative overflow-hidden group hover:bg-zinc-800/40 transition-colors"
               >
                 {chest ? (
                   <>
-                    <div className="text-lg">📦</div>
-                    <span className="text-lg font-bold text-yellow-500 uppercase mt-0.5">{chest.type}</span>
-                    <span className="text-[8px] text-zinc-400">{Math.floor(chest.unlockTime / 60)}m</span>
+                    <div className="text-2xl mb-1 drop-shadow-md transition-transform group-hover:scale-110">📦</div>
+                    <span className="text-[10px] font-bold text-amber-500 uppercase font-display tracking-wider">{chest.type}</span>
+                    <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{Math.floor(chest.unlockTime / 60)}m</span>
                   </>
                 ) : (
-                  <div className="text-zinc-600 flex flex-col items-center">
-                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Empty</span>
+                  <div className="text-zinc-700 flex flex-col items-center opacity-50">
+                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-zinc-800 flex items-center justify-center mb-1">
+                      <span className="text-xs">+</span>
+                    </div>
                   </div>
                 )}
               </div>

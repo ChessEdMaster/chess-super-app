@@ -375,21 +375,24 @@ export default function PlayPage() {
     <div className="h-dvh w-full flex flex-col overflow-hidden">
 
       {/* Header - Compact */}
-      <header className="flex-none py-4 px-6 border-b border-white/10 bg-slate-900/50 backdrop-blur-md flex items-center justify-between z-20">
-        <h1 className="text-2xl font-bold tracking-tighter flex items-center gap-2 text-white font-display">
+      <header className="flex-none py-4 px-6 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md flex items-center justify-between z-20">
+        <h1 className="text-2xl font-black tracking-widest flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 font-display italic">
           <Sword className="h-6 w-6 text-amber-500" />
           Arena Competitiva
         </h1>
         {userProfile && (
-          <div className="flex gap-3 text-xs text-slate-400">
-            <div className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-              Bullet: <strong className="text-white">{userProfile.elo_bullet || 1200}</strong>
+          <div className="flex gap-3 text-xs text-zinc-400">
+            <div className="bg-zinc-900/80 px-4 py-1.5 rounded-full border border-white/10 shadow-inner flex items-center gap-2">
+              <span className="font-bold text-zinc-500 uppercase tracking-wider">Bullet</span>
+              <strong className="text-white font-mono">{userProfile.elo_bullet || 1200}</strong>
             </div>
-            <div className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-              Blitz: <strong className="text-white">{userProfile.elo_blitz || 1200}</strong>
+            <div className="bg-zinc-900/80 px-4 py-1.5 rounded-full border border-white/10 shadow-inner flex items-center gap-2">
+              <span className="font-bold text-zinc-500 uppercase tracking-wider">Blitz</span>
+              <strong className="text-white font-mono">{userProfile.elo_blitz || 1200}</strong>
             </div>
-            <div className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-              Rapid: <strong className="text-white">{userProfile.elo_rapid || 1200}</strong>
+            <div className="bg-zinc-900/80 px-4 py-1.5 rounded-full border border-white/10 shadow-inner flex items-center gap-2">
+              <span className="font-bold text-zinc-500 uppercase tracking-wider">Rapid</span>
+              <strong className="text-white font-mono">{userProfile.elo_rapid || 1200}</strong>
             </div>
           </div>
         )}
@@ -399,132 +402,139 @@ export default function PlayPage() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
 
         {/* Left Sidebar: Controls */}
-        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/10 bg-slate-900/30 overflow-y-auto scrollbar-hide z-10">
-          <div className="space-y-4">
+        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/5 bg-zinc-900/20 overflow-y-auto scrollbar-hide z-10 glass-panel border-y-0 border-l-0 rounded-none">
+          <div className="space-y-6">
             {gameState === 'idle' && (
               <div className="space-y-3">
-                <h3 className="font-bold text-sm mb-2 flex items-center gap-2 text-slate-300 uppercase tracking-wider px-1">
-                  <Trophy className="h-4 w-4 text-amber-400" />
+                <h3 className="font-bold text-xs mb-2 flex items-center gap-2 text-zinc-500 uppercase tracking-widest px-1">
+                  <Trophy className="h-3 w-3 text-amber-500" />
                   Arenas
                 </h3>
-                <ArenaCard variant="bullet" progress={progress.bullet} onClick={() => setSelectedArena('bullet')} />
-                <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
-                <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
+                <div className="space-y-2">
+                  <ArenaCard variant="bullet" progress={progress.bullet} onClick={() => setSelectedArena('bullet')} />
+                  <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
+                  <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
+                </div>
               </div>
             )}
 
             {/* Chests Section */}
             <div className="space-y-3">
-              <h3 className="font-bold text-sm mb-2 flex items-center gap-2 text-slate-300 uppercase tracking-wider px-1">
-                <Archive className="h-4 w-4 text-amber-500" />
+              <h3 className="font-bold text-xs mb-2 flex items-center gap-2 text-zinc-500 uppercase tracking-widest px-1">
+                <Archive className="h-3 w-3 text-indigo-500" />
                 Cofres
               </h3>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {chests.map((chest, index) => (
                   <div
                     key={index}
                     onClick={() => handleChestClick(index, chest)}
-                    className={`aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 ${chest
-                      ? 'border-amber-500/50 bg-amber-900/20 cursor-pointer hover:bg-amber-900/30'
-                      : 'border-zinc-800 bg-zinc-900/50'
+                    className={`aspect-square rounded-xl border flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 group shadow-lg ${chest
+                      ? 'border-amber-500/30 bg-gradient-to-br from-zinc-900 to-amber-950/30 cursor-pointer hover:border-amber-500/60'
+                      : 'border-zinc-800 bg-zinc-900/30'
                       }`}
                   >
                     {chest ? (
                       <>
-                        <Gift className={`h-5 w-5 mb-1 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
-                          chest.type === 'GOLDEN' ? 'text-yellow-400' :
+                        <Gift className={`h-6 w-6 mb-1 drop-shadow-md transition-transform group-hover:scale-110 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
+                          chest.type === 'GOLDEN' ? 'text-amber-300' :
                             chest.type === 'SILVER' ? 'text-slate-300' :
                               'text-amber-700'
                           }`} />
-                        <span className="text-[8px] font-bold text-white uppercase">{chest.type.substring(0, 1)}</span>
+                        <span className="text-[8px] font-black text-white/50 uppercase tracking-widest">{chest.type.substring(0, 1)}</span>
 
                         {/* Status Overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                          {chest.status === 'LOCKED' && <Lock className="h-3 w-3 text-white/50" />}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {chest.status === 'LOCKED' && <Lock className="h-4 w-4 text-white/70" />}
                           {chest.status === 'UNLOCKING' && (
                             <div className="flex flex-col items-center">
-                              <Clock className="h-3 w-3 text-blue-400 animate-pulse" />
-                              {/* Simple countdown display could go here */}
+                              <Loader2 className="h-4 w-4 text-blue-400 animate-spin" />
                             </div>
                           )}
-                          {chest.status === 'READY' && <span className="text-[8px] font-bold text-green-400 bg-black/80 px-1 rounded animate-bounce">!</span>}
+                          {chest.status === 'READY' && <span className="text-[10px] font-bold text-emerald-400 bg-black/80 px-2 py-1 rounded-full border border-emerald-500/50">OPEN</span>}
                         </div>
+                        {chest.status === 'UNLOCKING' && (
+                          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-pulse" />
+                        )}
+                        {chest.status === 'READY' && (
+                          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-ping" />
+                        )}
                       </>
                     ) : (
-                      <span className="text-zinc-700 text-[8px] font-bold">EMPTY</span>
+                      <span className="text-zinc-800 text-[8px] font-black">EMPTY</span>
                     )}
                   </div>
                 ))}
               </div>
             </div>
 
-            <Card className="p-4 bg-white/5 backdrop-blur-md border-white/10 shadow-xl text-white">
-              <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-300 uppercase tracking-wider">
-                <Trophy className="h-4 w-4 text-amber-400" />
+            <div className="glass-panel p-5 rounded-xl bg-zinc-900/60 border-white/5">
+              <h3 className="font-bold text-xs mb-4 flex items-center gap-2 text-zinc-500 uppercase tracking-widest">
+                <Timer className="h-3 w-3 text-emerald-500" />
                 Ritme de Joc
               </h3>
 
-              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-3">
                 <Button
                   variant={gameMode === 'bullet' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  className={`justify-between h-auto py-3 px-4 rounded-xl transition-all duration-300 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500/50 text-white shadow-lg shadow-emerald-900/20' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
                   onClick={() => setGameMode('bullet')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-sm">🚀 Bullet</span>
-                  <span className="text-[10px] opacity-70">1+0</span>
+                  <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">🚀 Bullet</span>
+                  <span className="text-[10px] font-mono opacity-60">1+0</span>
                 </Button>
                 <Button
                   variant={gameMode === 'blitz' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 ${gameMode === 'blitz' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  className={`justify-between h-auto py-3 px-4 rounded-xl transition-all duration-300 ${gameMode === 'blitz' ? 'bg-amber-600 hover:bg-amber-500 border-amber-500/50 text-white shadow-lg shadow-amber-900/20' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
                   onClick={() => setGameMode('blitz')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-sm">⚡ Blitz</span>
-                  <span className="text-[10px] opacity-70">3+2</span>
+                  <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">⚡ Blitz</span>
+                  <span className="text-[10px] font-mono opacity-60">3+2</span>
                 </Button>
                 <Button
                   variant={gameMode === 'rapid' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 ${gameMode === 'rapid' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-white/5 border-white/10 hover:bg-white/20 text-white'}`}
+                  className={`justify-between h-auto py-3 px-4 rounded-xl transition-all duration-300 ${gameMode === 'rapid' ? 'bg-indigo-600 hover:bg-indigo-500 border-indigo-500/50 text-white shadow-lg shadow-indigo-900/20' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
                   onClick={() => setGameMode('rapid')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-sm">🐢 Rapid</span>
-                  <span className="text-[10px] opacity-70">10+0</span>
+                  <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">🐢 Rapid</span>
+                  <span className="text-[10px] font-mono opacity-60">10+0</span>
                 </Button>
               </div>
 
-              <div className="mt-4">
+              <div className="mt-6">
                 {gameState === 'idle' || gameState === 'finished' ? (
                   <Button
-                    className="w-full font-bold py-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 border-none"
+                    className="w-full font-black py-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/30 border border-emerald-500/20 uppercase tracking-widest text-sm"
                     onClick={() => startSearch(gameMode)}
                   >
                     Jugar Partida
                   </Button>
                 ) : gameState === 'searching' ? (
-                  <div className="flex flex-col items-center gap-2 py-2 bg-black/20 rounded-lg">
-                    <div className="flex items-center gap-2 text-emerald-400 font-medium animate-pulse text-sm">
+                  <div className="flex flex-col items-center gap-3 py-4 bg-zinc-950/50 rounded-xl border border-dashed border-zinc-800 animate-in fade-in">
+                    <div className="flex items-center gap-2 text-emerald-400 font-bold animate-pulse text-xs uppercase tracking-widest">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Cercant...
+                      Cercant Oponent...
                     </div>
-                    <div className="text-2xl font-mono font-bold text-white">
+                    <div className="text-3xl font-mono font-black text-white px-4 py-1 bg-black/40 rounded">
                       00:{searchTimer.toString().padStart(2, '0')}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 text-xs">
+                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-8 text-[10px] uppercase font-bold tracking-wider">
                       Cancel·lar
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-center py-2">
-                    <div className="text-xs text-slate-400 mb-1">Partida en curs</div>
-                    <div className="font-bold text-emerald-400 flex items-center justify-center gap-2 text-sm">
-                      <Sword className="h-3 w-3" /> VS Bot ({botDifficulty})
+                  <div className="text-center py-2 glass-panel rounded-xl border-amber-500/20 bg-amber-500/5">
+                    <div className="text-[10px] font-bold text-amber-500/70 mb-2 uppercase tracking-widest">Partida en curs</div>
+                    <div className="font-bold text-white flex items-center justify-center gap-2 text-sm mb-4">
+                      <Sword className="h-4 w-4 text-amber-500" /> VS Bot ({botDifficulty})
                     </div>
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="mt-3 w-full bg-red-600/80 hover:bg-red-600"
+                      className="w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/20 font-bold uppercase tracking-wider text-xs"
                       onClick={() => {
                         setGameState('finished');
                         setWinner('loss'); // Resign
@@ -535,20 +545,22 @@ export default function PlayPage() {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
 
         {/* Center: Chessboard Area */}
-        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden bg-gradient-to-br from-zinc-950 to-zinc-900">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
           {/* View Mode Toggle */}
-          <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-md p-1 rounded-lg flex gap-1 border border-white/10">
+          <div className="absolute top-4 right-4 z-20 glass-panel p-1 rounded-lg flex gap-1 border-white/5 bg-zinc-900/60 backdrop-blur-md">
             <Button
               variant={viewMode === '2d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('2d')}
-              className={`h-7 px-3 text-xs ${viewMode === '2d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider ${viewMode === '2d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
             >
               2D
             </Button>
@@ -556,14 +568,14 @@ export default function PlayPage() {
               variant={viewMode === '3d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('3d')}
-              className={`h-7 px-3 text-xs ${viewMode === '3d' ? 'bg-emerald-600 hover:bg-emerald-500' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider ${viewMode === '3d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
             >
               3D
             </Button>
           </div>
 
           {/* Board Container - Responsive Aspect Ratio */}
-          <div className="w-full max-w-[80vh] aspect-square relative z-0 shadow-2xl rounded-xl overflow-hidden border border-white/5">
+          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-2xl rounded-xl overflow-hidden glass-panel border-white/5 ring-1 ring-white/10">
             {viewMode === '3d' ? (
               <ChessScene
                 fen={fen}
@@ -572,7 +584,7 @@ export default function PlayPage() {
                 customSquareStyles={optionSquares}
               />
             ) : (
-              <div className="w-full h-full">
+              <div className="w-full h-full bg-zinc-900">
                 <Chessboard2D
                   fen={fen}
                   onSquareClick={onSquareClick}
@@ -619,18 +631,18 @@ export default function PlayPage() {
 
       {/* Arena Path Dialog */}
       <Dialog open={!!selectedArena} onOpenChange={(open) => !open && setSelectedArena(null)}>
-        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-slate-950 border-slate-800 text-white overflow-hidden">
-          <DialogHeader className="p-4 border-b border-slate-800 bg-slate-900">
-            <DialogTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
+        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800 text-white overflow-hidden glass-panel shadow-2xl">
+          <DialogHeader className="p-4 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl">
+            <DialogTitle className="flex items-center gap-2 font-display uppercase tracking-wider text-sm">
+              <Trophy className="h-4 w-4 text-amber-500" />
               {selectedArena === 'bullet' ? 'Bullet Arena' : selectedArena === 'blitz' ? 'Blitz Arena' : 'Rapid Arena'}
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Camí cap a la glòria (0 - 1000 Copes)
+            <DialogDescription className="text-zinc-500 text-xs font-bold uppercase tracking-widest">
+              Journey to Glory (0 - 1000 Cups)
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-4 bg-slate-950">
+          <div className="flex-1 overflow-y-auto p-4 bg-zinc-950/80">
             {selectedArena && progress[selectedArena] && (
               <ArenaPath
                 progress={progress[selectedArena]!}
@@ -638,8 +650,8 @@ export default function PlayPage() {
                 onPlayGatekeeper={(tier) => {
                   setSelectedArena(null);
                   setIsGatekeeperMatch(tier);
-                  startBotGame('hard'); // Gatekeeper is hard bot for now
-                  toast.info(`Desafiant al Gatekeeper del Tier ${tier}!`);
+                  startBotGame('hard');
+                  toast.info(`Challenging Gatekeeper Tier ${tier}!`);
                 }}
               />
             )}
@@ -649,49 +661,55 @@ export default function PlayPage() {
 
       {/* Bot Proposal Modal */}
       <Dialog open={showBotModal} onOpenChange={setShowBotModal}>
-        <DialogContent>
+        <DialogContent className="glass-panel border-zinc-800 bg-zinc-950/90 text-white">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-              No s'ha trobat oponent humà
+            <DialogTitle className="flex items-center gap-2 font-display text-amber-400">
+              <AlertCircle className="h-5 w-5" />
+              No Human Opponent Found
             </DialogTitle>
-            <DialogDescription>
-              Sembla que no hi ha jugadors disponibles en aquest moment. Vols jugar una partida puntuable contra la IA?
+            <DialogDescription className="text-zinc-400">
+              Seems quiet right now. Want to play a ranked match against AI?
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-3 gap-2 py-4">
-            <Button variant="outline" className="flex flex-col h-24 gap-1 hover:bg-green-50 hover:border-green-500" onClick={() => startBotGame('easy')}>
-              <span className="text-lg">🌱</span>
-              <span className="font-bold">Fàcil</span>
-              <span className="text-[10px] text-slate-500">800 ELO</span>
+          <div className="grid grid-cols-3 gap-3 py-4">
+            <Button variant="outline" className="flex flex-col h-28 gap-2 bg-zinc-900 border-zinc-800 hover:bg-emerald-900/20 hover:border-emerald-500/50 transition-all group" onClick={() => startBotGame('easy')}>
+              <span className="text-2xl group-hover:scale-110 transition-transform">🌱</span>
+              <div className="flex flex-col items-center">
+                <span className="font-bold text-white group-hover:text-emerald-400">Easy</span>
+                <span className="text-[10px] text-zinc-500 font-mono">800 ELO</span>
+              </div>
             </Button>
-            <Button variant="outline" className="flex flex-col h-24 gap-1 hover:bg-blue-50 hover:border-blue-500" onClick={() => startBotGame('medium')}>
-              <span className="text-lg">⚖️</span>
-              <span className="font-bold">Mitjà</span>
-              <span className="text-[10px] text-slate-500">1200 ELO</span>
+            <Button variant="outline" className="flex flex-col h-28 gap-2 bg-zinc-900 border-zinc-800 hover:bg-blue-900/20 hover:border-blue-500/50 transition-all group" onClick={() => startBotGame('medium')}>
+              <span className="text-2xl group-hover:scale-110 transition-transform">⚖️</span>
+              <div className="flex flex-col items-center">
+                <span className="font-bold text-white group-hover:text-blue-400">Medium</span>
+                <span className="text-[10px] text-zinc-500 font-mono">1200 ELO</span>
+              </div>
             </Button>
-            <Button variant="outline" className="flex flex-col h-24 gap-1 hover:bg-red-50 hover:border-red-500" onClick={() => startBotGame('hard')}>
-              <span className="text-lg">🔥</span>
-              <span className="font-bold">Difícil</span>
-              <span className="text-[10px] text-slate-500">1800 ELO</span>
+            <Button variant="outline" className="flex flex-col h-28 gap-2 bg-zinc-900 border-zinc-800 hover:bg-red-900/20 hover:border-red-500/50 transition-all group" onClick={() => startBotGame('hard')}>
+              <span className="text-2xl group-hover:scale-110 transition-transform">🔥</span>
+              <div className="flex flex-col items-center">
+                <span className="font-bold text-white group-hover:text-red-400">Hard</span>
+                <span className="text-[10px] text-zinc-500 font-mono">1800 ELO</span>
+              </div>
             </Button>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setShowBotModal(false); setGameState('idle'); }}>
-              Cancel·lar
+            <Button variant="ghost" onClick={() => { setShowBotModal(false); setGameState('idle'); }} className="text-zinc-500 hover:text-white">
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
       {/* Chest Opening Modal */}
       <ChestOpeningModal
         rewards={openingRewards}
         onClose={() => setOpeningRewards(null)}
       />
-
     </div>
   );
 }

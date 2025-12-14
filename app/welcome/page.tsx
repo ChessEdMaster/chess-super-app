@@ -1,5 +1,3 @@
-'use client';
-
 import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -11,61 +9,68 @@ export default function WelcomePage() {
     const router = useRouter();
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-            <div className="max-w-2xl w-full text-center space-y-8">
+        <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
+            <div className="max-w-2xl w-full text-center space-y-12">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.5, type: "spring" }}
+                    className="flex flex-col items-center"
                 >
-                    <div className="mx-auto w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/20 mb-6">
-                        <Crown className="text-white w-12 h-12" />
+                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-amber-700 rounded-3xl flex items-center justify-center shadow-2xl shadow-amber-500/30 mb-8 border border-amber-400/30 rotate-3 hover:rotate-6 transition-transform duration-500">
+                        <Crown className="text-white w-12 h-12 drop-shadow-md" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
-                        Benvingut a ChessHub!
+                    <h1 className="text-5xl md:text-7xl font-black text-white mb-6 uppercase tracking-tight font-display drop-shadow-xl">
+                        Chess<span className="text-amber-500">Hub</span>
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-lg mx-auto">
-                        La teva aventura d'escacs comença aquí. Has completat el registre correctament.
+                    <p className="text-xl text-zinc-300 max-w-lg mx-auto font-light leading-relaxed">
+                        Domina el tauler. Conquereix l'Arena. Converteix-te en Llegenda.
                     </p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                     <motion.div
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 hover:border-indigo-500/50 transition-colors"
+                        className="glass-panel p-8 rounded-2xl flex flex-col items-center text-center group hover:bg-zinc-900/40 transition-colors"
                     >
-                        <Swords className="text-indigo-400 w-8 h-8 mb-4 mx-auto" />
-                        <h3 className="text-lg font-bold text-white mb-2">Juga a l'Arena</h3>
-                        <p className="text-slate-400 text-sm mb-4">
-                            Desafia a altres jugadors, puja de rang i guanya cofres.
+                        <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Swords className="text-amber-400 w-7 h-7" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2 font-display uppercase tracking-wider">Battle Arena</h3>
+                        <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
+                            Desafia a altres jugadors en temps real, puja de lliga i guanya recompenses exclusives.
                         </p>
                         <Button
-                            className="w-full bg-indigo-600 hover:bg-indigo-500"
+                            size="lg"
+                            className="w-full mt-auto"
                             onClick={() => router.push('/lobby')}
                         >
-                            Anar al Lobby
+                            Entrar a l'Arena
                         </Button>
                     </motion.div>
 
                     <motion.div
-                        initial={{ x: 20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 hover:border-purple-500/50 transition-colors"
+                        className="glass-panel p-8 rounded-2xl flex flex-col items-center text-center group hover:bg-zinc-900/40 transition-colors"
                     >
-                        <BookOpen className="text-purple-400 w-8 h-8 mb-4 mx-auto" />
-                        <h3 className="text-lg font-bold text-white mb-2">Aprèn a l'Acadèmia</h3>
-                        <p className="text-slate-400 text-sm mb-4">
-                            Millora el teu joc amb lliçons interactives i exercicis.
+                        <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <BookOpen className="text-emerald-400 w-7 h-7" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2 font-display uppercase tracking-wider">Acadèmia</h3>
+                        <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
+                            Mestre els fonaments i estratègies avançades amb lliçons interactives i exercicis.
                         </p>
                         <Button
                             variant="outline"
-                            className="w-full border-slate-700 hover:bg-slate-800"
+                            size="lg"
+                            className="w-full mt-auto"
                             onClick={() => router.push('/academy')}
                         >
-                            Anar a l'Acadèmia
+                            Començar a Aprendre
                         </Button>
                     </motion.div>
                 </div>

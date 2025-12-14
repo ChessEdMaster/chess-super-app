@@ -694,7 +694,7 @@ export default function OnlineGamePage() {
       <div className="flex-1 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-4 p-2 lg:p-4 overflow-hidden">
 
         {/* COLUMNA ESQUERRA: Tauler i Rellotges */}
-        <div className="flex flex-col gap-2 w-full max-w-[600px] h-full justify-center shrink-0">
+        <div className="flex flex-col gap-4 w-full max-w-[600px] h-full justify-center shrink-0 z-10">
 
           <ChessClock
             whiteTime={gameData.white_time || 600}
@@ -705,7 +705,7 @@ export default function OnlineGamePage() {
           />
 
           {/* Board Container - Responsive Height */}
-          <div className="relative w-full aspect-square max-h-[60vh] lg:max-h-[70vh] shadow-2xl rounded-lg overflow-hidden border-2 border-slate-800 bg-slate-900 mx-auto">
+          <div className="relative w-full aspect-square max-h-[60vh] lg:max-h-[70vh] shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20">
             <Chessboard2D
               fen={fen}
               orientation={orientation}
@@ -715,57 +715,57 @@ export default function OnlineGamePage() {
             {gameData.status === 'pending' && (
               <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                 <div className="text-center">
-                  <Loader2 className="animate-spin text-white mb-2 mx-auto" size={48} />
-                  <h3 className="text-xl font-bold text-white">Esperant oponent...</h3>
-                  <p className="text-sm text-slate-300">Has compartit l{"'"}enllaç o creat un repte?</p>
+                  <Loader2 className="animate-spin text-amber-400 mb-4 mx-auto" size={48} />
+                  <h3 className="text-xl font-bold text-white font-display uppercase tracking-wider">Waiting for Opponent...</h3>
+                  <p className="text-sm text-zinc-400 mt-2">Compartir enllaç o esperar al Lobby.</p>
                 </div>
               </div>
             )}
           </div>
 
           {/* Controls */}
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition border border-slate-700 hover:border-red-500/50 disabled:opacity-50 text-xs">
-              <Flag size={14} /> Rendir-se
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="glass-panel hover:bg-red-900/30 text-zinc-300 hover:text-red-400 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition border-zinc-700/50 hover:border-red-500/50 disabled:opacity-50 text-xs font-display uppercase tracking-wider">
+              <Flag size={14} /> Resign
             </button>
 
             {/* Botó Taules Dinàmic */}
             {drawOffer && drawOffer !== orientation ? (
               <div className="flex gap-2">
-                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs">
-                  <Handshake size={14} /> Acceptar
+                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs font-display uppercase">
+                  <Handshake size={14} /> Accept
                 </button>
-                <button onClick={handleDeclineDraw} className="w-10 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg flex items-center justify-center transition border border-slate-700">
-                  <X size={14} />
+                <button onClick={handleDeclineDraw} className="w-12 glass-panel hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-lg flex items-center justify-center transition border-zinc-700/50">
+                  <X size={16} />
                 </button>
               </div>
             ) : (
               <button
                 onClick={handleOfferDraw}
                 disabled={gameData.status !== 'active' || drawOffer === orientation}
-                className={`bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition border border-slate-700 disabled:opacity-50 text-xs ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
+                className={`glass-panel hover:bg-zinc-800 text-zinc-300 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition border-zinc-700/50 disabled:opacity-50 text-xs font-display uppercase tracking-wider ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
               >
-                <Handshake size={14} /> {drawOffer === orientation ? 'Oferta enviada...' : 'Oferir Taules'}
+                <Handshake size={14} /> {drawOffer === orientation ? 'Offer Sent...' : 'Offer Draw'}
               </button>
             )}
           </div>
 
           {/* MODAL GAME OVER */}
           {gameData.status === 'finished' && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-              <div className="bg-slate-900 border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center transform scale-100 animate-in fade-in zoom-in duration-300">
-                <h2 className="text-2xl font-bold text-white mb-1">Partida Finalitzada</h2>
-                <p className="text-lg text-amber-400 font-bold mb-4">{status.replace('Partida Finalitzada: ', '')}</p>
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+              <div className="glass-panel p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center transform scale-100 animate-in zoom-in duration-300 border-amber-500/20">
+                <h2 className="text-3xl font-black text-white mb-2 font-display uppercase italic tracking-wider">Game Over</h2>
+                <p className="text-lg text-amber-400 font-bold mb-8">{status.replace('Partida Finalitzada: ', '')}</p>
 
-                <div className="flex flex-col gap-2">
-                  <button onClick={handleRematch} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/50 text-sm">
-                    <RotateCw size={18} /> Revenja
+                <div className="flex flex-col gap-3">
+                  <button onClick={handleRematch} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/40 text-sm font-display uppercase tracking-wide">
+                    <RotateCw size={18} /> Rematch
                   </button>
-                  <button onClick={goToAnalysis} className="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition border border-slate-700 text-sm">
-                    <Search size={18} /> Analitzar Partida
+                  <button onClick={goToAnalysis} className="w-full glass-panel hover:bg-zinc-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border-zinc-700 text-sm font-display uppercase tracking-wide">
+                    <Search size={18} /> Analysis Board
                   </button>
-                  <button onClick={() => router.push('/lobby')} className="w-full text-slate-400 hover:text-white py-2 text-xs transition">
-                    Tornar al Lobby
+                  <button onClick={() => router.push('/lobby')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
+                    Return to Lobby
                   </button>
                 </div>
               </div>
@@ -774,21 +774,21 @@ export default function OnlineGamePage() {
         </div>
 
         {/* COLUMNA DRETA: Info, Xat, Historial */}
-        <div className="w-full lg:w-80 flex flex-col gap-2 h-full lg:h-auto lg:max-h-[80vh] overflow-hidden">
+        <div className="w-full lg:w-80 flex flex-col gap-3 h-full lg:h-auto lg:max-h-[80vh] overflow-hidden z-10 glass-panel p-3 rounded-xl bg-zinc-950/40">
 
           {/* Oponent */}
-          <div className="bg-slate-800 p-2 rounded-lg flex items-center gap-3 border border-slate-700 opacity-90 shrink-0">
-            <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white font-bold shadow-inner text-xs">
+          <div className="bg-zinc-900/60 p-3 rounded-lg flex items-center gap-3 border border-white/5 shrink-0">
+            <div className={`w-10 h-10 rounded flex items-center justify-center text-white font-bold shadow-inner text-sm ${orientation === 'white' ? 'bg-zinc-800' : 'bg-zinc-100 text-black'}`}>
               {orientation === 'white' ? 'B' : 'W'}
             </div>
             <div>
-              <p className="font-bold text-white text-sm">{orientation === 'white' ? players.black : players.white}</p>
-              <p className="text-[10px] text-slate-400">Oponent</p>
+              <p className="font-bold text-white text-sm font-display tracking-wide">{orientation === 'white' ? players.black : players.white}</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Opponent</p>
             </div>
           </div>
 
           {/* Historial */}
-          <div className="flex-1 min-h-0 bg-slate-900/50 rounded-lg overflow-hidden">
+          <div className="flex-1 min-h-0 bg-zinc-900/30 rounded-lg overflow-hidden border border-white/5">
             <MoveHistory history={game.history()} />
           </div>
 
@@ -798,13 +798,13 @@ export default function OnlineGamePage() {
           </div>
 
           {/* Tu */}
-          <div className="bg-slate-800 p-2 rounded-lg flex items-center gap-3 border border-indigo-500/30 shadow-lg shadow-indigo-900/20 shrink-0">
-            <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold shadow-inner text-xs">
+          <div className="bg-zinc-900/60 p-3 rounded-lg flex items-center gap-3 border border-amber-500/30 shadow-lg shadow-amber-900/10 shrink-0">
+            <div className={`w-10 h-10 rounded flex items-center justify-center text-white font-bold shadow-inner text-sm ${orientation === 'white' ? 'bg-zinc-100 text-black' : 'bg-zinc-800'}`}>
               {orientation === 'white' ? 'W' : 'B'}
             </div>
             <div>
-              <p className="font-bold text-white text-sm">{orientation === 'white' ? players.white : players.black} (Tu)</p>
-              <p className="text-[10px] text-emerald-400">En línia</p>
+              <p className="font-bold text-white text-sm font-display tracking-wide">{orientation === 'white' ? players.white : players.black}</p>
+              <p className="text-[10px] text-amber-500 uppercase tracking-widest font-bold">You</p>
             </div>
           </div>
 

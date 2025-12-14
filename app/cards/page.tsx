@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { ConceptCard } from '@/components/cards/concept-card';
 import { ConceptCard as IConceptCard } from '@/types/rpg';
-import { X, ArrowUpCircle, Pickaxe, Crown, Shield, Zap, Target, Crosshair, Hexagon } from 'lucide-react';
+import { X, Crown, Shield, Zap, Target, Crosshair, Hexagon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PuzzleMiner } from '@/components/cards/puzzle-miner';
 import { toast } from 'sonner';
 
 export default function CardsPage() {
@@ -34,42 +33,48 @@ export default function CardsPage() {
     };
 
     const avatars = [
-        { name: 'King', icon: Crown, color: 'text-yellow-500' },
-        { name: 'Queen', icon: Target, color: 'text-purple-500' },
+        { name: 'King', icon: Crown, color: 'text-amber-500' },
+        { name: 'Queen', icon: Target, color: 'text-fuchsia-500' },
         { name: 'Rook', icon: Shield, color: 'text-slate-400' },
         { name: 'Bishop', icon: Crosshair, color: 'text-indigo-400' },
-        { name: 'Knight', icon: Zap, color: 'text-amber-600' },
-        { name: 'Pawn', icon: Hexagon, color: 'text-green-400' },
+        { name: 'Knight', icon: Zap, color: 'text-emerald-500' },
+        { name: 'Pawn', icon: Hexagon, color: 'text-rose-400' },
     ];
 
     return (
-        <div className="h-full w-full p-3 overflow-y-auto scrollbar-subtle pb-24">
-            <h1 className="text-xl font-black text-white mb-6 uppercase tracking-wider italic font-display">
+        <div className="h-full w-full p-6 overflow-y-auto scrollbar-subtle pb-24 max-w-7xl mx-auto">
+            <h1 className="text-3xl font-black text-gold-gradient mb-8 uppercase tracking-widest italic font-display drop-shadow-lg">
                 Collection
             </h1>
 
             {/* Avatars Section */}
-            <div className="mb-8">
-                <h2 className="text-sm font-bold text-zinc-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+            <div className="mb-8 glass-panel p-4 rounded-xl bg-zinc-900/40">
+                <h2 className="text-xs font-bold text-zinc-400 mb-4 flex items-center gap-2 uppercase tracking-widest font-display">
                     Avatars
                 </h2>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-6 gap-4">
                     {avatars.map((avatar, index) => (
-                        <div key={index} className="flex flex-col items-center gap-1">
-                            <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-lg">
+                        <div key={index} className="flex flex-col items-center gap-2 group cursor-pointer">
+                            <div className="w-14 h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform group-hover:border-amber-500/50">
                                 <avatar.icon className={`h-6 w-6 ${avatar.color}`} />
                             </div>
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase">{avatar.name}</span>
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase group-hover:text-white transition-colors">{avatar.name}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Cards Grid */}
-            <h2 className="text-sm font-bold text-zinc-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                Cards ({cards.length})
-            </h2>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-widest font-display">
+                    Cards ({cards.length})
+                </h2>
+                <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-500 font-bold uppercase tracking-wider">
+                    {cards.reduce((acc, card) => acc + card.level, 0)} Total Levels
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {cards.map((card) => (
                     <ConceptCard
                         key={card.id}
