@@ -186,12 +186,14 @@ export default function AnalysisPage() {
             const multipvId = multipvMatch ? parseInt(multipvMatch[1]) : 1;
 
             const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
+            const depthMatch = msg.match(/depth (\d+)/);
             let evalData: Evaluation | null = null;
+            const depth = depthMatch ? parseInt(depthMatch[1]) : undefined;
 
             if (scoreMatch) {
               const type = scoreMatch[1] as 'cp' | 'mate';
               const value = parseInt(scoreMatch[2]);
-              evalData = { type, value };
+              evalData = { type, value, depth };
 
               // Note: We don't set evaluation here immediately to avoid race conditions.
               // We do it below after verifying legitimacy
@@ -465,186 +467,167 @@ export default function AnalysisPage() {
   if (!isClient) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
 
   return (
-    <div className="h-dvh w-full grid grid-rows-[auto_1fr] lg:grid-rows-none lg:grid-cols-[1fr_400px] overflow-hidden text-zinc-100">
+    <div className="h-dvh w-full overflow-hidden text-zinc-100 bg-zinc-950 flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 h-full w-full max-w-7xl mx-auto p-4 box-border min-h-0">
 
-      {/* LEFT: BOARD AREA */}
-      <div className="flex flex-col items-center justify-center bg-zinc-900/50 p-2 lg:p-4 relative">
+        {/* LEFT COLUMN: Board + Controls */}
+        <div className="flex-1 flex flex-col min-h-0 gap-4">
 
-        {/* Board Container */}
-        {/* Mobile: max-w-[95vw] to be wider. Desktop: max-w-[65vh] to be smaller and match Play page */}
-        <div className="w-full max-w-[95vw] lg:max-w-[65vh] aspect-square relative z-0 shadow-2xl rounded-lg overflow-hidden border border-zinc-800">
-          {viewMode === '3d' ? (
-
-            <ChessScene fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} arrows={analysisArrows} />
-          ) : (
-            <div className="w-full h-full">
-
-              <Chessboard2D fen={fen} orientation="white" onSquareClick={onSquareClick} customSquareStyles={optionSquares} arrows={analysisArrows} />
+          {/* Board Container */}
+          <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
+            <div className="w-full h-full max-h-full aspect-square shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20 p-1 flex items-center justify-center">
+              {viewMode === '3d' ? (
+                <ChessScene
+                  fen={fen}
+                  orientation={'white'}
+                  onSquareClick={onSquareClick}
+                  customSquareStyles={optionSquares}
+                  arrows={analysisArrows}
+                />
+              ) : (
+                <Chessboard2D
+                  fen={fen}
+                  onSquareClick={onSquareClick}
+                  orientation={game.turn() === 'b' ? 'black' : 'white'}
+                  customSquareStyles={optionSquares}
+                  arrows={analysisArrows}
+                />
+              )}
             </div>
-          )}
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="flex items-center justify-center gap-2 w-full glass-panel p-2 rounded-lg shrink-0 bg-zinc-900/40">
+            <Button variant="secondary" onClick={goToStart} disabled={pgnTree.isAtStart()} size="sm"><ChevronsLeft size={18} /></Button>
+            <Button variant="secondary" onClick={goBack} disabled={pgnTree.isAtStart()} size="sm"><ChevronLeft size={18} /></Button>
+            <Button variant="secondary" onClick={goForward} disabled={pgnTree.isAtEnd()} size="sm"><ChevronRight size={18} /></Button>
+            <Button variant="secondary" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="sm"><ChevronsRight size={18} /></Button>
+            <div className="h-6 w-px bg-zinc-700 mx-2" />
+            <Button variant={createVariation ? "default" : "outline"} onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "bg-amber-600 hover:bg-amber-500" : ""} size="sm">
+              <GitBranch size={18} />
+            </Button>
+            <div className="h-6 w-px bg-zinc-700 mx-2" />
+            <div className="flex bg-zinc-800 rounded-lg p-1">
+              <button onClick={() => setViewMode('2d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '2d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>2D</button>
+              <button onClick={() => setViewMode('3d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '3d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>3D</button>
+            </div>
+          </div>
         </div>
 
-        {/* Navigation Controls */}
-        <div className="flex items-center justify-center gap-2 mt-4 w-full max-w-[600px]">
-          <Button variant="secondary" onClick={goToStart} disabled={pgnTree.isAtStart()} size="sm"><ChevronsLeft size={18} /></Button>
-          <Button variant="secondary" onClick={goBack} disabled={pgnTree.isAtStart()} size="sm"><ChevronLeft size={18} /></Button>
-          <Button variant="secondary" onClick={goForward} disabled={pgnTree.isAtEnd()} size="sm"><ChevronRight size={18} /></Button>
-          <Button variant="secondary" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="sm"><ChevronsRight size={18} /></Button>
-          <div className="h-6 w-px bg-zinc-800 mx-2" />
-          <Button variant={createVariation ? "default" : "outline"} onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "bg-amber-600 hover:bg-amber-500" : ""} size="sm">
-            <GitBranch size={18} />
-          </Button>
-          <div className="flex bg-zinc-800 rounded-lg p-1 ml-auto">
-            <button onClick={() => setViewMode('2d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '2d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>2D</button>
-            <button onClick={() => setViewMode('3d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '3d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>3D</button>
-            {/* Main Content - Full Height minus Header */}
-            <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-6rem)] w-full max-w-7xl mx-auto px-4 box-border">
+        {/* RIGHT COLUMN: Tools & Analysis (Fixed Width) */}
+        <div className="w-full lg:w-[450px] flex flex-col gap-4 h-full min-h-0 glass-panel rounded-xl p-4 bg-zinc-950/40 border-white/5">
 
-              {/* LEFT COLUMN: Board (Flexible) */}
-              <div className="flex-1 flex items-center justify-center min-h-0 relative">
-                <div className="w-full h-full max-h-[80vh] aspect-square shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20 p-1 flex items-center justify-center">
-                  {isSetupMode ? (
-                    <BoardSetup
-                      fen={fen} // Use current FEN
-                      onFenChange={(newFen) => {
-                        setFen(newFen);
-                        const newGame = new Chess(newFen);
-                        setGame(newGame);
-                        // Update engine logic here directly if possible or trigger effect
-                        if (engine.current && isAnalyzing) {
-                          engine.current.postMessage(`position fen ${newFen}`);
-                          engine.current.postMessage('go depth 20'); // Simplified
-                        }
-                      }}
-                      selectedPiece={setupSelectedPiece}
-                      onSelectPiece={setSetupSelectedPiece}
-                    />
-                  ) : viewMode === '3d' ? (
-                    <ChessScene
-                      fen={fen}
-                      // onMove={(from, to) => handleMove({ from, to })} // Todo: adapt handleMove signature
-                      orientation={'white'}
-                    />
-                  ) : (
-                    <Chessboard2D
-                      fen={fen}
-                      onPieceDrop={onDrop}
-                      orientation={game.turn() === 'b' ? 'black' : 'white'} // or user pref
-                      customSquareStyles={optionSquares}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: Tools & Analysis (Fixed Width) */}
-              <div className="w-full lg:w-[450px] flex flex-col gap-4 h-full min-h-0 glass-panel rounded-xl p-4 bg-zinc-950/40 border-white/5">
-
-                {/* ENGINE STATUS BAR - Compact */}
-                <div className="glass-panel p-3 rounded-lg flex items-center justify-between shrink-0 bg-zinc-900/60">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
-                    <div>
-                      <span className="text-xs font-bold text-zinc-300 font-display uppercase tracking-wider block">Stockfish 16</span>
-                      <span className="text-[10px] text-zinc-500 font-mono">
-                        {isAnalyzing ? `Depth: ${evaluation?.depth || 0}` : 'Ready'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className={`text-xl font-black font-mono tracking-tighter ${(evaluation?.score ?? 0) > 0 ? 'text-emerald-400' :
-                        (evaluation?.score ?? 0) < 0 ? 'text-red-400' : 'text-zinc-400'
-                      }`}>
-                      {evaluation?.score?.toFixed(2) || '0.00'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* TABS & TOOLS */}
-                <div className="flex bg-zinc-900/60 p-1 rounded-lg shrink-0">
-                  <button
-                    onClick={() => { setActiveTab('analysis'); setIsSetupMode(false); }}
-                    className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'analysis' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                  >
-                    Analysis
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
-                    className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'database' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                  >
-                    Database
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
-                    className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'setup' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                  >
-                    Setup
-                  </button>
-                </div>
-
-                {/* TAB CONTENT */}
-                <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle bg-zinc-900/20 rounded-lg p-2 border border-white/5 relative">
-
-                  {activeTab === 'analysis' && (
-                    <div className="flex flex-col gap-3 h-full">
-                      {/* Evaluation Graph Placeholder */}
-                      <div className="h-16 bg-zinc-900/40 rounded border border-white/5 flex items-end px-1 gap-0.5 opacity-50 relative overflow-hidden shrink-0">
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <span className="text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Evaluation History</span>
-                        </div>
-                      </div>
-
-                      {/* Move History */}
-                      <div className="flex-1 bg-zinc-900/30 rounded-lg border border-white/5 overflow-y-auto scrollbar-subtle p-2">
-                        <PGNEditor
-                          tree={pgnTree}
-                          onTreeChange={setPgnTree}
-                          onPositionChange={handlePositionChange}
-                          currentMove={currentNode?.move || undefined}
-                          autoAnnotate={true}
-                          engineEval={evaluation}
-                        />
-                      </div>
-
-                      {/* Controls */}
-                      <AnalysisControls
-                        isAnalyzing={isAnalyzing}
-                        setIsAnalyzing={setIsAnalyzing}
-                        depth={engineDepth}
-                        setDepth={setEngineDepth}
-                        multipv={multipv}
-                        setMultipv={setMultipv}
-                      />
-                    </div>
-                  )}
-
-                  {activeTab === 'database' && (
-                    <DatabaseManager
-                      onLoadGame={(pgn) => {
-                        loadPGN(pgn);
-                        setActiveTab('analysis');
-                      }}
-                      currentPgn={pgnTree.toString()}
-                    />
-                  )}
-
-                  {activeTab === 'setup' && (
-                    <div className="flex flex-col items-center justify-center h-full text-zinc-500 text-sm italic">
-                      <BoardSetup
-                        fen={fen}
-                        onFenChange={handlePositionChange}
-                        selectedPiece={setupSelectedPiece}
-                        onSelectPiece={setSetupSelectedPiece}
-                        onClear={() => handlePositionChange('8/8/8/8/8/8/8/8 w - - 0 1')}
-                        onReset={() => handlePositionChange('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')}
-                        onStartAnalysis={() => setActiveTab('analysis')}
-                      />
-                    </div>
-                  )}
-
-                </div>
-
+          {/* ENGINE STATUS BAR - Compact */}
+          <div className="glass-panel p-3 rounded-lg flex items-center justify-between shrink-0 bg-zinc-900/60">
+            <div className="flex items-center gap-3">
+              <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
+              <div>
+                <span className="text-xs font-bold text-zinc-300 font-display uppercase tracking-wider block">Stockfish 16</span>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  {isAnalyzing ? `Depth: ${evaluation?.depth || 0}` : 'Ready'}
+                </span>
               </div>
             </div>
+
+            <div className="text-right">
+              <span className={`text-xl font-black font-mono tracking-tighter ${(evaluation?.value ?? 0) > 0 ? 'text-emerald-400' :
+                (evaluation?.value ?? 0) < 0 ? 'text-red-400' : 'text-zinc-400'
+                }`}>
+                {getEvalText(evaluation)}
+              </span>
+            </div>
+          </div>
+
+          {/* TABS & TOOLS */}
+          <div className="flex bg-zinc-900/60 p-1 rounded-lg shrink-0">
+            <button
+              onClick={() => { setActiveTab('analysis'); setIsSetupMode(false); }}
+              className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'analysis' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Analysis
+            </button>
+            <button
+              onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
+              className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'database' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Database
+            </button>
+            <button
+              onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
+              className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'setup' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Setup
+            </button>
+          </div>
+
+          {/* TAB CONTENT */}
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle bg-zinc-900/20 rounded-lg p-2 border border-white/5 relative">
+
+            {activeTab === 'analysis' && (
+              <div className="flex flex-col gap-3 h-full">
+                {/* Evaluation Graph Placeholder */}
+                <div className="h-16 bg-zinc-900/40 rounded border border-white/5 flex items-end px-1 gap-0.5 opacity-50 relative overflow-hidden shrink-0">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Evaluation History</span>
+                  </div>
+                </div>
+
+                {/* Move History */}
+                <div className="flex-1 bg-zinc-900/30 rounded-lg border border-white/5 overflow-y-auto scrollbar-subtle p-2">
+                  <PGNEditor
+                    tree={pgnTree}
+                    onTreeChange={setPgnTree}
+                    onPositionChange={handlePositionChange}
+                    currentMove={currentNode?.move || undefined}
+                    autoAnnotate={true}
+                    engineEval={evaluation}
+                  />
+                </div>
+
+                {/* Controls */}
+                <AnalysisControls
+                  isAnalyzing={isAnalyzing}
+                  setIsAnalyzing={setIsAnalyzing}
+                  depth={engineDepth}
+                  setDepth={setEngineDepth}
+                  multipv={multipv}
+                  setMultipv={setMultipv}
+                />
+              </div>
+            )}
+
+            {activeTab === 'database' && (
+              <DatabaseManager
+                onLoadGame={(pgn) => {
+                  loadPGN(pgn);
+                  setActiveTab('analysis');
+                }}
+                currentPgn={pgnTree.toString()}
+              />
+            )}
+
+            {activeTab === 'setup' && (
+              <div className="flex flex-col items-center justify-center h-full text-zinc-500 text-sm italic">
+                <BoardSetup
+                  fen={fen}
+                  onFenChange={handlePositionChange}
+                  selectedPiece={setupSelectedPiece}
+                  onSelectPiece={setSetupSelectedPiece}
+                  onClear={() => handlePositionChange('8/8/8/8/8/8/8/8 w - - 0 1')}
+                  onReset={() => handlePositionChange('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')}
+                  onStartAnalysis={() => setActiveTab('analysis')}
+                />
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 

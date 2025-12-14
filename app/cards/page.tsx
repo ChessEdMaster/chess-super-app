@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { ConceptCard } from '@/components/cards/concept-card';
+import { PuzzleMiner } from '@/components/cards/puzzle-miner';
 import { ConceptCard as IConceptCard } from '@/types/rpg';
-import { X, Crown, Shield, Zap, Target, Crosshair, Hexagon } from 'lucide-react';
+import { X, Crown, Shield, Zap, Target, Crosshair, Hexagon, ArrowUpCircle, Pickaxe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 

@@ -10,9 +10,10 @@ interface ArenaPathProps {
     progress: ArenaProgress;
     onClaimChest: (chestId: string) => void;
     onPlayGatekeeper: (tier: number) => void;
+    compact?: boolean;
 }
 
-export function ArenaPath({ progress, onClaimChest, onPlayGatekeeper }: ArenaPathProps) {
+export function ArenaPath({ progress, onClaimChest, onPlayGatekeeper, compact }: ArenaPathProps) {
     const nodes = useMemo(() => generateArenaPath(), []);
     const currentCups = progress.current_cups;
 

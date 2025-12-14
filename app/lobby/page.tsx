@@ -8,7 +8,7 @@ import { useAuth } from '@/components/auth-provider';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Swords, Trophy, Zap, Timer, Turtle,
+  Swords, Trophy, Zap, Timer, Turtle, Archive,
   Plus, ChevronLeft, Menu, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ export default function LobbyPage() {
   const router = useRouter();
 
   // Stores
-  const { profile, loadProfile } = usePlayerStore();
+  const { profile, chests, loadProfile } = usePlayerStore();
   const { progress, fetchArenaProgress, claimChest } = useArenaStore();
 
   // State
@@ -273,12 +273,18 @@ export default function LobbyPage() {
             </div>
 
             <div className="flex-1 relative rounded-xl overflow-hidden bg-zinc-950/50 border border-white/5 shadow-inner">
-              <ArenaPath
-                currentArena={progress?.arena_id || 'wood-arena'}
-                cups={progress?.cups || 0}
-                onArenaClick={setSelectedArena}
-                compact
-              />
+              {progress.blitz ? (
+                <ArenaPath
+                  progress={progress.blitz}
+                  onClaimChest={(id) => user && claimChest(user.id, 'blitz', id)}
+                  onPlayGatekeeper={() => { }}
+                  compact
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-zinc-500 text-xs">
+                  Loading Arena...
+                </div>
+              )}
             </div>
           </div>
 
@@ -288,8 +294,8 @@ export default function LobbyPage() {
               <Archive size={14} className="text-indigo-400" /> Chest Slots
             </h2>
             <ChestGrid
-              chests={profile?.chests || []}
-              slots={profile?.chest_slots || 4}
+              chests={chests || []}
+              slots={4}
               onOpenChest={() => { }}
               compact
             />

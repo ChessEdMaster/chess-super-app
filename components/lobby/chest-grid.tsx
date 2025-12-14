@@ -4,10 +4,19 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Archive, Gift } from 'lucide-react';
 import { usePlayerStore } from '@/lib/store/player-store';
+import { Chest } from '@/types/rpg';
+
+interface ChestGridProps {
+    chests?: (Chest | null)[];
+    slots?: number;
+    onOpenChest?: (index: number) => void;
+    compact?: boolean;
+}
 import { toast } from 'sonner';
 
-export function ChestGrid() {
-    const { chests, startUnlockChest, openChest, updateChestTimers } = usePlayerStore();
+export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: ChestGridProps = {}) {
+    const { chests: storeChests, startUnlockChest, openChest, updateChestTimers } = usePlayerStore();
+    const chests = propChests || storeChests;
     // Local state to force re-render for timer visuals without hitting the store every second for everything
     const [, setTick] = useState(0);
 
@@ -46,9 +55,11 @@ export function ChestGrid() {
 
     return (
         <div className="mt-8">
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <Archive size={14} /> Cofres
-            </h3>
+            {!compact && (
+                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Archive size={14} /> Cofres
+                </h3>
+            )}
             <div className="grid grid-cols-4 gap-2">
                 {chests.map((chest, i) => (
                     <motion.div

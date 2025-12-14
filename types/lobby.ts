@@ -10,6 +10,7 @@ export interface Challenge {
     bot_difficulty: string | null;
     player_color: string;
     rated: boolean;
+    time_control: string;
     time_control_type: string;
     status: string;
     map_x: number;

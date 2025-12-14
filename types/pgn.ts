@@ -86,6 +86,7 @@ export const NAG_SYMBOLS: Record<number, string> = {
 export interface Evaluation {
     type: 'cp' | 'mate';  // centipawns or mate
     value: number;         // positive = white advantage, negative = black advantage
+    depth?: number;        // depth of the evaluation
 }
 
 // Visual annotation (arrows and highlights)
