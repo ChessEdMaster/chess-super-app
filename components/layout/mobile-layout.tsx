@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut, Shield } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -21,13 +21,13 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     const { signOut, user } = useAuth();
     const [profileOpen, setProfileOpen] = useState(false);
 
+    // Beta Launch Navigation
     const tabs = [
         { name: 'Battle', icon: Swords, href: '/' },
-        { name: 'Kingdom', icon: Castle, href: '/kingdom' },
+        { name: 'Analysis', icon: Search, href: '/analysis' }, // Changed Icon to Search or Microscope? Search is imported below.
         { name: 'Cards', icon: Layers, href: '/cards' },
         { name: 'Academy', icon: GraduationCap, href: '/academy' },
-        { name: 'Improve', icon: Trophy, href: '/improve' },
-        { name: 'Social', icon: Users, href: '/social' },
+        { name: 'Profile', icon: User, href: '/profile' },
     ];
 
     if (!user) {
@@ -71,15 +71,33 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                     <p className="text-sm font-bold truncate">{profile.username}</p>
                                 </div>
                                 {profile.role === 'SuperAdmin' && (
-                                    <Link
-                                        href="/admin/users"
-                                        className="w-full text-left px-4 py-2 text-sm text-indigo-400 hover:bg-zinc-800 hover:text-indigo-300 flex items-center gap-2"
-                                        onClick={() => setProfileOpen(false)}
-                                    >
-                                        <Shield size={14} />
-                                        Panel Admin
-                                    </Link>
+                                    <>
+                                        <Link
+                                            href="/admin/users"
+                                            className="w-full text-left px-4 py-2 text-sm text-indigo-400 hover:bg-zinc-800 hover:text-indigo-300 flex items-center gap-2"
+                                            onClick={() => setProfileOpen(false)}
+                                        >
+                                            <Shield size={14} />
+                                            Panel Admin
+                                        </Link>
+                                        <Link
+                                            href="/features"
+                                            className="w-full text-left px-4 py-2 text-sm text-emerald-400 hover:bg-zinc-800 hover:text-emerald-300 flex items-center gap-2"
+                                            onClick={() => setProfileOpen(false)}
+                                        >
+                                            <Sparkles size={14} />
+                                            Beta Features
+                                        </Link>
+                                    </>
                                 )}
+                                <Link
+                                    href="/profile"
+                                    className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2"
+                                    onClick={() => setProfileOpen(false)}
+                                >
+                                    <User size={14} />
+                                    El meu perfil
+                                </Link>
                                 <button
                                     className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2"
                                     onClick={() => {/* TODO: Settings Link */ }}

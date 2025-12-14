@@ -240,7 +240,9 @@ export default function LobbyPage() {
               <ArenaPath
                 progress={progress[selectedArena as ArenaVariant]!}
                 onClaimChest={(id) => claimChest(user.id, selectedArena as ArenaVariant, id)}
-                onPlayGatekeeper={() => { }}
+                onPlayGatekeeper={(tier) => {
+                  router.push(`/play/online/bot-gatekeeper-${tier}?difficulty=hard`);
+                }}
               />
             </div>
           )}

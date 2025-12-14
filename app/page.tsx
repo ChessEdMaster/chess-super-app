@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth-provider';
 import WelcomePage from './welcome/page';
-import { Zap, Timer, Turtle, Swords, Pickaxe, Gamepad2 } from 'lucide-react';
+import { Zap, Timer, Turtle, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
@@ -43,32 +43,7 @@ export default function HomePage() {
 
         {/* Top Area: Story Mode & Minigames & League Selector */}
         <div className="pt-4 px-4 flex flex-col gap-4 pointer-events-auto">
-          <div className="self-end flex gap-2">
-            {/* Mina de Puzzles Button */}
-            <Link href="/puzzles">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-zinc-900/80 backdrop-blur-md border border-purple-500/50 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg"
-              >
-                <Pickaxe size={16} className="text-purple-400" />
-                <span className="text-xs font-bold text-purple-100 uppercase tracking-wider">Mina de Puzzles</span>
-              </motion.div>
-            </Link>
-
-            {/* Minigames Button */}
-            <Link href="/minigames">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-zinc-900/80 backdrop-blur-md border border-indigo-500/50 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg"
-              >
-                <Gamepad2 size={16} className="text-indigo-400" />
-                <span className="text-xs font-bold text-indigo-100 uppercase tracking-wider">Minijocs</span>
-              </motion.div>
-            </Link>
-          </div>
-
+          {/* Top Area: League Selector */}
           {/* League Selector (Mostly visual here, as real selection happens in Lobby/Modal) */}
           <div className="self-center bg-black/40 backdrop-blur-md rounded-full p-1 flex gap-1 border border-white/10 opacity-70 hover:opacity-100 transition-opacity">
             {leagues.map((league) => (
@@ -89,56 +64,56 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Middle Spacer */}
-        <div className="flex-1" />
+          {/* Middle Spacer */}
+          <div className="flex-1" />
 
-        {/* Battle Button Area */}
-        <div className="flex flex-col items-center gap-2 py-4 pointer-events-auto">
-          <div className="text-white/80 text-[10px] font-bold uppercase tracking-widest drop-shadow-md">
-            Enter the Arena
-          </div>
-          <Link href="/lobby">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: ["0px 0px 0px 0px rgba(234, 179, 8, 0.7)", "0px 0px 20px 10px rgba(234, 179, 8, 0)"]
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                repeatType: "loop"
-              }}
-              className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2 font-display"
-            >
-              <Swords size={24} />
-              BATTLE
-            </motion.button>
-          </Link>
-        </div>
-
-        {/* Chest Slots */}
-        <div className="h-24 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 flex items-end justify-center gap-2 pointer-events-auto">
-          {chests.map((chest, index) => (
-            <div
-              key={index}
-              className="w-1/4 h-16 bg-zinc-800/80 backdrop-blur-sm rounded-lg border border-zinc-700 flex flex-col items-center justify-center relative overflow-hidden"
-            >
-              {chest ? (
-                <>
-                  <div className="text-lg">📦</div>
-                  <span className="text-lg font-bold text-yellow-500 uppercase mt-0.5">{chest.type}</span>
-                  <span className="text-[8px] text-zinc-400">{Math.floor(chest.unlockTime / 60)}m</span>
-                </>
-              ) : (
-                <div className="text-zinc-600 flex flex-col items-center">
-                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Empty</span>
-                </div>
-              )}
+          {/* Battle Button Area */}
+          <div className="flex flex-col items-center gap-2 py-4 pointer-events-auto">
+            <div className="text-white/80 text-[10px] font-bold uppercase tracking-widest drop-shadow-md">
+              Enter the Arena
             </div>
-          ))}
+            <Link href="/lobby">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{
+                  boxShadow: ["0px 0px 0px 0px rgba(234, 179, 8, 0.7)", "0px 0px 20px 10px rgba(234, 179, 8, 0)"]
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatType: "loop"
+                }}
+                className="bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-black text-xl px-10 py-4 rounded-full border-4 border-yellow-200 shadow-xl uppercase tracking-wider transform transition-transform flex items-center gap-2 font-display"
+              >
+                <Swords size={24} />
+                BATTLE
+              </motion.button>
+            </Link>
+          </div>
+
+          {/* Chest Slots */}
+          <div className="h-24 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 flex items-end justify-center gap-2 pointer-events-auto">
+            {chests.map((chest, index) => (
+              <div
+                key={index}
+                className="w-1/4 h-16 bg-zinc-800/80 backdrop-blur-sm rounded-lg border border-zinc-700 flex flex-col items-center justify-center relative overflow-hidden"
+              >
+                {chest ? (
+                  <>
+                    <div className="text-lg">📦</div>
+                    <span className="text-lg font-bold text-yellow-500 uppercase mt-0.5">{chest.type}</span>
+                    <span className="text-[8px] text-zinc-400">{Math.floor(chest.unlockTime / 60)}m</span>
+                  </>
+                ) : (
+                  <div className="text-zinc-600 flex flex-col items-center">
+                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Empty</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

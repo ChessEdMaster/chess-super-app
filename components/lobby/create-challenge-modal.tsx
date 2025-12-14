@@ -17,8 +17,11 @@ interface CreateChallengeModalProps {
 
 export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'blitz' }: CreateChallengeModalProps) {
     const router = useRouter();
-    const pathname = usePathname();
     const { user } = useAuth();
+    const [opponentType, setOpponentType] = useState<'human' | 'bot'>('human');
+    const [botDifficulty, setBotDifficulty] = useState('medium');
+
+    // Human options
     const [color, setColor] = useState<'white' | 'black' | 'random'>('random');
     const [timeControl, setTimeControl] = useState<string>(defaultTimeControl);
     const [mode, setMode] = useState<'rated' | 'casual'>('rated');
@@ -29,6 +32,14 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
         setLoading(true);
 
         try {
+            if (opponentType === 'bot') {
+                const gameId = `bot-${crypto.randomUUID()}`;
+                router.push(`/play/online/${gameId}?difficulty=${botDifficulty}`);
+                onClose();
+                setLoading(false);
+                return;
+            }
+
             // Generate a shared ID for both challenge and game
             const challengeId = crypto.randomUUID();
 
@@ -85,52 +96,87 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-zinc-800 text-white">
                 <DialogHeader>
-                    <DialogTitle>Create Challenge</DialogTitle>
+                    <DialogTitle>Jugar una Partida</DialogTitle>
                 </DialogHeader>
+
+                {/* Opponent Selector */}
+                <div className="flex gap-2 mb-4 p-1 bg-zinc-800 rounded-lg">
+                    <button
+                        onClick={() => setOpponentType('human')}
+                        className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${opponentType === 'human' ? 'bg-zinc-700 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                    >
+                        Vs Human
+                    </button>
+                    <button
+                        onClick={() => setOpponentType('bot')}
+                        className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${opponentType === 'bot' ? 'bg-zinc-700 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                    >
+                        Vs Bot
+                    </button>
+                </div>
+
                 <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="color" className="text-right">Color</Label>
-                        <Select value={color} onValueChange={(v: any) => setColor(v)}>
-                            <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
-                                <SelectValue placeholder="Select color" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-800 border-zinc-700">
-                                <SelectItem value="white">White</SelectItem>
-                                <SelectItem value="black">Black</SelectItem>
-                                <SelectItem value="random">Random</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="time" className="text-right">Time</Label>
-                        <Select value={timeControl} onValueChange={setTimeControl}>
-                            <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
-                                <SelectValue placeholder="Select time" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-800 border-zinc-700">
-                                <SelectItem value="bullet">Bullet (1+0)</SelectItem>
-                                <SelectItem value="blitz">Blitz (3+2)</SelectItem>
-                                <SelectItem value="rapid">Rapid (10+0)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="mode" className="text-right">Mode</Label>
-                        <Select value={mode} onValueChange={(v: any) => setMode(v)}>
-                            <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
-                                <SelectValue placeholder="Select mode" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-800 border-zinc-700">
-                                <SelectItem value="rated">Rated</SelectItem>
-                                <SelectItem value="casual">Casual</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {opponentType === 'human' ? (
+                        <>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="color" className="text-right">Color</Label>
+                                <Select value={color} onValueChange={(v: any) => setColor(v)}>
+                                    <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                        <SelectValue placeholder="Select color" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-800 border-zinc-700">
+                                        <SelectItem value="white">Blanques</SelectItem>
+                                        <SelectItem value="black">Negres</SelectItem>
+                                        <SelectItem value="random">Aleatori</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="time" className="text-right">Temps</Label>
+                                <Select value={timeControl} onValueChange={setTimeControl}>
+                                    <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                        <SelectValue placeholder="Select time" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-800 border-zinc-700">
+                                        <SelectItem value="bullet">Bullet (1+0)</SelectItem>
+                                        <SelectItem value="blitz">Blitz (3+2)</SelectItem>
+                                        <SelectItem value="rapid">Rapid (10+0)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="mode" className="text-right">Mode</Label>
+                                <Select value={mode} onValueChange={(v: any) => setMode(v)}>
+                                    <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                        <SelectValue placeholder="Select mode" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-800 border-zinc-700">
+                                        <SelectItem value="rated">Competitiu</SelectItem>
+                                        <SelectItem value="casual">Casual</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="difficulty" className="text-right">Nivell</Label>
+                            <Select value={botDifficulty} onValueChange={setBotDifficulty}>
+                                <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                    <SelectValue placeholder="Select difficulty" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-zinc-800 border-zinc-700">
+                                    <SelectItem value="easy">Fàcil (800)</SelectItem>
+                                    <SelectItem value="medium">Mitjà (1200)</SelectItem>
+                                    <SelectItem value="hard">Difícil (1800)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="border-zinc-700 hover:bg-zinc-800 hover:text-white">Cancel</Button>
+                    <Button variant="outline" onClick={onClose} className="border-zinc-700 hover:bg-zinc-800 hover:text-white">Cancel·lar</Button>
                     <Button onClick={handleCreate} disabled={loading} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
-                        {loading ? 'Creating...' : 'Create & Enter Lobby'}
+                        {loading ? 'Creant...' : (opponentType === 'bot' ? 'Jugar contra Bot' : 'Crear Sala')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
