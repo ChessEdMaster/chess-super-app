@@ -85,7 +85,7 @@ export default function VerifyAuthPage() {
                 if (intent === 'register') {
                     router.push('/welcome');
                 } else {
-                    router.push('/lobby'); // Changed from /profile to /lobby as it's more engaging for returning users
+                    router.push('/');
                 }
             }
         };

@@ -136,7 +136,7 @@ export default function LobbyPage() {
   if (loading || !user) return <div className="h-screen flex items-center justify-center"><div className="animate-pulse text-zinc-500">Loading...</div></div>;
 
   return (
-    <div className="h-full w-full p-6 overflow-hidden max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="h-full w-full p-6 max-w-7xl mx-auto flex flex-col gap-6">
 
       {/* HEADER */}
       <div className="flex items-center justify-between shrink-0">

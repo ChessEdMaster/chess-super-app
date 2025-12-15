@@ -56,7 +56,7 @@ export default function RegisterPage() {
                 console.error('Error creating profile:', profileError);
             }
 
-            router.push('/play');
+            router.push('/');
         }
     };
 

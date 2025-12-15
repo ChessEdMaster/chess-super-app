@@ -42,7 +42,7 @@ export default function HomePage() {
       <div className="absolute inset-0 z-10 flex flex-col justify-between pointer-events-none">
 
         {/* Top Area: Story Mode & Minigames & League Selector */}
-        <div className="pt-4 px-4 flex flex-col gap-4 pointer-events-auto">
+        <div className="pt-4 px-4 flex flex-col gap-4 pointer-events-auto h-full">
           {/* Top Area: League Selector */}
           {/* League Selector (Visual) */}
           <div className="self-center glass-panel rounded-full p-1.5 flex gap-1 transform hover:scale-105 transition-transform duration-300">
