@@ -12,6 +12,23 @@ export default function WelcomePage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
+            {/* Auth Buttons */}
+            <div className="absolute top-6 right-6 flex gap-4 z-20">
+                <Button
+                    variant="ghost"
+                    className="text-zinc-300 hover:text-white hover:bg-white/10"
+                    onClick={() => router.push('/login')}
+                >
+                    Iniciar Sessió
+                </Button>
+                <Button
+                    className="bg-amber-500 hover:bg-amber-600 text-black font-bold border-none"
+                    onClick={() => router.push('/register')}
+                >
+                    Registrar-se
+                </Button>
+            </div>
+
             <div className="max-w-2xl w-full text-center space-y-12">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -23,7 +40,7 @@ export default function WelcomePage() {
                         <Crown className="text-white w-12 h-12 drop-shadow-md" />
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black text-white mb-6 uppercase tracking-tight font-display drop-shadow-xl">
-                        Chess<span className="text-amber-500">Hub</span>
+                        CHESS <span className="text-amber-500">CLANS</span>
                     </h1>
                     <p className="text-xl text-zinc-300 max-w-lg mx-auto font-light leading-relaxed">
                         Domina el tauler. Conquereix l'Arena. Converteix-te en Llegenda.
@@ -47,7 +64,7 @@ export default function WelcomePage() {
                         <Button
                             size="lg"
                             className="w-full mt-auto"
-                            onClick={() => router.push('/lobby')}
+                            onClick={() => router.push('/login')}
                         >
                             Entrar a l'Arena
                         </Button>
@@ -70,7 +87,7 @@ export default function WelcomePage() {
                             variant="outline"
                             size="lg"
                             className="w-full mt-auto"
-                            onClick={() => router.push('/academy')}
+                            onClick={() => router.push('/register')}
                         >
                             Començar a Aprendre
                         </Button>
