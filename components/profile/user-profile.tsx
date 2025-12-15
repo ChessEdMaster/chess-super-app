@@ -31,23 +31,23 @@ function BackgroundSelector() {
     }, [isOpen]);
 
     return (
-        <div className="bg-slate-950/50 rounded-xl border border-slate-800/50 overflow-hidden">
+        <div className="bg-black/20 rounded-xl border border-white/5 overflow-hidden">
             <div
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-900/50 transition"
+                className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition"
             >
                 <div className="flex items-center gap-3">
                     <ImageIcon size={18} className="text-purple-400" />
-                    <span className="text-sm font-medium text-slate-300">Fons de Pantalla</span>
+                    <span className="text-sm font-medium text-zinc-300">Fons de Pantalla</span>
                 </div>
-                <div className="text-xs text-slate-500 flex items-center gap-2">
+                <div className="text-xs text-zinc-500 flex items-center gap-2">
                     {backgroundImage ? 'Personalitzat' : 'Per defecte'}
                     {isOpen ? <X size={14} /> : <Edit2 size={14} />}
                 </div>
             </div>
 
             {isOpen && (
-                <div className="p-3 border-t border-slate-800/50 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                <div className="p-3 border-t border-white/5 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
                     {backgrounds.map((bg) => (
                         <div
                             key={bg}
@@ -149,7 +149,7 @@ export function UserProfile() {
     // Mentres comprovem l'usuari, mostrem càrrega
     if (authLoading || !user || loadingGames) {
         return (
-            <div className="h-full flex items-center justify-center text-slate-500">
+            <div className="h-full flex items-center justify-center text-zinc-500">
                 <Loader2 className="animate-spin mr-2" /> Verificant accés...
             </div>
         );
@@ -196,12 +196,12 @@ export function UserProfile() {
                 {/* Columna Esquerra: Info Usuari */}
                 <div className="md:col-span-1 space-y-6">
                     {/* Targeta d'Usuari */}
-                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center relative overflow-hidden">
+                    <div className="glass-panel rounded-2xl p-6 flex flex-col items-center text-center relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-indigo-900/20 to-transparent"></div>
 
                         <div className="relative group mb-4">
                             <div className="absolute -inset-1 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
-                            <div className="relative w-32 h-32 bg-slate-900 rounded-full p-1 flex items-center justify-center overflow-hidden border-4 border-slate-800 shadow-2xl">
+                            <div className="relative w-32 h-32 bg-zinc-900 rounded-full p-1 flex items-center justify-center overflow-hidden border-4 border-zinc-800 shadow-2xl">
                                 {user.user_metadata?.avatar_url ? (
                                     <Image
                                         src={user.user_metadata.avatar_url}
@@ -246,33 +246,33 @@ export function UserProfile() {
                             </div>
                         )}
 
-                        <p className="text-slate-400 font-medium text-sm mb-4">Nivell {profile.level}</p>
+                        <p className="text-zinc-400 font-medium text-sm mb-4">Nivell {profile.level}</p>
 
                         {/* XP Bar */}
-                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-2">
+                        <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden mb-2">
                             <div
                                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
                                 style={{ width: `${Math.min((profile.xp / xpToNextLevel) * 100, 100)}%` }}
                             />
                         </div>
-                        <p className="text-xs text-slate-500 w-full flex justify-between">
+                        <p className="text-xs text-zinc-500 w-full flex justify-between">
                             <span>{profile.xp} XP</span>
                             <span>{xpToNextLevel} XP</span>
                         </p>
                     </div>
 
                     {/* Configuració */}
-                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                    <div className="glass-panel rounded-2xl p-6">
                         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <Settings size={20} className="text-slate-400" /> Configuració
+                            <Settings size={20} className="text-zinc-400" /> Configuració
                         </h3>
 
                         <div className="space-y-4">
                             {/* Language */}
-                            <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50">
+                            <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
                                 <div className="flex items-center gap-3">
                                     <Globe size={18} className="text-indigo-400" />
-                                    <span className="text-sm font-medium text-slate-300">Idioma</span>
+                                    <span className="text-sm font-medium text-zinc-300">Idioma</span>
                                 </div>
                                 <select
                                     value={profile.settings?.language || 'ca'}
@@ -287,7 +287,7 @@ export function UserProfile() {
                                         saveProfile();
                                         toast.success("Idioma actualitzat");
                                     }}
-                                    className="bg-slate-900 border border-slate-700 rounded-lg text-xs px-2 py-1 text-slate-300 focus:outline-none focus:border-indigo-500"
+                                    className="bg-zinc-900 border border-zinc-700 rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500"
                                 >
                                     <option value="ca">Català</option>
                                     <option value="es">Español</option>
@@ -307,13 +307,13 @@ export function UserProfile() {
                                     saveProfile();
                                     toast.success(`Notificacions ${newNotif ? 'activades' : 'desactivades'}`);
                                 }}
-                                className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50 cursor-pointer hover:bg-slate-900/50 transition"
+                                className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5 cursor-pointer hover:bg-black/30 transition"
                             >
                                 <div className="flex items-center gap-3">
                                     <Bell size={18} className={profile.settings?.notifications ? "text-indigo-400" : "text-slate-600"} />
-                                    <span className="text-sm font-medium text-slate-300">Notificacions</span>
+                                    <span className="text-sm font-medium text-zinc-300">Notificacions</span>
                                 </div>
-                                <div className={`w-8 h-4 rounded-full relative transition-colors ${profile.settings?.notifications ? 'bg-indigo-600' : 'bg-slate-700'}`}>
+                                <div className={`w-8 h-4 rounded-full relative transition-colors ${profile.settings?.notifications ? 'bg-indigo-600' : 'bg-zinc-700'}`}>
                                     <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${profile.settings?.notifications ? 'left-5' : 'left-1'}`}></div>
                                 </div>
                             </div>
@@ -324,18 +324,18 @@ export function UserProfile() {
                             {/* Social Privacy Settings */}
                             {socialSettings && (
                                 <>
-                                    <div className="h-px bg-slate-800 my-2"></div>
+                                    <div className="h-px bg-white/10 my-2"></div>
 
                                     {/* Privacy Level */}
-                                    <div className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50">
+                                    <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
                                         <div className="flex items-center gap-3">
                                             <Shield size={18} className="text-emerald-400" />
-                                            <span className="text-sm font-medium text-slate-300">Privacitat del Perfil</span>
+                                            <span className="text-sm font-medium text-zinc-300">Privacitat del Perfil</span>
                                         </div>
                                         <select
                                             value={socialSettings.privacy_level}
                                             onChange={(e) => updateSettings({ privacy_level: e.target.value as any })}
-                                            className="bg-slate-900 border border-slate-700 rounded-lg text-xs px-2 py-1 text-slate-300 focus:outline-none focus:border-indigo-500"
+                                            className="bg-zinc-900 border border-zinc-700 rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500"
                                         >
                                             <option value="public">Públic</option>
                                             <option value="friends_only">Només Amics</option>
@@ -346,13 +346,13 @@ export function UserProfile() {
                                     {/* Show Online Status */}
                                     <div
                                         onClick={() => updateSettings({ show_online_status: !socialSettings.show_online_status })}
-                                        className="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-slate-800/50 cursor-pointer hover:bg-slate-900/50 transition"
+                                        className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5 cursor-pointer hover:bg-black/30 transition"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Activity size={18} className={socialSettings.show_online_status ? "text-green-400" : "text-slate-600"} />
-                                            <span className="text-sm font-medium text-slate-300">Mostrar Estat Online</span>
+                                            <span className="text-sm font-medium text-zinc-300">Mostrar Estat Online</span>
                                         </div>
-                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${socialSettings.show_online_status ? 'bg-green-600' : 'bg-slate-700'}`}>
+                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${socialSettings.show_online_status ? 'bg-green-600' : 'bg-zinc-700'}`}>
                                             <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${socialSettings.show_online_status ? 'left-5' : 'left-1'}`}></div>
                                         </div>
                                     </div>
@@ -364,9 +364,9 @@ export function UserProfile() {
                                     >
                                         <div className="flex items-center gap-3">
                                             <User size={18} className={socialSettings.allow_friend_requests ? "text-blue-400" : "text-slate-600"} />
-                                            <span className="text-sm font-medium text-slate-300">Acceptar Sol·licituds</span>
+                                            <span className="text-sm font-medium text-zinc-300">Acceptar Sol·licituds</span>
                                         </div>
-                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${socialSettings.allow_friend_requests ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${socialSettings.allow_friend_requests ? 'bg-blue-600' : 'bg-zinc-700'}`}>
                                             <div className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${socialSettings.allow_friend_requests ? 'left-5' : 'left-1'}`}></div>
                                         </div>
                                     </div>
@@ -383,22 +383,22 @@ export function UserProfile() {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+                        <div className="glass-card p-4 rounded-2xl flex flex-col items-center">
                             <Zap className="text-amber-400 mb-2" size={24} />
                             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Agressivitat</span>
                             <span className="text-xl font-black text-white">{profile.attributes.AGGRESSION}</span>
                         </div>
-                        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+                        <div className="glass-card p-4 rounded-2xl flex flex-col items-center">
                             <ShieldCheck className="text-emerald-400 mb-2" size={24} />
                             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Solidesa</span>
                             <span className="text-xl font-black text-white">{profile.attributes.SOLIDITY}</span>
                         </div>
-                        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+                        <div className="glass-card p-4 rounded-2xl flex flex-col items-center">
                             <Brain className="text-blue-400 mb-2" size={24} />
                             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Coneixement</span>
                             <span className="text-xl font-black text-white">{profile.attributes.KNOWLEDGE}</span>
                         </div>
-                        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-col items-center">
+                        <div className="glass-card p-4 rounded-2xl flex flex-col items-center">
                             <Activity className="text-purple-400 mb-2" size={24} />
                             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Velocitat</span>
                             <span className="text-xl font-black text-white">{profile.attributes.SPEED}</span>
@@ -408,7 +408,7 @@ export function UserProfile() {
                     {/* Social Wall */}
                     <div>
                         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <Activity size={20} className="text-slate-400" /> Activity Wall
+                            <Activity size={20} className="text-zinc-400" /> Activity Wall
                         </h3>
                         <Feed userId={user.id} limit={3} />
                     </div>
@@ -416,18 +416,18 @@ export function UserProfile() {
                     {/* Historial de Partides */}
                     <div>
                         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <Swords size={20} className="text-slate-400" /> Historial Recent
+                            <Swords size={20} className="text-zinc-400" /> Historial Recent
                         </h3>
 
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                        <div className="glass-panel rounded-2xl overflow-hidden">
                             {games.length === 0 ? (
-                                <div className="p-8 text-center text-slate-500">
+                                <div className="p-8 text-center text-zinc-500">
                                     Encara no has jugat cap partida.
                                     <Link href="/play" className="text-indigo-400 hover:underline ml-1">Juga ara!</Link>
                                 </div>
                             ) : (
                                 <>
-                                    <div className="divide-y divide-slate-800">
+                                    <div className="divide-y divide-white/5">
                                         {games.slice(0, 5).map((game) => {
                                             const isWhite = game.white_player_id === user.id;
                                             // Determinar nom del rival
@@ -444,7 +444,7 @@ export function UserProfile() {
 
                                             if (game.result === '1/2-1/2') {
                                                 outcomeLabel = '🤝 Taules';
-                                                outcomeColor = 'text-slate-400';
+                                                outcomeColor = 'text-zinc-400';
                                             } else if ((isWhite && game.result === '1-0') || (!isWhite && game.result === '0-1')) {
                                                 outcomeLabel = '🏆 Victòria';
                                                 outcomeColor = 'text-emerald-400';
@@ -457,15 +457,15 @@ export function UserProfile() {
                                                 <div
                                                     key={game.id}
                                                     onClick={() => router.push(`/analysis?gameId=${game.id}`)}
-                                                    className="p-4 hover:bg-slate-800/50 transition flex flex-col sm:flex-row justify-between items-center gap-4 cursor-pointer group"
+                                                    className="p-4 hover:bg-white/5 transition flex flex-col sm:flex-row justify-between items-center gap-4 cursor-pointer group"
                                                 >
                                                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                                                        <div className={`w-10 h-10 rounded flex items-center justify-center font-bold text-lg ${isWhite ? 'bg-slate-200 text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
+                                                        <div className={`w-10 h-10 rounded flex items-center justify-center font-bold text-lg ${isWhite ? 'bg-zinc-200 text-zinc-900' : 'bg-zinc-700 text-zinc-200'}`}>
                                                             {isWhite ? 'W' : 'B'}
                                                         </div>
                                                         <div>
                                                             <p className="font-bold text-white group-hover:text-indigo-400 transition-colors">vs {opponentName}</p>
-                                                            <p className="text-xs text-slate-500 flex items-center gap-1">
+                                                            <p className="text-xs text-zinc-500 flex items-center gap-1">
                                                                 <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
                                                             </p>
                                                         </div>
@@ -474,7 +474,7 @@ export function UserProfile() {
                                                     <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
                                                         <div className="text-right">
                                                             <p className={`font-bold ${outcomeColor}`}>{outcomeLabel}</p>
-                                                            <p className="text-xs text-slate-600 font-mono">{game.result}</p>
+                                                            <p className="text-xs text-zinc-600 font-mono">{game.result}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -482,7 +482,7 @@ export function UserProfile() {
                                         })}
                                     </div>
                                     {games.length > 5 && (
-                                        <div className="p-3 bg-slate-900/50 text-center border-t border-slate-800">
+                                        <div className="p-3 bg-black/20 text-center border-t border-white/5">
                                             <Link href="/profile/games" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium hover:underline">
                                                 Veure totes les partides ({games.length})
                                             </Link>

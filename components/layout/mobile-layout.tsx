@@ -21,13 +21,12 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     const { signOut, user } = useAuth();
     const [profileOpen, setProfileOpen] = useState(false);
 
-    // Beta Launch Navigation
     const tabs = [
-        { name: 'Battle', icon: Swords, href: '/' },
-        { name: 'Analysis', icon: Search, href: '/analysis' }, // Changed Icon to Search or Microscope? Search is imported below.
-        { name: 'Cards', icon: Layers, href: '/cards' },
-        { name: 'Academy', icon: GraduationCap, href: '/academy' },
-        { name: 'Profile', icon: User, href: '/profile' },
+        { name: 'Batalla', icon: Swords, href: '/' },
+        { name: 'Anàlisi', icon: Search, href: '/analysis' }, // Changed Icon to Search or Microscope? Search is imported below.
+        { name: 'Cartes', icon: Layers, href: '/cards' },
+        { name: 'Acadèmia', icon: GraduationCap, href: '/academy' },
+        { name: 'Perfil', icon: User, href: '/profile' },
     ];
 
     if (!user) {
