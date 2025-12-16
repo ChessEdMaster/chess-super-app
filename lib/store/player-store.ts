@@ -56,7 +56,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             // 2. Fetch Concepts to build the base Card List
             const { data: conceptsData, error: conceptsError } = await supabase
                 .from('academy_concepts')
-                .select('*');
+                .select('*')
+                .limit(2000); // Increased limit for expanded concepts
 
             if (conceptsError) {
                 console.error('Error loading concepts:', conceptsError);
