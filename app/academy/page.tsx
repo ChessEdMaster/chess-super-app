@@ -66,6 +66,16 @@ export default function AcademyPage() {
         }
     }, [user, authLoading]);
 
+    // Auto-redirect if student has only 1 course
+    useEffect(() => {
+        if (!loading && courses.length === 1 && user) {
+            let isSuperAdmin = role === 'SuperAdmin' || user?.email === 'marc@marc.com';
+            if (!isSuperAdmin) {
+                router.push(`/academy/course/${courses[0].id}`);
+            }
+        }
+    }, [courses, loading, role, user, router]);
+
     const loadAcademyData = async () => {
         try {
             // 1. Determine Courses to Load
@@ -222,7 +232,8 @@ export default function AcademyPage() {
                     <h2 className="text-2xl font-bold text-white mb-4 font-display uppercase tracking-wide">No hi ha cursos disponibles</h2>
                     <p className="text-zinc-400 max-w-lg mx-auto mb-8 text-sm">
                         De l'assignatura <span className="text-emerald-400 font-bold">{SUBJECTS[selectedSubject]?.label}</span>.
-                        Estem treballant en els continguts.
+                        {/** If student, tell them to contact school */}
+                        {role !== 'SuperAdmin' ? 'Demana al teu professor que t\'assigni un curs.' : 'Estem treballant en els continguts.'}
                     </p>
                     <div className="flex justify-center gap-4">
                         <Link href="/" className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-bold transition font-display uppercase text-xs tracking-wider">

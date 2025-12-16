@@ -12,7 +12,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 const CSV_FILE = 'lichess_db_puzzle.csv';
 
 async function updateExerciseTags() {
-    console.log(`🚀 Starting Massive Tag Update via RPC...`);
+    console.log(`🚀 Starting Massive Tag Update (Batch 2)...`);
 
     if (!fs.existsSync(CSV_FILE)) {
         console.error('❌ CSV file not found.');
@@ -27,7 +27,7 @@ async function updateExerciseTags() {
 
     let rowCount = 0;
     let updatesBuffer = [];
-    const BATCH_SIZE = 500; // Optimal for RPC payload size
+    const BATCH_SIZE = 500;
     let processedBatches = 0;
     let totalUpdated = 0;
 
@@ -36,13 +36,22 @@ async function updateExerciseTags() {
     for await (const line of rl) {
         if (rowCount === 0) {
             rowCount++;
-            continue; // Skip header
+            continue;
+        }
+
+        // SKIP LOGIC: Skip first 1,000,000 rows
+        if (rowCount <= 1000000) {
+            rowCount++;
+            if (rowCount % 200000 === 0) process.stdout.write(`\r⏩ Skipping ${rowCount.toLocaleString()}...`);
+            returnToLoop: continue;
         }
 
         const cols = line.split(',');
-        if (cols.length < 9) continue;
+        if (cols.length < 9) {
+            rowCount++;
+            continue;
+        }
 
-        // Columns: PuzzleId(0), ..., Themes(7), ..., OpeningTags(9)
         const puzzleId = cols[0];
         const themes = cols[7] ? cols[7].split(' ') : [];
         const openingTags = cols.length > 9 && cols[9] ? cols[9].split(' ') : [];
@@ -65,9 +74,7 @@ async function updateExerciseTags() {
         }
 
         rowCount++;
-
-        // Safety break for testing (remove for production)
-        if (rowCount > 1000000) break; // Start with 1M rows first to test performance
+        // No break limit this time
     }
 
     if (updatesBuffer.length > 0) {
@@ -75,7 +82,7 @@ async function updateExerciseTags() {
         totalUpdated += updatesBuffer.length;
     }
 
-    console.log(`\n✅ Finished. Total rows scanned: ${rowCount}. Total updates sent: ${totalUpdated}.`);
+    console.log(`\n✅ Finished Match 2. Total rows scanned: ${rowCount}. Total updates sent: ${totalUpdated}.`);
 }
 
 async function flushBatch(batch) {
