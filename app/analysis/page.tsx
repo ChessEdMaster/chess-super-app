@@ -38,7 +38,7 @@ import ChessScene from '@/components/3d/ChessScene';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-export default function AnalysisPage() {
+function AnalysisContent() {
   // --- STATE ---
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -656,6 +656,14 @@ export default function AnalysisPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function AnalysisPage() {
+  return (
+    <React.Suspense fallback={<div className="h-full flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>}>
+      <AnalysisContent />
+    </React.Suspense>
   );
 }
 
