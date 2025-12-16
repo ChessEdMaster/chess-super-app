@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Chess, Square, Move } from 'chess.js';
 import {
