@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Chess, Square } from 'chess.js';
+import { useRef, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Chess, Square, Move } from 'chess.js';
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,7 +10,9 @@ import {
   ChevronsRight,
   GitBranch,
   LayoutGrid,
-  Loader2
+  Loader2,
+  Save,
+  CheckCircle2
 } from 'lucide-react';
 import { CoachAgent } from '@/components/coach-agent';
 import { PGNEditor } from '@/components/chess/pgn-editor';
@@ -23,6 +26,7 @@ import { PGNTree } from '@/lib/pgn/tree';
 import { PGNParser } from '@/lib/pgn/parser';
 import type { Evaluation } from '@/types/pgn';
 import Chessboard2D from '@/components/2d/Chessboard2D';
+import { supabase } from '@/lib/supabase'; // Import supabase
 
 interface EvaluationLine {
   id: number;
@@ -32,9 +36,13 @@ interface EvaluationLine {
 }
 import ChessScene from '@/components/3d/ChessScene';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function AnalysisPage() {
   // --- STATE ---
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [pgnTree, setPgnTree] = useState<PGNTree>(() => new PGNTree());
   const [game, setGame] = useState(() => new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
@@ -42,6 +50,12 @@ export default function AnalysisPage() {
   const [createVariation, setCreateVariation] = useState(false);
   const [activeTab, setActiveTab] = useState<'analysis' | 'database' | 'setup'>('analysis');
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+
+  // Persistence State
+  const [gameId, setGameId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const lastSavedPgn = useRef<string>(''); // To avoid saving unchanged PGNs
 
   // Setup State
   const [isSetupMode, setIsSetupMode] = useState(false);
@@ -69,35 +83,123 @@ export default function AnalysisPage() {
   // --- INITIALIZATION ---
   useEffect(() => {
     setIsClient(true);
-    const params = new URLSearchParams(window.location.search);
-    const gameId = params.get('gameId');
+    const idFromUrl = searchParams.get('gameId');
 
-    if (gameId) {
-      loadGameFromDB(gameId);
+    if (idFromUrl) {
+      setGameId(idFromUrl);
+      loadGameFromDB(idFromUrl);
     } else {
+      // Check local storage for legacy capability or unsaved draft
       const savedPGN = localStorage.getItem('analysis_pgn');
       if (savedPGN) {
         loadPGN(savedPGN);
         localStorage.removeItem('analysis_pgn');
       }
     }
-  }, []);
+  }, [searchParams]);
 
-  async function loadGameFromDB(gameId: string) {
+  // --- AUTO SAVE ---
+  const handleAutoSave = useCallback(async () => {
+    if (!isClient) return;
+    const currentPgn = pgnTree.toString();
+
+    // Don't save if empty (start pos only) or unchanged
+    if (pgnTree.isAtStart() && pgnTree.getMainLine().length === 0) return;
+    if (currentPgn === lastSavedPgn.current) return;
+
+    setIsSaving(true);
     try {
-      const { supabase } = await import('@/lib/supabase');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      let targetGameId = gameId;
+
+      // 1. If no gameId, CREATE new game in "My Analyses"
+      if (!targetGameId) {
+        // Find or Create "My Analyses" collection
+        let collectionId: string | null = null;
+        const { data: cols } = await supabase.from('pgn_collections').select('id').eq('title', 'My Analyses').eq('user_id', user.id).single();
+
+        if (cols) {
+          collectionId = cols.id;
+        } else {
+          const { data: newCol } = await supabase.from('pgn_collections').insert({
+            user_id: user.id,
+            title: 'My Analyses',
+            description: 'Default collection for your analysis sessions'
+          }).select().single();
+          if (newCol) collectionId = newCol.id;
+        }
+
+        if (collectionId) {
+          const { data: newGame } = await supabase.from('pgn_games').insert({
+            collection_id: collectionId,
+            pgn: currentPgn,
+            white: pgnTree.getHeader('White') || '?',
+            black: pgnTree.getHeader('Black') || '?',
+            result: pgnTree.getHeader('Result') || '*',
+            date: new Date().toISOString().split('T')[0],
+            event: 'Analysis Session'
+          }).select().single();
+
+          if (newGame) {
+            targetGameId = newGame.id;
+            setGameId(newGame.id);
+            // Update URL without reload
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('gameId', newGame.id);
+            window.history.pushState({}, '', newUrl.toString());
+          }
+        }
+      }
+      // 2. If gameId exists, UPDATE it
+      else {
+        await supabase.from('pgn_games').update({
+          pgn: currentPgn,
+          white: pgnTree.getHeader('White') || '?',
+          black: pgnTree.getHeader('Black') || '?',
+          result: pgnTree.getHeader('Result') || '*',
+          updated_at: new Date().toISOString() // Assuming schema has updated_at, if not it's fine
+        }).eq('id', targetGameId);
+      }
+
+      lastSavedPgn.current = currentPgn;
+      setLastSaved(new Date());
+
+    } catch (err) {
+      console.error("Auto-save failed", err);
+      toast.error("Failed to save analysis");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [gameId, isClient, pgnTree]);
+
+  // Debounced Auto-save effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleAutoSave();
+    }, 2000); // 2 seconds debounce
+
+    return () => clearTimeout(timer);
+  }, [handleAutoSave]);
+
+
+  async function loadGameFromDB(id: string) {
+    try {
       const { data, error } = await supabase
-        .from('games')
+        .from('pgn_games')
         .select('pgn')
-        .eq('id', gameId)
+        .eq('id', id)
         .single();
 
       if (error) throw error;
       if (data && data.pgn) {
         loadPGN(data.pgn);
+        lastSavedPgn.current = data.pgn; // Set initial ref to avoid immediate resave
       }
     } catch (error) {
       console.error('Error loading game:', error);
+      toast.error("Could not load game");
     }
   }
 
@@ -105,14 +207,18 @@ export default function AnalysisPage() {
     try {
       const newTree = PGNParser.parse(pgn);
       setPgnTree(newTree);
+      // Reset game state to start of PGN or end? Usually end for analysis
       const mainLine = newTree.getMainLine();
       if (mainLine.length > 0) {
         newTree.goToNode(mainLine[mainLine.length - 1]);
+      } else {
+        newTree.reset();
       }
       setFen(newTree.getCurrentFen());
       setGame(new Chess(newTree.getCurrentFen()));
     } catch (e) {
       console.error('Error parsing PGN:', e);
+      toast.error("Invalid PGN format");
     }
   }
 
