@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, User } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, Users, Trophy, Castle, Bot, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, User, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -89,6 +89,14 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                         </Link>
                                     </>
                                 )}
+                                <Link
+                                    href="/openings"
+                                    className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2"
+                                    onClick={() => setProfileOpen(false)}
+                                >
+                                    <BookOpen size={14} />
+                                    Enciclopèdia
+                                </Link>
                                 <Link
                                     href="/profile"
                                     className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-2"
