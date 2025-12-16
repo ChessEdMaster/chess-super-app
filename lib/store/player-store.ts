@@ -24,56 +24,6 @@ interface PlayerState {
     addChest: (chest: Chest) => void;
 }
 
-const GENERATE_CARDS = (): ConceptCard[] => {
-    type CardDef = {
-        title: string;
-        desc: string;
-        puzzle: string;
-        rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
-        category: 'AGGRESSION' | 'SOLIDITY' | 'KNOWLEDGE' | 'SPEED';
-        tags: string[];
-    };
-
-    // Unique list of cards based on themes available in DB
-    const cards: CardDef[] = [
-        { title: 'La Forquilla', desc: 'Atacar dues peces alhora amb una sola peça.', puzzle: 'puzzle-fork', rarity: 'COMMON', category: 'AGGRESSION', tags: ['fork'] },
-        { title: 'La Clavada', desc: 'Immobilitzar una peça perquè no exposi una de més valor.', puzzle: 'puzzle-pin', rarity: 'COMMON', category: 'SOLIDITY', tags: ['pin'] },
-        { title: "L'Enfilada", desc: 'Atacar una peça valuosa i capturar la que hi ha darrere.', puzzle: 'puzzle-skewer', rarity: 'RARE', category: 'AGGRESSION', tags: ['skewer'] },
-        { title: 'Escac a la Descoberta', desc: 'Moure una peça per obrir línia d\'atac d\'una altra.', puzzle: 'puzzle-discovered', rarity: 'RARE', category: 'KNOWLEDGE', tags: ['discoveredAttack'] },
-        { title: 'Raigs X', desc: 'Atacar a través d\'una peça enemiga.', puzzle: 'puzzle-xray', rarity: 'RARE', category: 'KNOWLEDGE', tags: ['xRayAttack'] },
-        { title: 'Sacrifici', desc: 'Entregar material per obtenir avantatge tàctic.', puzzle: 'puzzle-sacrifice', rarity: 'EPIC', category: 'AGGRESSION', tags: ['sacrifice'] },
-        { title: 'Desviació', desc: 'Forçar una peça a abandonar una casella clau.', puzzle: 'puzzle-deflection', rarity: 'EPIC', category: 'SPEED', tags: ['deflection'] },
-        { title: 'Intercepció', desc: 'Tallar la línia d\'acció d\'una peça enemiga.', puzzle: 'puzzle-interception', rarity: 'EPIC', category: 'SPEED', tags: ['interference'] },
-        { title: 'Zugzwang', desc: 'Qualsevol moviment empitjora la posició.', puzzle: 'puzzle-zugzwang', rarity: 'LEGENDARY', category: 'KNOWLEDGE', tags: ['zugzwang'] },
-        { title: 'Peó Passat', desc: 'Un peó sense oposició cap a la promoció.', puzzle: 'puzzle-passed-pawn', rarity: 'COMMON', category: 'SOLIDITY', tags: ['advancedPawn'] },
-        { title: 'Mate del Passadís', desc: 'Mate a la vuitena fila per bloqueig de peons.', puzzle: 'puzzle-back-rank', rarity: 'COMMON', category: 'SPEED', tags: ['backRankMate'] },
-        { title: 'Mate de l\'Ofegat', desc: 'El rei està atrapat per les seves pròpies peces.', puzzle: 'puzzle-smothered', rarity: 'RARE', category: 'AGGRESSION', tags: ['smotheredMate'] },
-        { title: 'Obertura Italiana', desc: 'Control del centre i atac ràpid.', puzzle: 'puzzle-italian', rarity: 'COMMON', category: 'KNOWLEDGE', tags: ['italian'] },
-        { title: 'Defensa Siciliana', desc: 'Contraatac agressiu des del principi.', puzzle: 'puzzle-sicilian', rarity: 'COMMON', category: 'AGGRESSION', tags: ['sicilian'] },
-        { title: 'Gambit de Dama', desc: 'Sacrifici de peó per control central.', puzzle: 'puzzle-queens-gambit', rarity: 'COMMON', category: 'KNOWLEDGE', tags: ['queensGambit'] },
-        { title: 'Ruy Lopez', desc: 'Pressió constant sobre el cavall i el centre.', puzzle: 'puzzle-ruy-lopez', rarity: 'COMMON', category: 'KNOWLEDGE', tags: ['ruyLopez'] },
-        { title: 'Defensa Francesa', desc: 'Estructura sòlida i contraatac al centre.', puzzle: 'puzzle-french', rarity: 'COMMON', category: 'SOLIDITY', tags: ['french'] },
-        { title: 'Defensa Caro-Kann', desc: 'Solidesa extrema i finals favorables.', puzzle: 'puzzle-caro-kann', rarity: 'COMMON', category: 'SOLIDITY', tags: ['caroKann'] },
-        { title: 'Atac Indi de Rei', desc: 'Atac directe al rei enrocant.', puzzle: 'puzzle-kings-indian', rarity: 'RARE', category: 'AGGRESSION', tags: ['kingsIndian'] },
-        { title: 'Sistema Londres', desc: 'Desenvolupament sòlid i universal.', puzzle: 'puzzle-london', rarity: 'COMMON', category: 'SOLIDITY', tags: ['london'] }
-    ];
-
-    return cards.map((c, i) => ({
-        id: `c_${c.puzzle}`, // Stable ID based on puzzle type
-        title: c.title,
-        rarity: c.rarity,
-        category: c.category,
-        level: 1,
-        cardsOwned: 0,
-        cardsRequired: 10,
-        description: c.desc,
-        minigameId: c.puzzle,
-        tags: c.tags
-    }));
-};
-
-const DEFAULT_CARDS = GENERATE_CARDS();
-
 export const usePlayerStore = create<PlayerState>((set, get) => ({
     profile: {
         id: '',
@@ -85,80 +35,135 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         attributes: { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
         settings: { language: 'ca', notifications: true },
     },
-    cards: DEFAULT_CARDS,
+    cards: [], // Initial empty state, populated on loadProfile
     chests: [null, null, null, null],
     isLoaded: false,
 
     loadProfile: async (userId: string) => {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*, app_roles(name)')
-            .eq('id', userId)
-            .single();
+        try {
+            // 1. Fetch Profile
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*, app_roles(name)')
+                .eq('id', userId)
+                .single();
 
-        if (error || !data) {
-            console.error('Error loading profile:', error);
-            return;
-        }
+            if (profileError || !profileData) {
+                console.error('Error loading profile:', profileError);
+                return;
+            }
 
-        const roleName = data.app_roles && !Array.isArray(data.app_roles) ? data.app_roles.name : undefined;
+            // 2. Fetch Concepts to build the base Card List
+            const { data: conceptsData, error: conceptsError } = await supabase
+                .from('academy_concepts')
+                .select('*');
 
-        // Merge logic: Use DEFAULT_CARDS but update with owned counts/levels from DB if they exist
-        let loadedCards = [...DEFAULT_CARDS];
-        if (data.cards && Array.isArray(data.cards) && data.cards.length > 0) {
-            // Map DB cards to current definitions to keep descriptions/titles updated
-            const dbCardsMap = new Map<string, any>(data.cards.map((c: any) => [c.id, c]));
-            loadedCards = loadedCards.map(card => {
-                const dbCard = dbCardsMap.get(card.id);
-                if (dbCard) {
-                    return { ...card, level: dbCard.level, cardsOwned: dbCard.cardsOwned, cardsRequired: dbCard.cardsRequired };
-                }
-                return card;
+            if (conceptsError) {
+                console.error('Error loading concepts:', conceptsError);
+                return;
+            }
+
+            // 3. Construct Base Cards from Concepts
+            const baseCards: ConceptCard[] = (conceptsData || []).map((concept: any) => ({
+                id: `c_${concept.name}`,
+                title: concept.display_name || formatName(concept.name),
+                description: concept.description || 'Master this concept to improve your chess skills.',
+                rarity: determineRarity(concept.puzzle_count), // Custom logic or random
+                category: mapCategory(concept.category),
+                level: 1,
+                cardsOwned: 0,
+                cardsRequired: 10, // Base requirement
+                minigameId: concept.name, // The tag acts as the "minigame" ID
+                tags: [concept.name]
+            }));
+
+            // 4. Merge with User's Owned Cards (Saved Progress)
+            let finalCards = [...baseCards];
+            if (profileData.cards && Array.isArray(profileData.cards) && profileData.cards.length > 0) {
+                const dbCardsMap = new Map<string, any>(profileData.cards.map((c: any) => [c.id, c]));
+                finalCards = finalCards.map(baseCard => {
+                    // Try exact match or legacy match (e.g. c_fork vs c_puzzle-fork)
+                    const savedCard = dbCardsMap.get(baseCard.id) || dbCardsMap.get(baseCard.id.replace('c_', 'c_puzzle-'));
+
+                    if (savedCard) {
+                        return {
+                            ...baseCard,
+                            level: savedCard.level || 1,
+                            cardsOwned: savedCard.cardsOwned || 0,
+                            cardsRequired: savedCard.cardsRequired || 10
+                        };
+                    }
+                    return baseCard;
+                });
+            }
+
+            const roleName = profileData.app_roles && !Array.isArray(profileData.app_roles) ? profileData.app_roles.name : undefined;
+
+            let loadedChests = (profileData.chests && Array.isArray(profileData.chests)) ? profileData.chests : [null, null, null, null];
+            if (loadedChests.length < 4) {
+                loadedChests = [...loadedChests, ...Array(4 - loadedChests.length).fill(null)];
+            }
+
+            // SuperAdmin Bonus Check
+            const currencies = {
+                gold: profileData.gold || 0,
+                gems: profileData.gems || 0,
+            };
+
+            if (roleName === 'SuperAdmin') {
+                if (currencies.gold < 100000) currencies.gold = 100000;
+                if (currencies.gems < 1000) currencies.gems = 1000;
+            }
+
+            set({
+                profile: {
+                    id: profileData.id,
+                    username: profileData.username || 'Jugador',
+                    avatarId: 'king-piece',
+                    level: profileData.level || 1,
+                    xp: profileData.xp || 0,
+                    currencies: currencies,
+                    attributes: profileData.attributes || { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
+                    settings: profileData.settings || { language: 'ca', notifications: true },
+                    role: roleName as any,
+                },
+                cards: finalCards,
+                chests: loadedChests,
+                isLoaded: true,
             });
-        }
 
-        let loadedChests = (data.chests && Array.isArray(data.chests)) ? data.chests : [null, null, null, null];
-        if (loadedChests.length < 4) {
-            loadedChests = [...loadedChests, ...Array(4 - loadedChests.length).fill(null)];
-        }
+            // Save immediately if we updated SuperAdmin currencies
+            if (roleName === 'SuperAdmin' && (profileData.gold < 100000 || profileData.gems < 1000)) {
+                get().saveProfile();
+            }
 
-        // SuperAdmin Bonus Check
-        const currencies = {
-            gold: data.gold || 0,
-            gems: data.gems || 0,
-        };
-
-        if (roleName === 'SuperAdmin') {
-            if (currencies.gold < 100000) currencies.gold = 100000;
-            if (currencies.gems < 1000) currencies.gems = 1000;
-        }
-
-        set({
-            profile: {
-                id: data.id,
-                username: data.username || 'Jugador',
-                avatarId: 'king-piece',
-                level: data.level || 1,
-                xp: data.xp || 0,
-                currencies: currencies,
-                attributes: data.attributes || { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
-                settings: data.settings || { language: 'ca', notifications: true },
-                role: roleName as any,
-            },
-            cards: loadedCards,
-            chests: loadedChests,
-            isLoaded: true,
-        });
-
-        // Save immediately if we updated SuperAdmin currencies
-        if (roleName === 'SuperAdmin' && (data.gold < 100000 || data.gems < 1000)) {
-            get().saveProfile();
+        } catch (err) {
+            console.error("Critical error loading profile:", err);
         }
     },
 
     saveProfile: async () => {
         const state = get();
         if (!state.profile.id) return;
+
+        // Simplify cards for saving: we only need ID, level, owned, required
+        // But storing full object is safer for now if descriptions change, 
+        // ALTHOUGH best practice is storing only mutable state.
+        // For simplicity and existing pattern, we store the full array.
+        const cardsToSave = state.cards.map(c => ({
+            id: c.id,
+            level: c.level,
+            cardsOwned: c.cardsOwned,
+            cardsRequired: c.cardsRequired
+            // We omit description, title etc to save space if we wanted to be efficient,
+            // but the current implementation loads/overwrites properties from DB map anyway.
+            // Let's store minimal data to keep DB clean? 
+            // Current implementation: `dbCardsMap` has everything. 
+            // If we only save stats, next load relies on `academy_concepts` for titles. THIS IS BETTER.
+        })).filter(c => c.level > 1 || c.cardsOwned > 0); // Only save modified cards?
+        // Actually, let's just save valid cards state to avoid losing progress.
+        // We will stick to saving what we have but maybe keep it lightweight?
+        // Reverting to saving the state.cards as is to be safe with existing robust logic.
 
         const { error } = await supabase
             .from('profiles')
@@ -170,7 +175,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                 gems: state.profile.currencies.gems,
                 attributes: state.profile.attributes,
                 settings: state.profile.settings,
-                cards: state.cards,
+                cards: state.cards, // Saves the full JSON
                 chests: state.chests,
             })
             .eq('id', state.profile.id);
@@ -236,7 +241,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             if (cardIndex === -1) return state;
 
             const card = state.cards[cardIndex];
-            // Cost logic: Level * 100 Gold (Example)
             const upgradeCost = card.level * 100;
 
             if (state.profile.currencies.gold < upgradeCost) return state; // Not enough gold
@@ -320,12 +324,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             }
             return state;
         });
-        // Save if changed (can be optimized to debounce)
-        // We'll just save periodically or when status changes to READY
+
         const state = get();
         if (state.chests.some(c => c?.status === 'READY' && c.unlockStartedAt)) {
-            // Clear unlockStartedAt for READY chests to avoid re-saving? 
-            // Actually, let's just save.
             get().saveProfile();
         }
     },
@@ -340,25 +341,29 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         const gemsReward = Math.floor(Math.random() * 5);
 
         // Random Card
-        const randomCardIndex = Math.floor(Math.random() * state.cards.length);
-        const cardId = state.cards[randomCardIndex].id;
-        const cardAmount = Math.floor(Math.random() * 5) + 1;
+        // Handle case where no cards exist yet (rare but possible if concepts fail to load)
+        let cardId = '';
+        let cardAmount = 0;
+        if (state.cards.length > 0) {
+            const randomCardIndex = Math.floor(Math.random() * state.cards.length);
+            cardId = state.cards[randomCardIndex].id;
+            cardAmount = Math.floor(Math.random() * 5) + 1;
+        }
 
         // 2. Apply Rewards
         state.addGold(goldReward);
         state.addGems(gemsReward);
-        state.addCardCopy(cardId, cardAmount);
+        if (cardId) state.addCardCopy(cardId, cardAmount);
 
         // 3. Remove Chest & Handle SuperAdmin Infinite Chests
         set((currentState) => {
             const newChests = [...currentState.chests];
 
             if (currentState.profile.role === 'SuperAdmin') {
-                // Refill immediately with a new random chest
                 newChests[chestIndex] = {
                     id: Math.random().toString(36).substring(7),
                     type: Math.random() > 0.8 ? 'GOLDEN' : Math.random() > 0.5 ? 'SILVER' : 'WOODEN',
-                    unlockTime: 10, // Short time for testing
+                    unlockTime: 10,
                     status: 'LOCKED'
                 };
             } else {
@@ -379,3 +384,24 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
 }));
 
+
+// Helper functions
+function formatName(name: string) {
+    return name.split(/(?=[A-Z])|_|-/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+function determineRarity(count: number): 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' {
+    if (count > 100000) return 'COMMON';
+    if (count > 50000) return 'RARE';
+    if (count > 10000) return 'EPIC';
+    return 'LEGENDARY';
+}
+
+function mapCategory(category: string): 'AGGRESSION' | 'SOLIDITY' | 'KNOWLEDGE' | 'SPEED' {
+    if (!category) return 'KNOWLEDGE';
+    const upper = category.toUpperCase();
+    if (upper.includes('ATTACK') || upper.includes('MATE') || upper.includes('TACTIC')) return 'AGGRESSION';
+    if (upper.includes('DEFENSE') || upper.includes('PAWN') || upper.includes('ENDGAME')) return 'SOLIDITY';
+    if (upper.includes('OPENING') || upper.includes('STRATEGY')) return 'KNOWLEDGE';
+    return 'SPEED';
+}

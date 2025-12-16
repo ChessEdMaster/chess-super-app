@@ -13,30 +13,6 @@ interface PuzzleMinerProps {
     onClose: () => void;
 }
 
-// Map Card Puzzle IDs to DB Tags
-const PUZZLE_TAG_MAP: Record<string, string[]> = {
-    'puzzle-fork': ['fork'],
-    'puzzle-pin': ['pin'],
-    'puzzle-skewer': ['skewer'],
-    'puzzle-discovered': ['discoveredAttack'],
-    'puzzle-xray': ['xRayAttack', 'xRay'],
-    'puzzle-sacrifice': ['sacrifice'],
-    'puzzle-deflection': ['deflection'],
-    'puzzle-interception': ['interference'],
-    'puzzle-zugzwang': ['zugzwang'],
-    'puzzle-passed-pawn': ['passedPawn'],
-    'puzzle-back-rank': ['backRankMate'],
-    'puzzle-smothered': ['smotheredMate'],
-    'puzzle-italian': ['opening', 'italian'],
-    'puzzle-sicilian': ['opening', 'sicilian'],
-    'puzzle-queens-gambit': ['opening', 'queensGambit'],
-    'puzzle-ruy-lopez': ['opening', 'ruyLopez'],
-    'puzzle-french': ['opening', 'french'],
-    'puzzle-caro-kann': ['opening', 'caroKann'],
-    'puzzle-kings-indian': ['opening', 'kingsIndian'],
-    'puzzle-london': ['opening', 'london'],
-};
-
 export function PuzzleMiner({ puzzleId, onSuccess, onClose }: PuzzleMinerProps) {
     const [exercise, setExercise] = useState<AcademyExercise | null>(null);
     const [loading, setLoading] = useState(true);
@@ -52,20 +28,14 @@ export function PuzzleMiner({ puzzleId, onSuccess, onClose }: PuzzleMinerProps) 
         setLoading(true);
         setError(null);
         try {
-            const tags = PUZZLE_TAG_MAP[puzzleId] || [];
+            // The puzzleId passed from the card is actually the concept name (tag)
+            const tag = puzzleId;
 
+            // We specifically look for exercises containing this tag
             let query = supabase
                 .from('academy_exercises')
-                .select('*');
-
-            if (tags.length > 0) {
-                // We want exercises that contain at least one of the tags
-                // Postgres array overlap operator is &&
-                // Supabase filter for array overlap: .overlaps('tags', tags)
-                // But let's try .contains for now if we want ALL tags, or just rely on the first one
-                // Actually, let's just search for the first tag to be safe
-                query = query.contains('tags', [tags[0]]);
-            }
+                .select('*')
+                .contains('tags', [tag]);
 
             // Get a random one (limit 20 then pick random)
             const { data, error: dbError } = await query.limit(20);
@@ -76,18 +46,8 @@ export function PuzzleMiner({ puzzleId, onSuccess, onClose }: PuzzleMinerProps) 
                 const randomExercise = data[Math.floor(Math.random() * data.length)];
                 setExercise(randomExercise);
             } else {
-                // Fallback if no specific exercise found
-                console.warn(`No exercises found for tags: ${tags.join(', ')}. Fetching random.`);
-                const { data: fallback } = await supabase
-                    .from('academy_exercises')
-                    .select('*')
-                    .limit(20);
-
-                if (fallback && fallback.length > 0) {
-                    setExercise(fallback[Math.floor(Math.random() * fallback.length)]);
-                } else {
-                    setError("No exercises available.");
-                }
+                console.warn(`No exercises found for tag: ${tag}.`);
+                setError("No exercises available for this concept yet.");
             }
 
         } catch (err) {
