@@ -45,7 +45,7 @@ export default function AnalysisPage() {
 
   // Setup State
   const [isSetupMode, setIsSetupMode] = useState(false);
-  const [setupSelectedPiece, setSetupSelectedPiece] = useState<string | null>('wP'); // Default to White Pawn
+  const [setupSelectedPiece, setSetupSelectedPiece] = useState<string | null>('wP');
 
   // Click to move state
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -64,11 +64,8 @@ export default function AnalysisPage() {
 
   // Settings
   const { boardTheme } = useSettings();
-
-  // Derived state
   const currentNode = pgnTree.getCurrentNode();
 
-  // --- INITIALIZATION ---
   // --- INITIALIZATION ---
   useEffect(() => {
     setIsClient(true);
@@ -88,7 +85,6 @@ export default function AnalysisPage() {
 
   async function loadGameFromDB(gameId: string) {
     try {
-      // Dynamic import to avoid SSR issues if any, though we are in useEffect
       const { supabase } = await import('@/lib/supabase');
       const { data, error } = await supabase
         .from('games')
@@ -120,19 +116,15 @@ export default function AnalysisPage() {
     }
   }
 
-  // Sync game to ref for worker access
   const gameRef = useRef(game);
   useEffect(() => {
     gameRef.current = game;
   }, [game]);
 
   // --- ENGINE WORKER ---
-  // --- ENGINE WORKER ---
-  // --- ENGINE WORKER ---
   useEffect(() => {
     async function initEngine() {
       if (!engine.current) {
-        // Auth check for Superadmin Native Engine
         const { supabase } = await import('@/lib/supabase');
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -142,7 +134,6 @@ export default function AnalysisPage() {
           // @ts-expect-error - Adapter matches Worker interface enough for our usage
           engine.current = new ServerEngineAdapter();
         } else {
-          // Standard Web Worker implementation
           const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
           try {
             const response = await fetch(stockfishUrl);
@@ -158,33 +149,22 @@ export default function AnalysisPage() {
 
         if (!engine.current) return;
 
-        // --- PERFORMANCE OPTIMIZATION ---
-        // Detect logical cores (default to 4 if unavailable)
         const cores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4;
-        const threadsToUse = Math.max(1, cores - 1); // Leave 1 core for UI
-        const hashSize = 128; // 128 MB Hash
-
-        console.log(`Initializing Stockfish with ${threadsToUse} threads and ${hashSize}MB Hash`);
+        const threadsToUse = Math.max(1, cores - 1);
+        const hashSize = 128;
 
         engine.current.postMessage('uci');
-
-        // Configure Engine Options for Max Performance
         engine.current.postMessage(`setoption name Threads value ${threadsToUse}`);
         engine.current.postMessage(`setoption name Hash value ${hashSize}`);
         engine.current.postMessage('setoption name UCI_AnalyseMode value true');
         engine.current.postMessage('setoption name Ponder value false');
-
-        // Wait for ready
         engine.current.postMessage('isready');
 
         engine.current.onmessage = (event) => {
           const msg = event.data;
-          // Parse info
           if (msg.startsWith('info') && msg.includes('depth')) {
-            // Parse multipv ID (default to 1)
             const multipvMatch = msg.match(/multipv (\d+)/);
             const multipvId = multipvMatch ? parseInt(multipvMatch[1]) : 1;
-
             const scoreMatch = msg.match(/score (cp|mate) (-?\d+)/);
             const depthMatch = msg.match(/depth (\d+)/);
             let evalData: Evaluation | null = null;
@@ -194,9 +174,6 @@ export default function AnalysisPage() {
               const type = scoreMatch[1] as 'cp' | 'mate';
               const value = parseInt(scoreMatch[2]);
               evalData = { type, value, depth };
-
-              // Note: We don't set evaluation here immediately to avoid race conditions.
-              // We do it below after verifying legitimacy
             }
 
             const pvMatch = msg.match(/ pv ([a-h1-8]+(?:\s+[a-h1-8]+)*)/);
@@ -204,17 +181,10 @@ export default function AnalysisPage() {
               const moves = pvMatch[1].trim().split(/\s+/);
               if (moves.length > 0) {
                 const bestMoveStr = moves[0];
-
-                // STALE DATA CHECK:
-                // Verify if this move is legal in the CURRENT game state.
                 try {
                   const from = bestMoveStr.substring(0, 2);
-                  // Fast Validation: check if piece at 'from' exists and is correct color
                   const piece = gameRef.current.get(from as Square);
-                  if (!piece || piece.color !== gameRef.current.turn()) {
-                    // This message is for an old position (stale)
-                    return;
-                  }
+                  if (!piece || piece.color !== gameRef.current.turn()) return;
                 } catch (e) { return; }
 
                 const newLine: EvaluationLine = {
@@ -227,11 +197,8 @@ export default function AnalysisPage() {
                 setLines(prev => {
                   const newLines = [...prev];
                   const index = newLines.findIndex(l => l.id === multipvId);
-                  if (index !== -1) {
-                    newLines[index] = newLine;
-                  } else {
-                    newLines.push(newLine);
-                  }
+                  if (index !== -1) newLines[index] = newLine;
+                  else newLines.push(newLine);
                   return newLines.sort((a, b) => a.id - b.id);
                 });
 
@@ -246,9 +213,7 @@ export default function AnalysisPage() {
         };
       }
     }
-
     initEngine();
-
     return () => {
       engine.current?.terminate();
       engine.current = null;
@@ -259,60 +224,42 @@ export default function AnalysisPage() {
   useEffect(() => {
     if (!engine.current || !isClient) return;
 
-
-    // IMMEDIATE CLEAR: When FEN changes, clear old data instantly
     setLines([]);
     setEvaluation(null);
     setBestLine("");
 
     if (isAnalyzing) {
-      // Debounce: Wait 150ms before asking engine
       const timeoutId = setTimeout(() => {
         if (!engine.current) return;
-        console.log("Starting analysis for FEN:", fen);
         engine.current.postMessage('stop');
         engine.current.postMessage(`setoption name MultiPV value ${multipv}`);
         engine.current.postMessage(`position fen ${fen}`);
         engine.current.postMessage(`go depth ${engineDepth}`);
       }, 150);
-
       return () => clearTimeout(timeoutId);
     } else {
-      console.log("Stopping analysis");
       engine.current.postMessage('stop');
     }
   }, [fen, isClient, isAnalyzing, engineDepth, multipv]);
 
-
   const handleSetupClick = (square: string) => {
     if (!setupSelectedPiece) return;
-
     const gameSpec = new Chess(fen);
-    // Chess.js is tricky for arbitrary edits. We parse FEN manually for simple edits or use put/remove if supported by library version.
-    // Chess.js v1 (which we seem to use) has .put() and .remove().
-    // Note: .put() might return false if invalid, but for setup we usually force it.
-    // However, recreating FEN string is often safer for "illegal" intermediate states.
-
-    // Let's rely on .put and .remove wrapper
     try {
       if (setupSelectedPiece === 'trash') {
         gameSpec.remove(square as Square);
       } else {
-        // setupSelectedPiece e.g. 'wP'
         const color = setupSelectedPiece[0] as 'w' | 'b';
         const type = setupSelectedPiece[1].toLowerCase() as any;
         gameSpec.put({ type, color }, square as Square);
       }
       setFen(gameSpec.fen());
       setGame(gameSpec);
-    } catch (e) {
-      console.error("Setup error", e);
-    }
+    } catch (e) { console.error("Setup error", e); }
   };
 
-  // --- GAME LOGIC ---
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
-    if (activeTab === 'setup') return false; // Disable normal moves in setup
+    if (activeTab === 'setup') return false;
     if (!targetSquare) return false;
     const gameCopy = new Chess(fen);
     let move = null;
@@ -367,7 +314,6 @@ export default function AnalysisPage() {
         setOptionSquares({});
         return;
       }
-
       const moveResult = onDrop(moveFrom, square);
       if (moveResult) {
         setMoveFrom(null);
@@ -435,48 +381,48 @@ export default function AnalysisPage() {
     return val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2);
   };
 
-  // Derive arrows from analysis lines
   const analysisArrows = lines.map((line) => {
     if (!line.bestMove || line.bestMove.length < 4) return null;
     const from = line.bestMove.substring(0, 2);
     const to = line.bestMove.substring(2, 4);
-
-    // Color logic
-    let color = '#ef4444'; // default red
-
-    if (lines.length > 5) {
-      // Full analysis mode color coding
-      const bestEval = lines.find(l => l.id === 1)?.evaluation.value || 0;
-      const diff = bestEval - line.evaluation.value;
-
-      if (line.id === 1) color = '#06b6d4'; // Cyan for best
-      else if (diff < 50) color = '#22c55e'; // < 0.5 pawn loss
-      else if (diff < 150) color = '#eab308'; // < 1.5 pawn loss
-      else color = '#ef4444'; // > 1.5 pawn loss
-    } else {
-      // Standard mode
-      if (line.id === 1) color = '#22c55e'; // Best = Green
-      else if (line.id === 2) color = '#84cc16'; // 2nd = Lime
-      else if (line.id === 3) color = '#eab308'; // 3rd = Yellow
-      else color = '#f97316'; // 4+ = Orange
-    }
-
+    let color = '#ef4444';
+    if (line.id === 1) color = '#22c55e';
+    else if (line.id === 2) color = '#84cc16';
+    else if (line.id === 3) color = '#eab308';
+    else color = '#f97316';
     return { from, to, color };
   }).filter(Boolean) as { from: string, to: string, color: string }[];
+
+  // --- ICONS for TABs ---
+  const ActivityIcon = LayoutGrid; // Analysis
+  const DatabaseIcon = React.memo(() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>);
+  const SetupIcon = React.memo(() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>);
+
 
   if (!isClient) return <div className="h-full flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
 
   return (
-    <div className="h-[calc(100vh-8rem)] w-full text-zinc-100 flex flex-col">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 h-full w-full max-w-7xl mx-auto p-4 box-border min-h-0">
+    <div className="h-[calc(100vh-4rem)] w-full text-zinc-100 flex flex-col p-4"> {/* Reduced overall page clutter */}
+
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 h-full w-full max-w-7xl mx-auto min-h-0">
 
         {/* LEFT COLUMN: Board + Controls */}
-        <div className="flex-1 flex flex-col min-h-0 gap-4">
+        <div className="flex-1 flex flex-col min-h-0 gap-3">
 
           {/* Board Container */}
           <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
-            <div className="w-full h-full max-h-full aspect-square shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20 p-1 flex items-center justify-center">
+            <div className="w-full h-full max-h-full aspect-square shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20 p-0.5 flex items-center justify-center relative">
+              {/* Engine Bar Overlay (Minimal) */}
+              {isAnalyzing && evaluation && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-2 shadow-xl">
+                  <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'animate-pulse bg-emerald-500' : 'bg-zinc-500'}`} />
+                  <span className={`font-mono font-bold text-sm ${evaluation.value > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {getEvalText(evaluation)}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">d{evaluation.depth}</span>
+                </div>
+              )}
+
               {viewMode === '3d' ? (
                 <ChessScene
                   fen={fen}
@@ -498,83 +444,70 @@ export default function AnalysisPage() {
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex items-center justify-center gap-2 w-full glass-panel p-2 rounded-lg shrink-0 bg-zinc-900/40">
-            <Button variant="secondary" onClick={goToStart} disabled={pgnTree.isAtStart()} size="sm"><ChevronsLeft size={18} /></Button>
-            <Button variant="secondary" onClick={goBack} disabled={pgnTree.isAtStart()} size="sm"><ChevronLeft size={18} /></Button>
-            <Button variant="secondary" onClick={goForward} disabled={pgnTree.isAtEnd()} size="sm"><ChevronRight size={18} /></Button>
-            <Button variant="secondary" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="sm"><ChevronsRight size={18} /></Button>
-            <div className="h-6 w-px bg-zinc-700 mx-2" />
-            <Button variant={createVariation ? "default" : "outline"} onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "bg-amber-600 hover:bg-amber-500" : ""} size="sm">
+          <div className="flex items-center justify-center gap-2 w-full glass-panel p-2 rounded-lg shrink-0 bg-zinc-900/40 border-white/5 mx-auto max-w-lg">
+            {/* ... Navigation Buttons (unchanged just styled) ... */}
+            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goToStart} disabled={pgnTree.isAtStart()} size="icon"><ChevronsLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goBack} disabled={pgnTree.isAtStart()} size="icon"><ChevronLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goForward} disabled={pgnTree.isAtEnd()} size="icon"><ChevronRight size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="icon"><ChevronsRight size={20} /></Button>
+            <div className="h-6 w-px bg-zinc-800 mx-2" />
+            <Button variant="ghost" onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "text-amber-500 bg-amber-500/10" : "text-zinc-500 hover:text-zinc-300"} size="icon" title="New Variation">
               <GitBranch size={18} />
             </Button>
-            <div className="h-6 w-px bg-zinc-700 mx-2" />
-            <div className="flex bg-zinc-800 rounded-lg p-1">
-              <button onClick={() => setViewMode('2d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '2d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>2D</button>
-              <button onClick={() => setViewMode('3d')} className={`px-3 py-1 rounded text-xs font-bold ${viewMode === '3d' ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>3D</button>
+            <div className="h-6 w-px bg-zinc-800 mx-2" />
+            <div className="flex bg-zinc-950/50 rounded p-0.5 border border-white/5">
+              <button onClick={() => setViewMode('2d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '2d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-400'}`}>2D</button>
+              <button onClick={() => setViewMode('3d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '3d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-400'}`}>3D</button>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Tools & Analysis (Fixed Width) */}
-        <div className="w-full lg:w-[450px] flex flex-col gap-4 h-full min-h-0 glass-panel rounded-xl p-4 bg-zinc-950/40 border-white/5">
+        {/* RIGHT COLUMN: Tabbed Interface */}
+        <div className="w-full lg:w-[420px] h-full flex flex-col glass-panel rounded-xl overflow-hidden bg-zinc-950/60 border-white/5 shadow-2xl">
 
-          {/* ENGINE STATUS BAR - Compact */}
-          <div className="glass-panel p-3 rounded-lg flex items-center justify-between shrink-0 bg-zinc-900/60">
-            <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
-              <div>
-                <span className="text-xs font-bold text-zinc-300 font-display uppercase tracking-wider block">Stockfish 16</span>
-                <span className="text-[10px] text-zinc-500 font-mono">
-                  {isAnalyzing ? `Depth: ${evaluation?.depth || 0}` : 'Ready'}
-                </span>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <span className={`text-xl font-black font-mono tracking-tighter ${(evaluation?.value ?? 0) > 0 ? 'text-emerald-400' :
-                (evaluation?.value ?? 0) < 0 ? 'text-red-400' : 'text-zinc-400'
-                }`}>
-                {getEvalText(evaluation)}
-              </span>
-            </div>
-          </div>
-
-          {/* TABS & TOOLS */}
-          <div className="flex bg-zinc-900/60 p-1 rounded-lg shrink-0">
+          {/* TAB HEADERS */}
+          <div className="flex border-b border-white/5 bg-zinc-900/80 backdrop-blur">
             <button
               onClick={() => { setActiveTab('analysis'); setIsSetupMode(false); }}
-              className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'analysis' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'analysis' ? 'text-indigo-400 bg-indigo-500/5' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
-              Analysis
+              <ActivityIcon size={20} />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Analysis</span>
             </button>
             <button
               onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
-              className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'database' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'database' ? 'text-indigo-400 bg-indigo-500/5' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
-              Database
+              <DatabaseIcon />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Database</span>
             </button>
             <button
               onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
-              className={`flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider font-display transition-colors ${activeTab === 'setup' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'setup' ? 'text-indigo-400 bg-indigo-500/5' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
-              Setup
+              <SetupIcon />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Setup</span>
             </button>
           </div>
 
           {/* TAB CONTENT */}
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle bg-zinc-900/20 rounded-lg p-2 border border-white/5 relative">
-
+          <div className="flex-1 min-h-0 relative p-0 bg-transparent flex flex-col">
             {activeTab === 'analysis' && (
-              <div className="flex flex-col gap-3 h-full">
-                {/* Evaluation Graph Placeholder */}
-                <div className="h-16 bg-zinc-900/40 rounded border border-white/5 flex items-end px-1 gap-0.5 opacity-50 relative overflow-hidden shrink-0">
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Evaluation History</span>
-                  </div>
+              <div className="flex flex-col h-full p-2 gap-2">
+                {/* Compact Controls at Top */}
+                <div className="shrink-0">
+                  <AnalysisControls
+                    isAnalyzing={isAnalyzing}
+                    setIsAnalyzing={setIsAnalyzing}
+                    depth={engineDepth}
+                    setDepth={setEngineDepth}
+                    multipv={multipv}
+                    setMultipv={setMultipv}
+                  />
                 </div>
 
-                {/* Move History */}
-                <div className="flex-1 bg-zinc-900/30 rounded-lg border border-white/5 overflow-y-auto scrollbar-subtle p-2">
+                {/* PGN Editor Filler */}
+                <div className="flex-1 min-h-0">
                   <PGNEditor
                     tree={pgnTree}
                     onTreeChange={setPgnTree}
@@ -584,31 +517,23 @@ export default function AnalysisPage() {
                     engineEval={evaluation}
                   />
                 </div>
-
-                {/* Controls */}
-                <AnalysisControls
-                  isAnalyzing={isAnalyzing}
-                  setIsAnalyzing={setIsAnalyzing}
-                  depth={engineDepth}
-                  setDepth={setEngineDepth}
-                  multipv={multipv}
-                  setMultipv={setMultipv}
-                />
               </div>
             )}
 
             {activeTab === 'database' && (
-              <DatabaseManager
-                onLoadGame={(pgn) => {
-                  loadPGN(pgn);
-                  setActiveTab('analysis');
-                }}
-                currentPgn={pgnTree.toString()}
-              />
+              <div className="flex-1 p-2 overflow-hidden">
+                <DatabaseManager
+                  onLoadGame={(pgn) => {
+                    loadPGN(pgn);
+                    setActiveTab('analysis');
+                  }}
+                  currentPgn={pgnTree.toString()}
+                />
+              </div>
             )}
 
             {activeTab === 'setup' && (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-500 text-sm italic">
+              <div className="flex-1 p-2 flex items-center justify-center overflow-auto">
                 <BoardSetup
                   fen={fen}
                   onFenChange={handlePositionChange}
@@ -620,10 +545,9 @@ export default function AnalysisPage() {
                 />
               </div>
             )}
-
           </div>
-
         </div>
+
       </div>
     </div>
   );

@@ -34,10 +34,9 @@ export function AnnotationPanel({
 
     if (!node) {
         return (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center">
-                <MessageSquare className="mx-auto mb-2 text-slate-600" size={32} />
-                <p className="text-slate-500 text-sm">
-                    Select a move to add annotations
+            <div className="bg-zinc-900/40 border border-white/5 rounded-lg p-4 text-center">
+                <p className="text-zinc-500 text-xs italic">
+                    Select a move to annotate
                 </p>
             </div>
         );
@@ -62,115 +61,75 @@ export function AnnotationPanel({
         }
     };
 
-    const handleClearEvaluation = () => {
-        onSetEvaluation(undefined);
-        setEvalValue('');
-    };
-
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
-            {/* Header with Move Info */}
-            <div className="bg-slate-800 border-b border-slate-700 p-3">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <span className="text-slate-400 text-xs">Annotating</span>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="text-white font-bold text-lg">{node.move}</span>
-                            <NAGDisplay nags={node.annotation.nags} onRemove={onToggleNAG} />
-                        </div>
-                    </div>
-                    <div className="text-xs text-slate-500">
-                        Move {node.moveNumber}
-                    </div>
-                </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-slate-700">
+        <div className="bg-zinc-900/50 border border-white/5 rounded-lg overflow-hidden flex flex-col">
+            {/* Minimal Tabs */}
+            <div className="flex border-b border-white/5">
                 <button
                     onClick={() => setActiveTab('comments')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition flex items-center justify-center gap-2 ${activeTab === 'comments'
-                        ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                        }`}
+                    className={`flex-1 py-2 flex items-center justify-center transition-colors ${activeTab === 'comments' ? 'bg-zinc-800 text-indigo-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    title="Comments"
                 >
-                    <MessageSquare size={16} />
-                    Comments
+                    <MessageSquare size={14} />
                 </button>
                 <button
                     onClick={() => setActiveTab('symbols')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition flex items-center justify-center gap-2 ${activeTab === 'symbols'
-                        ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                        }`}
+                    className={`flex-1 py-2 flex items-center justify-center transition-colors ${activeTab === 'symbols' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    title="Symbols (NAGs)"
                 >
-                    <Palette size={16} />
-                    Symbols
+                    <Palette size={14} />
                 </button>
                 <button
                     onClick={() => setActiveTab('evaluation')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition flex items-center justify-center gap-2 ${activeTab === 'evaluation'
-                        ? 'bg-slate-800 text-indigo-400 border-b-2 border-indigo-500'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                        }`}
+                    className={`flex-1 py-2 flex items-center justify-center transition-colors ${activeTab === 'evaluation' ? 'bg-zinc-800 text-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    title="Evaluation"
                 >
-                    <TrendingUp size={16} />
-                    Evaluation
+                    <TrendingUp size={14} />
                 </button>
             </div>
 
-            {/* Content */}
-            <div className="p-4 flex-1 overflow-y-auto max-h-96">
-                {/* Comments Tab */}
+            {/* Content Area */}
+            <div className="p-2 min-h-[120px] max-h-60 overflow-y-auto scrollbar-subtle">
                 {activeTab === 'comments' && (
-                    <div className="space-y-3">
-                        {/* Existing Comments */}
+                    <div className="space-y-2">
                         {node.annotation.comments.map((comment, index) => (
-                            <div
-                                key={index}
-                                className="bg-slate-800 border border-slate-700 rounded-lg p-3 group"
-                            >
-                                <div className="flex items-start justify-between gap-2">
-                                    <textarea
-                                        value={comment.text}
-                                        onChange={(e) => onUpdateComment(index, e.target.value)}
-                                        className="flex-1 bg-transparent text-slate-200 text-sm resize-none outline-none"
-                                        rows={2}
-                                    />
-                                    <button
-                                        onClick={() => onRemoveComment(index)}
-                                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 text-red-400 rounded transition"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
+                            <div key={index} className="flex gap-2 group">
+                                <textarea
+                                    value={comment.text}
+                                    onChange={(e) => onUpdateComment(index, e.target.value)}
+                                    className="flex-1 bg-zinc-950/50 text-zinc-300 text-xs p-2 rounded border border-white/5 resize-none focus:outline-none focus:border-zinc-700"
+                                    rows={2}
+                                />
+                                <button
+                                    onClick={() => onRemoveComment(index)}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-500/10 rounded transition-all self-start"
+                                >
+                                    <Trash2 size={12} />
+                                </button>
                             </div>
                         ))}
-
-                        {/* Add New Comment */}
-                        <div className="space-y-2">
-                            <textarea
+                        <div className="flex gap-2">
+                            <input
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Add a comment..."
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-slate-200 text-sm placeholder-slate-500 outline-none focus:border-indigo-500 transition resize-none"
-                                rows={3}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                                placeholder="Add comment..."
+                                className="flex-1 bg-zinc-950 text-zinc-300 text-xs p-2 rounded border border-white/5 focus:outline-none focus:border-zinc-700"
                             />
                             <button
                                 onClick={handleAddComment}
                                 disabled={!newComment.trim()}
-                                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2"
+                                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors disabled:opacity-50"
                             >
-                                <Plus size={16} />
-                                Add Comment
+                                <Plus size={14} />
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* Symbols Tab */}
                 {activeTab === 'symbols' && (
                     <div>
+                        {/* We can re-use the NAGSelector but stripped of extra UI if needed, for now standard is fine */}
                         <NAGSelector
                             selectedNAGs={node.annotation.nags}
                             onToggleNAG={onToggleNAG}
@@ -178,86 +137,36 @@ export function AnnotationPanel({
                     </div>
                 )}
 
-                {/* Evaluation Tab */}
                 {activeTab === 'evaluation' && (
-                    <div className="space-y-4">
-                        {/* Current Evaluation Display */}
-                        {node.annotation.evaluation && (
-                            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="text-xs text-slate-400 mb-1">Current Evaluation</div>
-                                        <div className="text-2xl font-bold text-indigo-400">
-                                            {node.annotation.evaluation.type === 'mate'
-                                                ? `M${node.annotation.evaluation.value}`
-                                                : (node.annotation.evaluation.value / 100).toFixed(2)}
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={handleClearEvaluation}
-                                        className="p-2 hover:bg-red-500/20 text-red-400 rounded transition"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] text-zinc-500 uppercase font-bold">Manual Eval</span>
+                            <div className="flex bg-zinc-950 rounded p-0.5 ml-auto">
+                                <button onClick={() => setEvalType('cp')} className={`px-2 py-0.5 text-[10px] rounded ${evalType === 'cp' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>CP</button>
+                                <button onClick={() => setEvalType('mate')} className={`px-2 py-0.5 text-[10px] rounded ${evalType === 'mate' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Mate</button>
                             </div>
-                        )}
-
-                        {/* Set Evaluation */}
-                        <div className="space-y-3">
-                            <div>
-                                <label className="text-xs text-slate-400 mb-2 block">Evaluation Type</label>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setEvalType('cp')}
-                                        className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${evalType === 'cp'
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                                            }`}
-                                    >
-                                        Centipawns
-                                    </button>
-                                    <button
-                                        onClick={() => setEvalType('mate')}
-                                        className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${evalType === 'mate'
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                                            }`}
-                                    >
-                                        Mate
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-xs text-slate-400 mb-2 block">
-                                    Value {evalType === 'cp' ? '(e.g., 1.5 for +1.50)' : '(moves to mate)'}
-                                </label>
-                                <input
-                                    type="number"
-                                    step={evalType === 'cp' ? '0.1' : '1'}
-                                    value={evalValue}
-                                    onChange={(e) => setEvalValue(e.target.value)}
-                                    placeholder={evalType === 'cp' ? '0.0' : '0'}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-slate-200 text-sm placeholder-slate-500 outline-none focus:border-indigo-500 transition"
-                                />
-                            </div>
-
+                        </div>
+                        <div className="flex gap-2">
+                            <input
+                                type="number"
+                                value={evalValue}
+                                onChange={(e) => setEvalValue(e.target.value)}
+                                placeholder={evalType === 'cp' ? "0.00" : "Moves"}
+                                className="flex-1 bg-zinc-950 border border-white/5 rounded px-2 text-xs py-1"
+                            />
                             <button
                                 onClick={handleSetEvaluation}
-                                disabled={!evalValue.trim()}
-                                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 rounded-lg text-sm font-medium transition"
+                                className="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 px-3 py-1 rounded text-xs border border-indigo-500/20 transition-colors"
                             >
-                                Set Evaluation
+                                Set
                             </button>
                         </div>
-
-                        {/* Info */}
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">
-                            <p className="text-xs text-slate-400">
-                                💡 Positive values favor White, negative values favor Black
-                            </p>
-                        </div>
+                        {node.annotation.evaluation && (
+                            <div className="flex items-center justify-between bg-zinc-950/30 p-1.5 rounded border border-white/5 mt-2">
+                                <span className="text-xs text-zinc-400 ml-1">Current: <span className="text-zinc-200 font-mono font-bold">{node.annotation.evaluation.type === 'mate' ? `M${node.annotation.evaluation.value}` : (node.annotation.evaluation.value / 100).toFixed(2)}</span></span>
+                                <button onClick={() => onSetEvaluation(undefined)} className="text-red-400 hover:text-red-300"><Trash2 size={12} /></button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
