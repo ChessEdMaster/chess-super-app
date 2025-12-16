@@ -66,16 +66,6 @@ export default function AcademyPage() {
         }
     }, [user, authLoading]);
 
-    // Auto-redirect if student has only 1 course
-    useEffect(() => {
-        if (!loading && courses.length === 1 && user) {
-            let isSuperAdmin = role === 'SuperAdmin' || user?.email === 'marc@marc.com';
-            if (!isSuperAdmin) {
-                router.push(`/academy/course/${courses[0].id}`);
-            }
-        }
-    }, [courses, loading, role, user, router]);
-
     const loadAcademyData = async () => {
         try {
             // 1. Determine Courses to Load
@@ -119,7 +109,18 @@ export default function AcademyPage() {
                         .eq('published', true)
                         .order('title');
 
-                    if (userCourses) setCourses(userCourses);
+                    if (userCourses) {
+                        setCourses(userCourses);
+
+                        // OPTIMIZATION: Redirect immediately if single course
+                        // We check specifically if NOT SuperAdmin (though implicit by reaching this block)
+                        // but logic above handles 'isSuperAdmin' branch separately.
+                        // So if we are here, we are NOT SuperAdmin (or at least filtering by clan).
+                        if (userCourses.length === 1) {
+                            router.push(`/academy/course/${userCourses[0].id}`);
+                            return; // RETURN EARLY to keep loading=true and prevent flash
+                        }
+                    }
                 } else {
                     setCourses([]); // No courses assigned
                 }
@@ -160,9 +161,11 @@ export default function AcademyPage() {
                 achievementsUnlocked: userAchievementsData?.length || 0
             });
 
+            // Only set loading false if we didn't redirect
+            setLoading(false);
+
         } catch (error) {
             console.error('Error loading academy data:', error);
-        } finally {
             setLoading(false);
         }
     };
