@@ -38,7 +38,7 @@ const TRACK_TITLES: Record<string, string> = {
 };
 
 export default function AcademyPage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, role, loading: authLoading } = useAuth(); // Destructure role directly
     const router = useRouter();
     const [courses, setCourses] = useState<AcademyCourse[]>([]);
     const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
@@ -61,30 +61,65 @@ export default function AcademyPage() {
     }, [user, authLoading, router]);
 
     useEffect(() => {
-        if (user) {
+        if (user && !authLoading) {
             loadAcademyData();
         }
-    }, [user]);
+    }, [user, authLoading]);
 
     const loadAcademyData = async () => {
         try {
-            // 1. Load All Public Courses
-            // We fetch ALL courses and filter client side for better UX when switching tabs
-            const { data: coursesData, error: coursesError } = await supabase
-                .from('academy_courses')
-                .select('*')
-                .eq('published', true)
-                .order('target_grade'); // Sort by grade naturally P3 -> ...
+            // 1. Determine Courses to Load
+            let accessibleCourseIds: string[] = [];
+            let isSuperAdmin = role === 'SuperAdmin' || user?.email === 'marc@marc.com';
 
-            if (coursesData) setCourses(coursesData);
+            if (isSuperAdmin) {
+                // Load ALL published courses
+                const { data: allCourses } = await supabase
+                    .from('academy_courses')
+                    .select('*')
+                    .eq('published', true)
+                    .order('title'); // Sort consistently
 
-            // 2. Load Enrollments
-            const { data: enrollData } = await supabase
-                .from('academy_enrollments')
-                .select('course_id')
-                .eq('user_id', user!.id);
+                if (allCourses) setCourses(allCourses);
+            } else {
+                // Load User's Clan Courses
+                const { data: clubMemberships, error: clubsError } = await supabase
+                    .from('club_members')
+                    .select(`
+                        club:clubs (
+                            id,
+                            course_id
+                        )
+                    `)
+                    .eq('user_id', user!.id);
 
-            const enrolledSet = new Set(enrollData?.map(e => e.course_id) || []);
+                if (clubMemberships) {
+                    // Extract non-null course IDs
+                    // @ts-ignore - course_id is new
+                    accessibleCourseIds = clubMemberships
+                        .map((m: any) => m.club?.course_id)
+                        .filter((id: string) => id); // Remove nulls/undefined
+                }
+
+                if (accessibleCourseIds.length > 0) {
+                    const { data: userCourses } = await supabase
+                        .from('academy_courses')
+                        .select('*')
+                        .in('id', accessibleCourseIds)
+                        .eq('published', true)
+                        .order('title');
+
+                    if (userCourses) setCourses(userCourses);
+                } else {
+                    setCourses([]); // No courses assigned
+                }
+            }
+
+            // 2. Load Enrollments (Legacy? Or still useful for progress?)
+            // We can keep this for compatibility if academy_enrollments is still used
+            // But now enrollment is effectively via Clan. 
+            // We'll just assume they are enrolled in what they can see.
+            const enrolledSet = new Set(accessibleCourseIds);
             setEnrolledCourseIds(enrolledSet);
 
             // 3. Load Stats
