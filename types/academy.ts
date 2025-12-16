@@ -203,3 +203,17 @@ export interface UserAcademyStats {
     averageScore: number;
     achievementsUnlocked: number;
 }
+
+export interface AcademyConcept {
+    id: string;
+    name: string; // The tag name (e.g., 'fork', 'pin')
+    puzzle_count: number;
+    description?: string;
+    display_name?: string;
+    icon?: string;
+    color?: string;
+    category?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+

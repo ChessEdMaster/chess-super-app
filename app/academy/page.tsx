@@ -155,19 +155,26 @@ export default function AcademyPage() {
                     </p>
                 </div>
 
-                {stats.totalLessonsCompleted > 0 && (
-                    <div className="glass-panel px-4 py-2 rounded-lg flex items-center gap-4 bg-zinc-900/60">
-                        <div className="flex flex-col items-center">
-                            <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Lliçons</span>
-                            <span className="text-xl font-black text-white font-display">{stats.totalLessonsCompleted}</span>
+                <div className="flex items-center gap-4">
+                    <Link href="/academy/concepts" className="glass-panel px-4 py-2 rounded-lg bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20 transition flex items-center gap-2 group">
+                        <BrainCircuit size={20} className="text-purple-400 group-hover:text-purple-300" />
+                        <span className="text-sm font-bold text-white uppercase tracking-wider">Conceptes</span>
+                    </Link>
+
+                    {stats.totalLessonsCompleted > 0 && (
+                        <div className="glass-panel px-4 py-2 rounded-lg flex items-center gap-4 bg-zinc-900/60">
+                            <div className="flex flex-col items-center">
+                                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Lliçons</span>
+                                <span className="text-xl font-black text-white font-display">{stats.totalLessonsCompleted}</span>
+                            </div>
+                            <div className="w-px h-8 bg-white/10" />
+                            <div className="flex flex-col items-center">
+                                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Exercicis</span>
+                                <span className="text-xl font-black text-white font-display">{stats.totalExercisesSolved}</span>
+                            </div>
                         </div>
-                        <div className="w-px h-8 bg-white/10" />
-                        <div className="flex flex-col items-center">
-                            <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Exercicis</span>
-                            <span className="text-xl font-black text-white font-display">{stats.totalExercisesSolved}</span>
-                        </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* SUBJECT SELECTOR */}
