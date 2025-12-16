@@ -325,4 +325,80 @@ export class PGNTree {
         if (!this.game.currentNode) return this.game.mainLine.length === 0;
         return this.findNextMove(this.game.currentNode) === null;
     }
+    // Get header value
+    getHeader(key: string): string | undefined {
+        // Standardize key case if needed, or just access directly
+        // Usually PGN headers are Case Sensitive but commonly Title Case
+        return this.game.metadata[key];
+    }
+
+    // Convert tree to PGN string
+    toString(): string {
+        let pgn = '';
+
+        // 1. Headers
+        const headers: Record<string, string> = {
+            'Event': '?',
+            'Site': '?',
+            'Date': '????.??.??',
+            'Round': '?',
+            'White': '?',
+            'Black': '?',
+            'Result': '*',
+            ...this.game.metadata
+        };
+
+        for (const [key, value] of Object.entries(headers)) {
+            pgn += `[${key} "${value}"]\n`;
+        }
+        pgn += '\n';
+
+        // 2. Moves
+        pgn += this.renderVariations(this.game.mainLine);
+
+        // 3. Result
+        pgn += ` ${headers['Result'] || '*'}`;
+
+        return pgn;
+    }
+
+    private renderVariations(moves: MoveNode[]): string {
+        let result = '';
+        let moveNumber = 1; // Track locally, though nodes have it
+
+        for (let i = 0; i < moves.length; i++) {
+            const node = moves[i];
+
+            // Move Number (if white or first move in sequence)
+            if (node.color === 'w') {
+                result += `${node.moveNumber}. `;
+            } else if (i === 0) {
+                result += `${node.moveNumber}... `;
+            }
+
+            // Move SAN
+            result += node.move;
+
+            // NAGs
+            if (node.annotation.nags.length > 0) {
+                result += node.annotation.nags.map(n => ` $${n}`).join('');
+            }
+
+            // Comments
+            if (node.annotation.comments.length > 0) {
+                const text = node.annotation.comments.map(c => c.text).join(' ');
+                result += ` {${text}}`;
+            }
+
+            result += ' ';
+
+            // Variations
+            if (node.variations.length > 0) {
+                for (const variation of node.variations) {
+                    result += `( ${this.renderVariations(variation.moves)} ) `;
+                }
+            }
+        }
+        return result.trim();
+    }
 }
