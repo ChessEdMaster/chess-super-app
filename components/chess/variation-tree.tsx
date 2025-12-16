@@ -198,44 +198,41 @@ interface MoveListProps {
 }
 
 export function MoveList({ moves, currentNode, onSelectNode }: MoveListProps) {
-    return (
-        <div className="flex flex-wrap gap-1 items-center">
-            {/* Starting position button */}
-            <button
-                onClick={() => onSelectNode(null)}
-                className={`px-2 py-1 rounded text-xs font-medium transition ${currentNode === null
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-400 hover:bg-slate-800'
-                    }`}
-            >
-                Start
-            </button>
+    if (moves.length === 0) return <div className="p-4 text-center text-zinc-500 text-xs italic">Game start</div>;
 
-            {moves.map((node) => {
+    return (
+        <div className="flex flex-wrap text-sm gap-x-1 gap-y-1 items-baseline">
+            {moves.map((node, index) => {
                 const isActive = currentNode?.id === node.id;
-                const showMoveNumber = node.color === 'w';
+                const showMoveNumber = node.color === 'w' || index === 0; // Always show for first node if it's black (from fen)
 
                 return (
                     <React.Fragment key={node.id}>
                         {showMoveNumber && (
-                            <span className="text-slate-500 text-xs font-mono select-none">
-                                {node.moveNumber}.
+                            <span className="text-zinc-500 font-mono select-none text-xs ml-1">
+                                {node.moveNumber}{node.color === 'b' ? '...' : '.'}
                             </span>
                         )}
-                        <button
+                        <span
                             onClick={() => onSelectNode(node)}
-                            className={`px-2 py-1 rounded font-mono text-sm transition ${isActive
-                                ? 'bg-indigo-600 text-white font-bold'
-                                : 'text-slate-300 hover:bg-slate-800'
+                            className={`cursor-pointer px-1 rounded transition-colors ${isActive
+                                ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                                : 'hover:bg-zinc-800 text-zinc-300'
                                 }`}
                         >
                             {node.move}
                             {node.annotation.nags.length > 0 && (
-                                <span className="text-amber-400 ml-0.5">
-                                    {node.annotation.nags.map((nag) => NAG_SYMBOLS[nag] || '').join('')}
+                                <span className="text-emerald-400 text-xs ml-0.5 font-bold">
+                                    {node.annotation.nags.map((nag) => NAG_SYMBOLS[nag] || `$${nag}`).join('')}
                                 </span>
                             )}
-                        </button>
+                            {/* Inline Comments */}
+                            {node.annotation.comments.length > 0 && (
+                                <span className="text-zinc-500 italic ml-1 font-sans text-xs">
+                                    {node.annotation.comments.map(c => c.text).join(' ')}
+                                </span>
+                            )}
+                        </span>
                     </React.Fragment>
                 );
             })}
