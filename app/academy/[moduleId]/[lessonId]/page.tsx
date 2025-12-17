@@ -33,12 +33,13 @@ export default function LessonPage() {
         try {
             const { data, error } = await supabase
                 .from('academy_lessons')
-                .select('*')
+                .select('*, module:academy_modules(course_id)')
                 .eq('id', lessonId)
                 .single();
 
             if (error) throw error;
-            setLesson(data);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setLesson(data as any);
         } catch (error) {
             console.error('Error loading lesson:', error);
         } finally {
@@ -90,7 +91,13 @@ export default function LessonPage() {
 
             // Redirect after a delay
             setTimeout(() => {
-                router.push(`/academy/course/${lesson.course_id}`); // Assuming back to module view via course or module
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const courseId = (lesson as any).module?.course_id;
+                if (courseId) {
+                    router.push(`/academy/course/${courseId}`);
+                } else {
+                    router.push('/academy');
+                }
             }, 3000);
 
         } catch (error) {
@@ -178,7 +185,8 @@ export default function LessonPage() {
         <div className="min-h-screen bg-zinc-950 font-sans text-white flex flex-col">
             <header className="h-16 border-b border-zinc-800 flex items-center px-4 bg-zinc-900/50 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto w-full flex items-center">
-                    <Link href={`/academy/course/${lesson.course_id}`} passHref>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <Link href={`/academy/course/${(lesson as any).module?.course_id}`} passHref>
                         <Button variant="ghost" className="text-zinc-400 hover:text-white gap-2 pl-0">
                             <ArrowLeft size={20} /> <span className="uppercase font-bold tracking-wider text-xs hidden md:inline">Back to Course</span>
                         </Button>
