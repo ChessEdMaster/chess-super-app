@@ -9,7 +9,7 @@ interface EndgamePanelProps {
 }
 
 export const EndgamePanel = ({ fen }: EndgamePanelProps) => {
-    const { data, loading, isApplicable } = useSyzygy(fen);
+    const { data, loading, isApplicable, error } = useSyzygy(fen);
 
     if (!isApplicable) return null;
 
@@ -22,7 +22,11 @@ export const EndgamePanel = ({ fen }: EndgamePanelProps) => {
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                {loading ? (
+                {error ? (
+                    <div className="flex items-center gap-2 text-red-400 text-xs">
+                        <Skull className="h-3 w-3" /> {error}
+                    </div>
+                ) : loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground text-sm">
                         <Loader2 className="h-3 w-3 animate-spin" /> Consultant l'oracle...
                     </div>

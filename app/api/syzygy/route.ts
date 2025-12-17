@@ -9,7 +9,11 @@ export async function GET(request: Request) {
     }
 
     try {
-        const response = await fetch(`https://syzygy-tables.info/api/v2?fen=${encodeURIComponent(fen)}`);
+        const response = await fetch(`https://syzygy-tables.info/api/v2?fen=${encodeURIComponent(fen)}`, {
+            headers: {
+                'User-Agent': 'ChessSuperApp/1.0 (https://chess-super-app.vercel.app)'
+            }
+        });
 
         if (!response.ok) {
             // If the external API fails, forward the status or 500
