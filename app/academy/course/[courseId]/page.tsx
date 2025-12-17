@@ -14,6 +14,8 @@ import { supabase } from '@/lib/supabase';
 import { AcademyCourse, AcademyModule, ModuleProgress } from '@/types/academy';
 import { GamifiedCourseView } from '@/components/academy/gamified-course-view';
 import { AcademicCourseView } from '@/components/academy/academic-course-view';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { Button } from '@/components/ui/button';
 
 export default function CoursePage() {
     const { courseId } = useParams();
@@ -104,59 +106,68 @@ export default function CoursePage() {
 
     if (authLoading || loading || !course) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+                <Loader2 className="animate-spin text-amber-500" size={48} />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
-            <div className="max-w-5xl mx-auto">
-                <Link href="/academy" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-8">
-                    <ArrowLeft size={20} /> Tornar al Curriculum
+        <div className="min-h-screen bg-zinc-950 p-6 font-sans text-slate-200">
+            <div className="max-w-5xl mx-auto flex flex-col gap-8">
+
+                {/* Back Button */}
+                <Link href="/academy">
+                    <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-white/5 gap-2 pl-0">
+                        <ArrowLeft size={20} /> <span className="uppercase font-bold tracking-wider text-xs">Back to Curriculum</span>
+                    </Button>
                 </Link>
 
                 {/* HERO SECTION */}
-                <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 mb-8">
+                <Panel className="relative rounded-3xl overflow-hidden bg-zinc-900 border-zinc-700 min-h-[300px] flex flex-col justify-end">
                     <div className="absolute inset-0">
                         {course.image_url && (
                             <Image
                                 src={course.image_url}
-                                className="object-cover opacity-20"
+                                className="object-cover opacity-40"
                                 alt={course.title}
                                 fill
                                 unoptimized
                             />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/60 to-transparent" />
                     </div>
 
-                    <div className="relative p-6 max-w-2xl">
-                        <div className="flex gap-2 mb-3">
-                            <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                    <div className="relative p-8 max-w-3xl z-10">
+                        <div className="flex gap-3 mb-4">
+                            <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider backdrop-blur-sm">
                                 {course.target_grade}
                             </span>
                             {course.subject_tags?.map(tag => (
-                                <span key={tag} className="bg-slate-700/50 text-slate-300 border border-slate-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                                <span key={tag} className="bg-zinc-800/80 text-zinc-300 border border-zinc-600/50 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
                                     {tag}
                                 </span>
                             ))}
                         </div>
 
-                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
+                        <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-none font-display text-stroke uppercase tracking-wide drop-shadow-xl">
                             {course.title}
                         </h1>
-                        <p className="text-sm text-slate-300 mb-4 leading-relaxed">
+                        <p className="text-sm md:text-base text-zinc-300 mb-2 leading-relaxed font-medium max-w-2xl text-shadow">
                             {course.description}
                         </p>
                     </div>
-                </div>
+                </Panel>
 
                 {/* MODULES LIST / MAP */}
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                    <BookOpen className="text-indigo-400" /> Contingut del Curs
-                </h2>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                        <BookOpen className="text-amber-500" size={24} />
+                    </div>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-wide font-display">
+                        Course Content
+                    </h2>
+                </div>
 
                 {/* Conditional View Rendering */}
                 {isGamifiedGrade(course.target_grade) ? (
@@ -166,10 +177,10 @@ export default function CoursePage() {
                 )}
 
                 {modules.length === 0 && (
-                    <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-slate-800 border-dashed">
-                        <BookOpen size={48} className="text-slate-700 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-slate-500">Aquest curs encara no té contingut</h3>
-                        <p className="text-slate-600">Torna més tard per veure noves lliçons.</p>
+                    <div className="text-center py-24 bg-zinc-900/30 rounded-3xl border border-zinc-800 border-dashed animate-in fade-in zoom-in">
+                        <BookOpen size={64} className="text-zinc-800 mx-auto mb-6" />
+                        <h3 className="text-xl font-black text-zinc-500 uppercase tracking-wide mb-2">Coming Soon</h3>
+                        <p className="text-zinc-600 font-bold text-sm">This course is currently being built.</p>
                     </div>
                 )}
             </div>

@@ -40,7 +40,7 @@ export function GlobalBackground() {
                 />
             </div>
             {/* Gradient Overlay - Darker for premium feel */}
-            <div className="absolute inset-0 bg-zinc-950/80" />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-indigo-950/50 to-slate-950/90 pointer-events-none" />
         </div>
     );
 }

@@ -17,6 +17,9 @@ import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { playSound } from '@/lib/sounds';
 import { LearningDiary } from './academy/sa-view/learning-diary';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { Panel } from '@/components/ui/design-system/Panel';
 
 interface LessonViewerProps {
     content: LessonContent;
@@ -77,52 +80,53 @@ export function LessonViewer({ content, onComplete, lessonTitle, userId, lessonI
 
     if (content.activities && content.activities.length > 0) {
         return (
-            <div className="w-full max-w-4xl mx-auto p-4">
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-indigo-600 rounded-lg">
-                            <Trophy className="text-white" size={20} />
+            <div className="w-full max-w-4xl mx-auto">
+                <GameCard variant="default" className="bg-zinc-900 border-zinc-800 p-6 md:p-8">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-indigo-600 rounded-xl shadow-lg border border-indigo-500/50">
+                            <Trophy className="text-white" size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white">{lessonTitle}</h2>
-                            <p className="text-slate-400 text-sm">Activitats Offline / Aula</p>
+                            <h2 className="text-2xl font-black text-white font-display uppercase tracking-wide">{lessonTitle}</h2>
+                            <p className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Activitats Offline / Aula</p>
                         </div>
                     </div>
 
-                    <div className="grid gap-3 mb-6">
+                    <div className="grid gap-4 mb-8">
                         {content.activities.map((activity, idx) => (
-                            <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 flex flex-col gap-1.5 hover:border-indigo-500/50 transition-colors">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-2 py-0.5 bg-indigo-900/40 rounded border border-indigo-500/20">
+                            <div key={idx} className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-5 flex flex-col gap-2 hover:border-indigo-500/50 transition-colors group">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest px-3 py-1 bg-indigo-900/40 rounded border border-indigo-500/20 shadow-sm">
                                         {activity.type}
                                     </span>
                                 </div>
-                                <h3 className="text-base font-bold text-white">{activity.title}</h3>
-                                <p className="text-slate-300 text-xs leading-relaxed">{activity.desc}</p>
+                                <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">{activity.title}</h3>
+                                <p className="text-zinc-400 text-sm leading-relaxed">{activity.desc}</p>
                             </div>
                         ))}
                     </div>
 
                     <div className="flex justify-center">
-                        <button
+                        <ShinyButton
+                            variant="success"
                             onClick={() => onComplete(100)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold text-base shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
+                            className="w-full sm:w-auto px-8 py-4 text-sm uppercase tracking-widest font-bold"
                         >
-                            <CheckCircle size={18} />
+                            <CheckCircle size={20} className="mr-2" />
                             Marcar com a Completat
-                        </button>
+                        </ShinyButton>
                     </div>
-                </div>
+                </GameCard>
             </div>
         );
     }
 
     if (!content || (!content.steps && !content.activities)) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center bg-slate-900 border border-slate-800 rounded-xl">
-                <p className="text-white font-bold mb-2">Error de contingut</p>
-                <p className="text-slate-400">Aquesta lliçó no té passos definits o el format és incorrecte.</p>
-            </div>
+            <GameCard variant="default" className="flex flex-col items-center justify-center p-12 text-center bg-zinc-900 border-zinc-800">
+                <p className="text-white font-black text-xl mb-2 font-display uppercase tracking-wide">Error de contingut</p>
+                <p className="text-zinc-500 font-bold text-sm">Aquesta lliçó no té passos definits o el format és incorrecte.</p>
+            </GameCard>
         );
     }
 
@@ -204,14 +208,14 @@ export function LessonViewer({ content, onComplete, lessonTitle, userId, lessonI
 
             newSquares[move.to] = {
                 background: isCapture
-                    ? 'radial-gradient(circle, rgba(255,0,0,.5) 25%, transparent 25%)'
-                    : 'radial-gradient(circle, rgba(0,0,0,.5) 25%, transparent 25%)',
+                    ? 'radial-gradient(circle, rgba(239, 68, 68, .6) 25%, transparent 25%)'
+                    : 'radial-gradient(circle, rgba(16, 185, 129, .6) 25%, transparent 25%)', // Green/Red dots for consistency
                 borderRadius: '50%',
             };
             return move;
         });
         newSquares[square] = {
-            background: 'rgba(255, 255, 0, 0.4)',
+            background: 'rgba(245, 158, 11, 0.5)', // Amber selection
         };
         setOptionSquares(newSquares);
         return true;
@@ -303,54 +307,56 @@ export function LessonViewer({ content, onComplete, lessonTitle, userId, lessonI
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4">
-            <div className="flex flex-col lg:flex-row gap-4">
+        <div className="w-full max-w-6xl mx-auto">
+            <div className="flex flex-col lg:flex-row gap-6">
 
                 <div className="flex-1">
-                    <div className="relative w-full max-w-[480px] aspect-square mx-auto shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
+                    <GameCard variant="default" className="relative w-full aspect-square mx-auto shadow-2xl overflow-hidden border-zinc-800 p-1 bg-zinc-950">
                         <Chessboard2D
                             fen={fen}
                             orientation="white"
                             onSquareClick={onSquareClick}
                             customSquareStyles={optionSquares}
                         />
-                    </div>
+                    </GameCard>
 
-                    <div className="mt-3 max-w-[480px] mx-auto">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs text-slate-400">
+                    <div className="mt-4 max-w-full mx-auto px-1">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                                 Pas {currentStepIndex + 1} de {content.steps?.length || 0}
                             </span>
-                            <span className="text-xs text-slate-400">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                                 Precisió: {totalAttempts > 0 ? Math.round((correctMoves / totalAttempts) * 100) : 0}%
                             </span>
                         </div>
-                        <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden border border-zinc-700">
                             <div
-                                className="bg-indigo-500 h-full transition-all duration-300"
+                                className="bg-amber-500 h-full transition-all duration-300 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
                                 style={{ width: `${((currentStepIndex + 1) / (content.steps?.length || 1)) * 100}%` }}
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="w-full lg:w-80 flex flex-col gap-3">
+                <div className="w-full lg:w-96 flex flex-col gap-4">
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                        <h2 className="text-lg font-bold text-white mb-2">{lessonTitle}</h2>
+                    <Panel className="bg-zinc-900 border-zinc-700 p-5 rounded-2xl">
+                        <h2 className="text-xl font-black text-white mb-2 font-display uppercase tracking-wide leading-none">{lessonTitle}</h2>
                         {isFirstStep && content.introduction && (
-                            <p className="text-slate-400 text-xs mb-3">{content.introduction}</p>
+                            <p className="text-zinc-400 text-xs font-bold leading-relaxed">{content.introduction}</p>
                         )}
-                    </div>
+                    </Panel>
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                        <div className="flex items-start gap-2 mb-3">
-                            <Lightbulb className="text-amber-400 mt-0.5" size={18} />
+                    <Panel className="bg-zinc-900 border-zinc-700 p-5 rounded-2xl flex-1 flex flex-col">
+                        <div className="flex items-start gap-3 mb-4">
+                            <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/20 mt-0.5">
+                                <Lightbulb className="text-amber-500" size={18} />
+                            </div>
                             <div>
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                                <h3 className="text-[10px] font-black text-amber-500/80 uppercase tracking-widest mb-1">
                                     Instrucció
                                 </h3>
-                                <p className="text-white text-sm leading-relaxed">
+                                <p className="text-white text-sm font-medium leading-relaxed">
                                     {currentStep.instruction}
                                 </p>
                             </div>
@@ -359,92 +365,107 @@ export function LessonViewer({ content, onComplete, lessonTitle, userId, lessonI
                         {!isCompleted && (
                             <button
                                 onClick={toggleHint}
-                                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition"
+                                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition font-bold uppercase tracking-wide ml-auto mb-2"
                             >
-                                <Lightbulb size={14} />
                                 {showHint ? 'Amagar pista' : 'Mostrar pista'}
                             </button>
                         )}
 
                         {showHint && (
-                            <div className="mt-2 p-2.5 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
-                                <p className="text-xs text-indigo-200">
+                            <div className="mb-4 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-xl relative overflow-hidden">
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
+                                <p className="text-xs text-indigo-200 font-medium pl-2">
                                     Busca moviments que segueixin la instrucció. Pensa en la seguretat del teu rei i l&apos;activitat de les peces.
                                 </p>
                             </div>
                         )}
-                    </div>
 
-                    {feedback && (
-                        <div className={`border rounded-xl p-3 ${feedback.type === 'success'
-                            ? 'bg-emerald-900/20 border-emerald-500/30'
-                            : feedback.type === 'error'
-                                ? 'bg-red-900/20 border-red-500/30'
-                                : 'bg-blue-900/20 border-blue-500/30'
-                            }`}>
-                            <div className="flex items-start gap-2">
-                                {feedback.type === 'success' ? (
-                                    <CheckCircle className="text-emerald-400 mt-0.5" size={18} />
-                                ) : feedback.type === 'error' ? (
-                                    <XCircle className="text-red-400 mt-0.5" size={18} />
-                                ) : (
-                                    <Lightbulb className="text-blue-400 mt-0.5" size={18} />
-                                )}
-                                <p className={`text-xs ${feedback.type === 'success'
-                                    ? 'text-emerald-200'
+                        <div className="mt-auto space-y-3">
+                            {feedback && (
+                                <div className={`border-l-4 rounded-r-xl p-3 animate-in slide-in-from-right-2 duration-300 ${feedback.type === 'success'
+                                    ? 'bg-emerald-950/30 border-emerald-500'
                                     : feedback.type === 'error'
-                                        ? 'text-red-200'
-                                        : 'text-blue-200'
+                                        ? 'bg-red-950/30 border-red-500'
+                                        : 'bg-blue-950/30 border-blue-500'
                                     }`}>
-                                    {feedback.message}
-                                </p>
+                                    <div className="flex items-start gap-3">
+                                        <div className={`
+                                            p-1 rounded-full 
+                                             ${feedback.type === 'success'
+                                                ? 'bg-emerald-500/20 text-emerald-400'
+                                                : feedback.type === 'error'
+                                                    ? 'bg-red-500/20 text-red-400'
+                                                    : 'bg-blue-500/20 text-blue-400'
+                                            }
+                                        `}>
+                                            {feedback.type === 'success' ? (
+                                                <CheckCircle size={14} />
+                                            ) : feedback.type === 'error' ? (
+                                                <XCircle size={14} />
+                                            ) : (
+                                                <Lightbulb size={14} />
+                                            )}
+                                        </div>
+
+                                        <p className={`text-xs font-bold ${feedback.type === 'success'
+                                            ? 'text-emerald-300'
+                                            : feedback.type === 'error'
+                                                ? 'text-red-300'
+                                                : 'text-blue-300'
+                                            }`}>
+                                            {feedback.message}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex gap-2 pt-2">
+                                <ShinyButton
+                                    variant="neutral"
+                                    onClick={previousStep}
+                                    disabled={isFirstStep}
+                                    className="flex-1 h-10 text-xs uppercase tracking-wider"
+                                >
+                                    <ChevronLeft size={16} /> Prev
+                                </ShinyButton>
+
+                                <ShinyButton
+                                    variant="neutral"
+                                    onClick={resetStep}
+                                    className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+                                    title="Reiniciar pas"
+                                >
+                                    <RotateCcw size={16} />
+                                </ShinyButton>
+
+                                {!isCompleted && !isLastStep && (
+                                    <ShinyButton
+                                        variant="primary"
+                                        onClick={nextStep}
+                                        className="flex-1 h-10 text-xs uppercase tracking-wider"
+                                    >
+                                        Next <ChevronRight size={16} />
+                                    </ShinyButton>
+                                )}
                             </div>
                         </div>
-                    )}
 
-                    <div className="flex gap-2">
-                        <button
-                            onClick={previousStep}
-                            disabled={isFirstStep}
-                            className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition"
-                        >
-                            <ChevronLeft size={18} />
-                            Anterior
-                        </button>
-
-                        <button
-                            onClick={resetStep}
-                            className="bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded-lg transition"
-                            title="Reiniciar pas"
-                        >
-                            <RotateCcw size={18} />
-                        </button>
-
-                        {!isCompleted && !isLastStep && (
-                            <button
-                                onClick={nextStep}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition"
-                            >
-                                Següent
-                                <ChevronRight size={18} />
-                            </button>
-                        )}
-                    </div>
+                    </Panel>
 
                     {isCompleted && (
-                        <div className="space-y-4">
-                            <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/50 rounded-xl p-4 text-center">
-                                <Trophy className="text-amber-400 mx-auto mb-2" size={32} />
-                                <h3 className="text-lg font-bold text-white mb-1.5">
+                        <div className="space-y-4 animate-in fade-in zoom-in duration-500">
+                            <GameCard variant="gold" className="text-center p-6 border-amber-500/50">
+                                <Trophy className="text-amber-400 mx-auto mb-3 drop-shadow-md" size={48} />
+                                <h3 className="text-xl font-black text-white mb-1 font-display uppercase tracking-wide text-stroke">
                                     Lliçó Completada!
                                 </h3>
-                                <p className="text-slate-300 text-xs mb-2">
+                                <p className="text-amber-200 text-xs font-bold uppercase tracking-widest mb-4">
                                     Puntuació: {Math.round((correctMoves / Math.max(totalAttempts, 1)) * 100)}%
                                 </p>
-                                <div className="text-[10px] text-slate-400">
+                                <div className="text-[10px] text-zinc-400 font-bold bg-black/20 rounded-full py-1 px-3 inline-block border border-black/10">
                                     Moviments correctes: {correctMoves} / {totalAttempts}
                                 </div>
-                            </div>
+                            </GameCard>
 
                             {/* Learning Diary Integration */}
                             {(userId && lessonId) && (

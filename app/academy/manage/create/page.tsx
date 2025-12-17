@@ -9,6 +9,9 @@ import { StepIdentification } from '@/components/academy/builder/step-identifica
 import { StepArchitecture } from '@/components/academy/builder/step-architecture';
 import { StepEvaluation } from '@/components/academy/builder/step-evaluation';
 import { StepReview } from '@/components/academy/builder/step-review';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { GameCard } from '@/components/ui/design-system/GameCard';
 
 const STEPS = [
     { id: 1, title: 'Identificació', subtitle: 'Títol i Vectors' },
@@ -36,74 +39,106 @@ export default function CreateSAPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-20">
+        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-24">
             {/* Top Bar */}
-            <div className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur border-b border-slate-800 p-4">
-                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <button onClick={handleBack} className="text-slate-400 hover:text-white transition">
-                        <ArrowLeft size={24} />
+            <div className="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 p-4 shadow-xl">
+                <div className="max-w-6xl mx-auto flex items-center justify-between">
+                    <button
+                        onClick={handleBack}
+                        className="text-zinc-500 hover:text-white transition flex items-center gap-2 group"
+                    >
+                        <div className="p-2 bg-zinc-800 rounded-lg group-hover:bg-zinc-700 transition-colors">
+                            <ArrowLeft size={20} />
+                        </div>
+                        <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">Enrere</span>
                     </button>
 
                     <div className="text-center">
-                        <h1 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Nova Situació d'Aprenentatge</h1>
-                        <p className="font-bold text-white text-lg">{STEPS[currentStep - 1].title}</p>
+                        <h1 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Nova Situació d'Aprenentatge</h1>
+                        <p className="font-black text-white text-lg font-display uppercase tracking-wide text-stroke-sm">
+                            {STEPS[currentStep - 1].title}
+                        </p>
                     </div>
 
-                    <button
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm transition disabled:opacity-50"
+                    <ShinyButton
+                        variant="neutral"
+                        className="px-4 py-2 h-10 text-xs"
                         disabled={false} // Todo: validation
                     >
-                        <Save size={16} />
+                        <Save size={16} className="mr-2" />
                         <span className="hidden md:inline">Desar Esborrany</span>
-                    </button>
+                    </ShinyButton>
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-6 py-8">
+            <div className="max-w-6xl mx-auto px-6 py-8">
                 {/* Progress Steps */}
-                <div className="flex items-center justify-center mb-12">
-                    {STEPS.map((step, idx) => {
-                        const isCurrent = currentStep === step.id;
-                        const isCompleted = currentStep > step.id;
+                <Panel className="mb-8 p-6 lg:p-8 bg-zinc-900/80 border-zinc-700">
+                    <div className="flex items-center justify-center relative z-10">
+                        {STEPS.map((step, idx) => {
+                            const isCurrent = currentStep === step.id;
+                            const isCompleted = currentStep > step.id;
 
-                        return (
-                            <div key={step.id} className="flex items-center">
-                                <div className={`flex flex-col items-center gap-2 cursor-pointer group`} onClick={() => setStep(step.id)}>
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all 
-                                        ${isCurrent ? 'border-indigo-500 bg-indigo-500/20 text-indigo-400' :
-                                            isCompleted ? 'border-emerald-500 bg-emerald-500 text-slate-950' :
-                                                'border-slate-800 bg-slate-900 text-slate-500 group-hover:border-slate-700'}`}>
-                                        {isCompleted ? <Check size={18} /> : <span className="font-bold">{step.id}</span>}
+                            return (
+                                <div key={step.id} className="flex items-center flex-1 last:flex-none justify-center">
+                                    <div className="relative">
+                                        {/* Label */}
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap hidden md:block">
+                                            <div className={`text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${isCurrent ? 'text-amber-400' : 'text-zinc-500'}`}>
+                                                {step.title}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            className={`
+                                                w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all cursor-pointer shadow-lg z-10 relative
+                                                ${isCurrent
+                                                    ? 'bg-amber-500 border-amber-300 text-white shadow-amber-500/50 scale-110'
+                                                    : isCompleted
+                                                        ? 'bg-emerald-500 border-emerald-400 text-white shadow-emerald-500/20'
+                                                        : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:bg-zinc-700 hover:border-zinc-600'
+                                                }
+                                            `}
+                                            onClick={() => setStep(step.id)}
+                                        >
+                                            {isCompleted ? <Check size={24} strokeWidth={3} /> : <span className="font-black font-display text-lg">{step.id}</span>}
+                                        </div>
                                     </div>
-                                    <div className="hidden md:block text-center w-24">
-                                        <div className={`text-xs font-bold ${isCurrent ? 'text-white' : 'text-slate-500'}`}>{step.title}</div>
-                                    </div>
+
+                                    {idx < STEPS.length - 1 && (
+                                        <div className="flex-1 h-3 mx-2 md:mx-4 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 min-w-[40px]">
+                                            <div
+                                                className={`h-full transition-all duration-500 ${currentStep > step.id ? 'bg-emerald-500' : 'bg-transparent'}`}
+                                                style={{ width: currentStep > step.id ? '100%' : '0%' }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                                {idx < STEPS.length - 1 && (
-                                    <div className={`w-12 md:w-24 h-0.5 mx-2 md:mx-4 ${currentStep > step.id ? 'bg-emerald-500/50' : 'bg-slate-800'}`} />
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                </Panel>
 
                 {/* Form Content */}
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-10 min-h-[400px]">
-                    {currentStep === 1 && <StepIdentification />}
-                    {currentStep === 2 && <StepArchitecture />}
-                    {currentStep === 3 && <StepEvaluation />}
-                    {currentStep === 4 && <StepReview />}
-                </div>
+                <GameCard variant="default" className="p-8 md:p-12 min-h-[500px] bg-zinc-900 border-zinc-700">
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {currentStep === 1 && <StepIdentification />}
+                        {currentStep === 2 && <StepArchitecture />}
+                        {currentStep === 3 && <StepEvaluation />}
+                        {currentStep === 4 && <StepReview />}
+                    </div>
+                </GameCard>
 
                 {/* Bottom Navigation */}
                 {currentStep < 4 && (
                     <div className="flex justify-end mt-8">
-                        <button
+                        <ShinyButton
+                            variant="primary"
                             onClick={handleNext}
-                            className="bg-white text-slate-900 px-8 py-4 rounded-xl font-black text-lg hover:bg-indigo-50 transition flex items-center gap-2 shadow-xl shadow-indigo-500/10"
+                            className="px-8 py-4 text-base uppercase tracking-widest font-black"
                         >
-                            Següent Pas <ChevronRight size={20} />
-                        </button>
+                            Següent Pas <ChevronRight size={20} className="ml-2" />
+                        </ShinyButton>
                     </div>
                 )}
             </div>

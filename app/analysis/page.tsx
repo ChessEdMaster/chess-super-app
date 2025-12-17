@@ -26,7 +26,13 @@ import { PGNTree } from '@/lib/pgn/tree';
 import { PGNParser } from '@/lib/pgn/parser';
 import type { Evaluation } from '@/types/pgn';
 import Chessboard2D from '@/components/2d/Chessboard2D';
-import { supabase } from '@/lib/supabase'; // Import supabase
+import { supabase } from '@/lib/supabase';
+import ChessScene from '@/components/3d/ChessScene';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
 
 interface EvaluationLine {
   id: number;
@@ -34,9 +40,6 @@ interface EvaluationLine {
   bestMove: string;
   line: string;
 }
-import ChessScene from '@/components/3d/ChessScene';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 
 function AnalysisContent() {
   // --- STATE ---
@@ -55,7 +58,7 @@ function AnalysisContent() {
   const [gameId, setGameId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const lastSavedPgn = useRef<string>(''); // To avoid saving unchanged PGNs
+  const lastSavedPgn = useRef<string>('');
 
   // Setup State
   const [isSetupMode, setIsSetupMode] = useState(false);
@@ -89,7 +92,6 @@ function AnalysisContent() {
       setGameId(idFromUrl);
       loadGameFromDB(idFromUrl);
     } else {
-      // Check local storage for legacy capability or unsaved draft
       const savedPGN = localStorage.getItem('analysis_pgn');
       if (savedPGN) {
         loadPGN(savedPGN);
@@ -103,7 +105,6 @@ function AnalysisContent() {
     if (!isClient) return;
     const currentPgn = pgnTree.toString();
 
-    // Don't save if empty (start pos only) or unchanged
     if (pgnTree.isAtStart() && pgnTree.getMainLine().length === 0) return;
     if (currentPgn === lastSavedPgn.current) return;
 
@@ -114,9 +115,7 @@ function AnalysisContent() {
 
       let targetGameId = gameId;
 
-      // 1. If no gameId, CREATE new game in "My Analyses"
       if (!targetGameId) {
-        // Find or Create "My Analyses" collection
         let collectionId: string | null = null;
         const { data: cols } = await supabase.from('pgn_collections').select('id').eq('title', 'My Analyses').eq('user_id', user.id).single();
 
@@ -145,21 +144,18 @@ function AnalysisContent() {
           if (newGame) {
             targetGameId = newGame.id;
             setGameId(newGame.id);
-            // Update URL without reload
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set('gameId', newGame.id);
             window.history.pushState({}, '', newUrl.toString());
           }
         }
-      }
-      // 2. If gameId exists, UPDATE it
-      else {
+      } else {
         await supabase.from('pgn_games').update({
           pgn: currentPgn,
           white: pgnTree.getHeader('White') || '?',
           black: pgnTree.getHeader('Black') || '?',
           result: pgnTree.getHeader('Result') || '*',
-          updated_at: new Date().toISOString() // Assuming schema has updated_at, if not it's fine
+          updated_at: new Date().toISOString()
         }).eq('id', targetGameId);
       }
 
@@ -178,7 +174,7 @@ function AnalysisContent() {
   useEffect(() => {
     const timer = setTimeout(() => {
       handleAutoSave();
-    }, 2000); // 2 seconds debounce
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [handleAutoSave]);
@@ -195,7 +191,7 @@ function AnalysisContent() {
       if (error) throw error;
       if (data && data.pgn) {
         loadPGN(data.pgn);
-        lastSavedPgn.current = data.pgn; // Set initial ref to avoid immediate resave
+        lastSavedPgn.current = data.pgn;
       }
     } catch (error) {
       console.error('Error loading game:', error);
@@ -207,7 +203,6 @@ function AnalysisContent() {
     try {
       const newTree = PGNParser.parse(pgn);
       setPgnTree(newTree);
-      // Reset game state to start of PGN or end? Usually end for analysis
       const mainLine = newTree.getMainLine();
       if (mainLine.length > 0) {
         newTree.goToNode(mainLine[mainLine.length - 1]);
@@ -500,7 +495,7 @@ function AnalysisContent() {
   }).filter(Boolean) as { from: string, to: string, color: string }[];
 
   // --- ICONS for TABs ---
-  const ActivityIcon = LayoutGrid; // Analysis
+  const ActivityIcon = LayoutGrid;
   const DatabaseIcon = React.memo(() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>);
   const SetupIcon = React.memo(() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>);
 
@@ -508,7 +503,7 @@ function AnalysisContent() {
   if (!isClient) return <div className="h-full flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
 
   return (
-    <div className="h-[calc(100vh-4rem)] w-full text-zinc-100 flex flex-col p-4"> {/* Reduced overall page clutter */}
+    <div className="h-[calc(100vh-4rem)] w-full flex flex-col p-4">
 
       <div className="flex-1 flex flex-col lg:flex-row gap-4 h-full w-full max-w-7xl mx-auto min-h-0">
 
@@ -517,7 +512,7 @@ function AnalysisContent() {
 
           {/* Board Container */}
           <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
-            <div className="w-full h-full max-h-full aspect-square shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20 p-0.5 flex items-center justify-center relative">
+            <div className="w-full h-full max-h-full aspect-square shadow-2xl rounded-2xl overflow-hidden glass-panel mx-auto bg-black/20 p-1 flex items-center justify-center relative border-8 border-zinc-800 ring-1 ring-white/10">
               {/* Engine Bar Overlay (Minimal) */}
               {isAnalyzing && evaluation && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-2 shadow-xl">
@@ -538,58 +533,59 @@ function AnalysisContent() {
                   arrows={analysisArrows}
                 />
               ) : (
-                <Chessboard2D
-                  fen={fen}
-                  onSquareClick={onSquareClick}
-                  orientation={game.turn() === 'b' ? 'black' : 'white'}
-                  customSquareStyles={optionSquares}
-                  arrows={analysisArrows}
-                />
+                <div className="w-full h-full bg-zinc-900">
+                  <Chessboard2D
+                    fen={fen}
+                    onSquareClick={onSquareClick}
+                    orientation={game.turn() === 'b' ? 'black' : 'white'}
+                    customSquareStyles={optionSquares}
+                    arrows={analysisArrows}
+                  />
+                </div>
               )}
             </div>
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex items-center justify-center gap-2 w-full glass-panel p-2 rounded-lg shrink-0 bg-zinc-900/40 border-white/5 mx-auto max-w-lg">
-            {/* ... Navigation Buttons (unchanged just styled) ... */}
-            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goToStart} disabled={pgnTree.isAtStart()} size="icon"><ChevronsLeft size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goBack} disabled={pgnTree.isAtStart()} size="icon"><ChevronLeft size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goForward} disabled={pgnTree.isAtEnd()} size="icon"><ChevronRight size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-zinc-800" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="icon"><ChevronsRight size={20} /></Button>
+          <Panel className="flex items-center justify-center gap-2 w-full p-2 bg-zinc-900/60 border-zinc-800 mx-auto max-w-lg">
+            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goToStart} disabled={pgnTree.isAtStart()} size="icon"><ChevronsLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goBack} disabled={pgnTree.isAtStart()} size="icon"><ChevronLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goForward} disabled={pgnTree.isAtEnd()} size="icon"><ChevronRight size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="icon"><ChevronsRight size={20} /></Button>
             <div className="h-6 w-px bg-zinc-800 mx-2" />
             <Button variant="ghost" onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "text-amber-500 bg-amber-500/10" : "text-zinc-500 hover:text-zinc-300"} size="icon" title="New Variation">
               <GitBranch size={18} />
             </Button>
             <div className="h-6 w-px bg-zinc-800 mx-2" />
-            <div className="flex bg-zinc-950/50 rounded p-0.5 border border-white/5">
+            <div className="flex bg-zinc-950/50 rounded-lg p-0.5 border border-white/5">
               <button onClick={() => setViewMode('2d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '2d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-400'}`}>2D</button>
               <button onClick={() => setViewMode('3d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '3d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-400'}`}>3D</button>
             </div>
-          </div>
+          </Panel>
         </div>
 
         {/* RIGHT COLUMN: Tabbed Interface */}
-        <div className="w-full lg:w-[420px] h-full flex flex-col glass-panel rounded-xl overflow-hidden bg-zinc-950/60 border-white/5 shadow-2xl">
+        <GameCard variant="default" className="w-full lg:w-[420px] h-full flex flex-col overflow-hidden bg-zinc-900/80 border-zinc-800 p-0">
 
           {/* TAB HEADERS */}
-          <div className="flex border-b border-white/5 bg-zinc-900/80 backdrop-blur">
+          <div className="flex border-b border-black/20 bg-zinc-950/50 backdrop-blur">
             <button
               onClick={() => { setActiveTab('analysis'); setIsSetupMode(false); }}
-              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'analysis' ? 'text-indigo-400 bg-indigo-500/5' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'analysis' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
               <ActivityIcon size={20} />
               <span className="text-[10px] uppercase font-bold tracking-widest">Analysis</span>
             </button>
             <button
               onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
-              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'database' ? 'text-indigo-400 bg-indigo-500/5' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'database' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
               <DatabaseIcon />
               <span className="text-[10px] uppercase font-bold tracking-widest">Database</span>
             </button>
             <button
               onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
-              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'setup' ? 'text-indigo-400 bg-indigo-500/5' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'setup' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
               <SetupIcon />
               <span className="text-[10px] uppercase font-bold tracking-widest">Setup</span>
@@ -652,7 +648,7 @@ function AnalysisContent() {
               </div>
             )}
           </div>
-        </div>
+        </GameCard>
 
       </div>
     </div>
@@ -666,6 +662,3 @@ export default function AnalysisPage() {
     </React.Suspense>
   );
 }
-
-
-

@@ -6,9 +6,13 @@ import { motion } from 'framer-motion';
 import {
     Gamepad2, ArrowLeft, Crown, Layers,
     RefreshCcw, Hexagon, Trophy, Users, Dices,
-    MonitorCheck, Goal
+    MonitorCheck, Goal,
+    Swords
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
 
 interface GameItem {
     id: string;
@@ -92,80 +96,92 @@ const GAMES: GameItem[] = [
 
 export default function MinigamesPage() {
     return (
-        <div className="min-h-screen bg-zinc-950 text-white font-sans p-6 overflow-hidden relative">
+        <div className="min-h-screen p-6 overflow-hidden relative flex flex-col gap-8">
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
-            <div className="max-w-6xl mx-auto relative z-10">
-                {/* Header */}
-                <header className="flex items-center gap-4 mb-12">
+            {/* Header */}
+            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-zinc-900/90 border-zinc-700 relative z-10">
+                <div className="flex items-center gap-6">
                     <Link href="/">
-                        <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400 hover:text-white">
-                            <ArrowLeft className="mr-2" size={20} /> Tornar
+                        <Button variant="ghost" className="hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl h-12 w-12 p-0 flex items-center justify-center border border-white/5">
+                            <ArrowLeft size={24} />
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-4xl font-black italic flex items-center gap-3">
-                            <Gamepad2 className="text-indigo-500" size={32} />
-                            ARCADE CHESS
+                        <h1 className="text-4xl md:text-5xl font-black italic flex items-center gap-3 text-transparent bg-clip-text bg-gradient-to-br from-indigo-300 via-indigo-100 to-indigo-400 uppercase tracking-tighter text-stroke drop-shadow-lg font-display">
+                            <Gamepad2 className="text-indigo-400 fill-indigo-900 stroke-[1.5]" size={48} />
+                            Arcade Zone
                         </h1>
-                        <p className="text-zinc-400 mt-1">Col·lecció de minijocs i variants per desconnectar.</p>
+                        <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs mt-2 ml-1">
+                            Minigames & Variants Collection
+                        </p>
                     </div>
-                </header>
+                </div>
+            </Panel>
 
-                {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {GAMES.map((game, i) => (
-                        <motion.div
-                            key={game.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                        >
-                            <Link href={game.href || '#'} className={`block h-full ${!game.href ? 'cursor-not-allowed opacity-60' : ''}`} onClick={e => !game.href && e.preventDefault()}>
-                                <div className="h-full bg-zinc-900/50 backdrop-blur border border-zinc-800 rounded-xl p-5 hover:bg-zinc-800/80 hover:border-indigo-500/50 transition-all group relative overflow-hidden">
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto w-full relative z-10">
+                {GAMES.map((game, i) => (
+                    <motion.div
+                        key={game.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                    >
+                        <Link href={game.href || '#'} className={`block h-full ${!game.href ? 'cursor-not-allowed opacity-60' : ''}`} onClick={e => !game.href && e.preventDefault()}>
+                            <GameCard variant="default" className="h-full bg-zinc-900/40 hover:bg-zinc-800/60 transition-all group relative overflow-hidden flex flex-col border-zinc-800 hover:border-indigo-500/50">
 
-                                    {/* Icon Background */}
-                                    <div className={`absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 ${game.color}`}>
-                                        <game.icon size={120} />
+                                {/* Header */}
+                                <div className="flex justify-between items-start mb-4 p-4 pb-0 z-10">
+                                    <div className={`p-3 rounded-xl bg-zinc-950 border border-white/5 shadow-inner group-hover:scale-110 transition-transform duration-300 ${game.color}`}>
+                                        <game.icon size={28} />
                                     </div>
-
-                                    {/* Header */}
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className={`p-3 rounded-lg bg-zinc-800 group-hover:bg-zinc-700 transition-colors ${game.color}`}>
-                                            <game.icon size={24} />
-                                        </div>
-                                        <div className="flex flex-col items-end gap-1">
-                                            {game.tags.map(tag => (
-                                                <span key={tag} className={`
-                                                    text-[10px] font-bold px-2 py-0.5 rounded uppercase
-                                                    ${tag === 'Multiplayer' ? 'bg-blue-500/10 text-blue-400' : ''}
-                                                    ${tag === 'Solo' ? 'bg-emerald-500/10 text-emerald-400' : ''}
-                                                    ${tag === 'Nou' ? 'bg-yellow-500/10 text-yellow-400' : ''}
+                                    <div className="flex flex-col items-end gap-1">
+                                        {game.tags.map(tag => (
+                                            <span key={tag} className={`
+                                                    text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-wider shadow-sm
+                                                    ${tag === 'Multiplayer' ? 'bg-blue-950/50 text-blue-400 border-blue-500/30' : ''}
+                                                    ${tag === 'Solo' ? 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30' : ''}
+                                                    ${tag === 'Nou' ? 'bg-amber-950/50 text-amber-400 border-amber-500/30 animate-pulse' : ''}
                                                `}>
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
+                                                {tag}
+                                            </span>
+                                        ))}
                                     </div>
+                                </div>
 
-                                    {/* Content */}
-                                    <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-300 transition-colors">{game.title}</h3>
-                                    <p className="text-sm text-zinc-400 leading-relaxed">
+                                {/* Content */}
+                                <div className="p-4 pt-0 flex-1 flex flex-col z-10">
+                                    <h3 className="text-xl font-black mb-2 text-zinc-100 group-hover:text-indigo-400 transition-colors font-display uppercase tracking-wide">
+                                        {game.title}
+                                    </h3>
+                                    <p className="text-xs font-medium text-zinc-500 leading-relaxed">
                                         {game.description}
                                     </p>
-
-                                    {!game.href && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="font-bold text-xs uppercase tracking-widest border border-white/20 px-3 py-1 rounded-full bg-black/50">
-                                                Coming Soon
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
-                            </Link>
-                        </motion.div>
-                    ))}
-                </div>
+
+                                {/* Decorative Background Icon */}
+                                <div className={`absolute -right-4 -bottom-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity transform group-hover:scale-110 group-hover:rotate-[-10deg] duration-500 ${game.color}`}>
+                                    <game.icon size={160} />
+                                </div>
+
+                                {!game.href && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                        <div className="transform rotate-[-10deg] border-2 border-zinc-500 text-zinc-500 px-4 py-1 font-black text-xl uppercase tracking-widest bg-black">
+                                            Coming Soon
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="p-4 pt-0 mt-auto z-10 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                                    <ShinyButton variant={game.href ? 'primary' : 'neutral'} disabled={!game.href} className="w-full text-xs h-9">
+                                        Detailed Info
+                                    </ShinyButton>
+                                </div>
+                            </GameCard>
+                        </Link>
+                    </motion.div>
+                ))}
             </div>
         </div>
     );

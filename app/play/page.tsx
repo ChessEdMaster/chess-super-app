@@ -3,11 +3,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Chess, Square } from 'chess.js';
-import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword, Archive, Gift, Lock, Clock } from 'lucide-react';
+import { Loader2, User, Bot, Trophy, Timer, AlertCircle, Sword, Archive, Gift, Lock, Clock, RotateCcw } from 'lucide-react';
 import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { Panel } from '@/components/ui/design-system/Panel';
 import {
   Dialog,
   DialogContent,
@@ -330,7 +332,6 @@ export default function PlayPage() {
   };
 
   const handleChestClick = (index: number, chest: Chest | null) => {
-    console.log('Chest clicked:', index, chest);
     if (!chest) {
       if (profile.role === 'SuperAdmin') {
         // Debug: Add a chest
@@ -361,7 +362,6 @@ export default function PlayPage() {
         }
       } else {
         toast.info("Chest is unlocking... wait for timer!");
-        // We don't open it here, the timer does the job to switch to READY
       }
     } else if (chest.status === 'READY') {
       const rewards = openChest(index);
@@ -373,26 +373,32 @@ export default function PlayPage() {
 
   return (
     <div className="h-dvh w-full flex flex-col overflow-hidden">
-
       {/* Header - Compact */}
-      <header className="flex-none py-4 px-6 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md flex items-center justify-between z-20">
-        <h1 className="text-2xl font-black tracking-widest flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 font-display italic">
-          <Sword className="h-6 w-6 text-amber-500" />
+      <header className="flex-none py-3 px-4 border-b border-black/20 bg-zinc-950/80 backdrop-blur-md flex items-center justify-between z-20 shadow-xl">
+        <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 font-display uppercase tracking-widest text-stroke drop-shadow-sm">
+          <Sword className="h-6 w-6 text-amber-500 fill-amber-500 stroke-amber-900 stroke-2" />
           Arena Competitiva
         </h1>
         {userProfile && (
-          <div className="flex gap-3 text-xs text-zinc-400">
-            <div className="bg-zinc-900/80 px-4 py-1.5 rounded-full border border-white/10 shadow-inner flex items-center gap-2">
-              <span className="font-bold text-zinc-500 uppercase tracking-wider">Bullet</span>
-              <strong className="text-white font-mono">{userProfile.elo_bullet || 1200}</strong>
+          <div className="flex gap-2 text-xs md:text-xs">
+            <div className="hidden md:flex gap-2">
+              <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
+                <span className="font-bold text-zinc-500 uppercase tracking-wider">Bullet</span>
+                <strong className="text-white font-mono">{userProfile.elo_bullet || 1200}</strong>
+              </div>
+              <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
+                <span className="font-bold text-zinc-500 uppercase tracking-wider">Blitz</span>
+                <strong className="text-white font-mono">{userProfile.elo_blitz || 1200}</strong>
+              </div>
+              <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
+                <span className="font-bold text-zinc-500 uppercase tracking-wider">Rapid</span>
+                <strong className="text-white font-mono">{userProfile.elo_rapid || 1200}</strong>
+              </div>
             </div>
-            <div className="bg-zinc-900/80 px-4 py-1.5 rounded-full border border-white/10 shadow-inner flex items-center gap-2">
-              <span className="font-bold text-zinc-500 uppercase tracking-wider">Blitz</span>
+            {/* Mobile View Elo - Simplified */}
+            <div className="md:hidden bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
+              <span className="font-bold text-zinc-400">elo</span>
               <strong className="text-white font-mono">{userProfile.elo_blitz || 1200}</strong>
-            </div>
-            <div className="bg-zinc-900/80 px-4 py-1.5 rounded-full border border-white/10 shadow-inner flex items-center gap-2">
-              <span className="font-bold text-zinc-500 uppercase tracking-wider">Rapid</span>
-              <strong className="text-white font-mono">{userProfile.elo_rapid || 1200}</strong>
             </div>
           </div>
         )}
@@ -402,11 +408,11 @@ export default function PlayPage() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
 
         {/* Left Sidebar: Controls */}
-        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-white/5 bg-zinc-900/20 overflow-y-auto scrollbar-hide z-10 glass-panel border-y-0 border-l-0 rounded-none">
+        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-black/20 bg-zinc-950/40 overflow-y-auto scrollbar-hide z-10 lg:shadow-2xl">
           <div className="space-y-6">
             {gameState === 'idle' && (
-              <div className="space-y-3">
-                <h3 className="font-bold text-xs mb-2 flex items-center gap-2 text-zinc-500 uppercase tracking-widest px-1">
+              <GameCard className="p-4 space-y-3 bg-zinc-900/90 border-zinc-700">
+                <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 uppercase tracking-widest">
                   <Trophy className="h-3 w-3 text-amber-500" />
                   Arenas
                 </h3>
@@ -415,152 +421,149 @@ export default function PlayPage() {
                   <ArenaCard variant="blitz" progress={progress.blitz} onClick={() => setSelectedArena('blitz')} />
                   <ArenaCard variant="rapid" progress={progress.rapid} onClick={() => setSelectedArena('rapid')} />
                 </div>
-              </div>
+              </GameCard>
             )}
 
             {/* Chests Section */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-xs mb-2 flex items-center gap-2 text-zinc-500 uppercase tracking-widest px-1">
-                <Archive className="h-3 w-3 text-indigo-500" />
+            <GameCard className="p-4 space-y-3 bg-zinc-900/90 border-zinc-700">
+              <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 uppercase tracking-widest">
+                <Archive className="h-3 w-3 text-indigo-400" />
                 Cofres
               </h3>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 {chests.map((chest, index) => (
                   <div
                     key={index}
                     onClick={() => handleChestClick(index, chest)}
-                    className={`aspect-square rounded-xl border flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 group shadow-lg ${chest
-                      ? 'border-amber-500/30 bg-gradient-to-br from-zinc-900 to-amber-950/30 cursor-pointer hover:border-amber-500/60'
-                      : 'border-zinc-800 bg-zinc-900/30'
+                    className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 group shadow-lg ${chest
+                      ? 'border-amber-600/40 bg-gradient-to-br from-zinc-800 to-amber-950/40 cursor-pointer hover:border-amber-500'
+                      : 'border-black/50 bg-black/30'
                       }`}
                   >
                     {chest ? (
                       <>
-                        <Gift className={`h-6 w-6 mb-1 drop-shadow-md transition-transform group-hover:scale-110 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
+                        <Gift className={`h-5 w-5 mb-1 drop-shadow-md transition-transform group-hover:scale-110 ${chest.type === 'LEGENDARY' ? 'text-purple-400 animate-pulse' :
                           chest.type === 'GOLDEN' ? 'text-amber-300' :
                             chest.type === 'SILVER' ? 'text-slate-300' :
                               'text-amber-700'
                           }`} />
-                        <span className="text-[8px] font-black text-white/50 uppercase tracking-widest">{chest.type.substring(0, 1)}</span>
+                        <span className="text-[7px] font-black text-white/50 uppercase tracking-widest">{chest.type.substring(0, 1)}</span>
 
                         {/* Status Overlay */}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {chest.status === 'LOCKED' && <Lock className="h-4 w-4 text-white/70" />}
+                          {chest.status === 'LOCKED' && <Lock className="h-3 w-3 text-white/70" />}
                           {chest.status === 'UNLOCKING' && (
                             <div className="flex flex-col items-center">
-                              <Loader2 className="h-4 w-4 text-blue-400 animate-spin" />
+                              <Loader2 className="h-3 w-3 text-blue-400 animate-spin" />
                             </div>
                           )}
-                          {chest.status === 'READY' && <span className="text-[10px] font-bold text-emerald-400 bg-black/80 px-2 py-1 rounded-full border border-emerald-500/50">OPEN</span>}
+                          {chest.status === 'READY' && <span className="text-[8px] font-bold text-emerald-400 bg-black/80 px-1 py-0.5 rounded-full border border-emerald-500/50">OPEN</span>}
                         </div>
                         {chest.status === 'UNLOCKING' && (
-                          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-pulse" />
+                          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-pulse" />
                         )}
                         {chest.status === 'READY' && (
-                          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-ping" />
+                          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-ping" />
                         )}
                       </>
                     ) : (
-                      <span className="text-zinc-800 text-[8px] font-black">EMPTY</span>
+                      <span className="text-zinc-700 text-[8px] font-black">+</span>
                     )}
                   </div>
                 ))}
               </div>
-            </div>
+            </GameCard>
 
-            <div className="glass-panel p-5 rounded-xl bg-zinc-900/60 border-white/5">
-              <h3 className="font-bold text-xs mb-4 flex items-center gap-2 text-zinc-500 uppercase tracking-widest">
+            <GameCard className="p-4 bg-zinc-900/90 border-zinc-700">
+              <h3 className="font-black text-xs mb-4 flex items-center gap-2 text-zinc-400 uppercase tracking-widest">
                 <Timer className="h-3 w-3 text-emerald-500" />
                 Ritme de Joc
               </h3>
 
-              <div className="grid grid-cols-3 lg:grid-cols-1 gap-3">
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                 <Button
                   variant={gameMode === 'bullet' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 px-4 rounded-xl transition-all duration-300 ${gameMode === 'bullet' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500/50 text-white shadow-lg shadow-emerald-900/20' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'bullet' ? 'bg-emerald-700 border-emerald-500 text-white shadow-[0_4px_0_#064e3b] translate-y-0' : 'bg-transparent border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
                   onClick={() => setGameMode('bullet')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">🚀 Bullet</span>
-                  <span className="text-[10px] font-mono opacity-60">1+0</span>
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">🚀 Bullet</span>
+                  <span className="text-[10px] font-mono opacity-80 bg-black/20 px-1.5 rounded">1+0</span>
                 </Button>
                 <Button
                   variant={gameMode === 'blitz' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 px-4 rounded-xl transition-all duration-300 ${gameMode === 'blitz' ? 'bg-amber-600 hover:bg-amber-500 border-amber-500/50 text-white shadow-lg shadow-amber-900/20' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'blitz' ? 'bg-amber-700 border-amber-500 text-white shadow-[0_4px_0_#78350f] translate-y-0' : 'bg-transparent border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
                   onClick={() => setGameMode('blitz')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">⚡ Blitz</span>
-                  <span className="text-[10px] font-mono opacity-60">3+2</span>
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">⚡ Blitz</span>
+                  <span className="text-[10px] font-mono opacity-80 bg-black/20 px-1.5 rounded">3+2</span>
                 </Button>
                 <Button
                   variant={gameMode === 'rapid' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-3 px-4 rounded-xl transition-all duration-300 ${gameMode === 'rapid' ? 'bg-indigo-600 hover:bg-indigo-500 border-indigo-500/50 text-white shadow-lg shadow-indigo-900/20' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'rapid' ? 'bg-indigo-700 border-indigo-500 text-white shadow-[0_4px_0_#312e81] translate-y-0' : 'bg-transparent border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
                   onClick={() => setGameMode('rapid')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">🐢 Rapid</span>
-                  <span className="text-[10px] font-mono opacity-60">10+0</span>
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">🐢 Rapid</span>
+                  <span className="text-[10px] font-mono opacity-80 bg-black/20 px-1.5 rounded">10+0</span>
                 </Button>
               </div>
 
               <div className="mt-6">
                 {gameState === 'idle' || gameState === 'finished' ? (
-                  <Button
-                    className="w-full font-black py-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/30 border border-emerald-500/20 uppercase tracking-widest text-sm"
-                    onClick={() => startSearch(gameMode)}
-                  >
+                  <ShinyButton variant="success" className="w-full" onClick={() => startSearch(gameMode)}>
                     Jugar Partida
-                  </Button>
+                  </ShinyButton>
                 ) : gameState === 'searching' ? (
-                  <div className="flex flex-col items-center gap-3 py-4 bg-zinc-950/50 rounded-xl border border-dashed border-zinc-800 animate-in fade-in">
+                  <GameCard className="flex flex-col items-center gap-3 py-4 bg-zinc-950/50 border-dashed border-zinc-800">
                     <div className="flex items-center gap-2 text-emerald-400 font-bold animate-pulse text-xs uppercase tracking-widest">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Cercant Oponent...
+                      Cercant...
                     </div>
-                    <div className="text-3xl font-mono font-black text-white px-4 py-1 bg-black/40 rounded">
+                    <div className="text-3xl font-mono font-black text-white px-4 py-1 bg-black/60 rounded-lg border border-white/10 shadow-inner text-stroke">
                       00:{searchTimer.toString().padStart(2, '0')}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-8 text-[10px] uppercase font-bold tracking-wider">
+                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-8 text-[10px] uppercase font-black tracking-wider">
                       Cancel·lar
                     </Button>
-                  </div>
+                  </GameCard>
                 ) : (
-                  <div className="text-center py-2 glass-panel rounded-xl border-amber-500/20 bg-amber-500/5">
-                    <div className="text-[10px] font-bold text-amber-500/70 mb-2 uppercase tracking-widest">Partida en curs</div>
+                  <GameCard className="text-center py-4 bg-amber-950/30 border-amber-500/30">
+                    <div className="text-[9px] font-black text-amber-500/70 mb-2 uppercase tracking-widest">Partida en curs</div>
                     <div className="font-bold text-white flex items-center justify-center gap-2 text-sm mb-4">
                       <Sword className="h-4 w-4 text-amber-500" /> VS Bot ({botDifficulty})
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/20 font-bold uppercase tracking-wider text-xs"
+                    <ShinyButton
+                      variant="danger"
+                      className="w-full text-xs py-2"
                       onClick={() => {
                         setGameState('finished');
                         setWinner('loss'); // Resign
                       }}
                     >
                       Rendir-se
-                    </Button>
-                  </div>
+                    </ShinyButton>
+                  </GameCard>
                 )}
               </div>
-            </div>
+            </GameCard>
           </div>
         </div>
 
         {/* Center: Chessboard Area */}
-        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden bg-gradient-to-br from-zinc-950 to-zinc-900">
+        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden bg-zinc-900">
           {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+          <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+          <div className="absolute inset-0 bg-gradient-radial from-transparent to-black/80 pointer-events-none" />
 
           {/* View Mode Toggle */}
-          <div className="absolute top-4 right-4 z-20 glass-panel p-1 rounded-lg flex gap-1 border-white/5 bg-zinc-900/60 backdrop-blur-md">
+          <div className="absolute top-4 right-4 z-20 bg-black/40 backdrop-blur-md p-1 rounded-xl flex gap-1 border border-white/10 shadow-xl">
             <Button
               variant={viewMode === '2d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('2d')}
-              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider ${viewMode === '2d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${viewMode === '2d' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
             >
               2D
             </Button>
@@ -568,14 +571,17 @@ export default function PlayPage() {
               variant={viewMode === '3d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('3d')}
-              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider ${viewMode === '3d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${viewMode === '3d' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
             >
               3D
             </Button>
           </div>
 
-          {/* Board Container - Responsive Aspect Ratio */}
-          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-2xl rounded-xl overflow-hidden glass-panel border-white/5 ring-1 ring-white/10">
+          {/* Board Container */}
+          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden border-[10px] border-zinc-800 bg-zinc-900 ring-1 ring-white/5">
+            {/* Board Inner shadow */}
+            <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] pointer-events-none z-20 rounded-lg"></div>
+
             {viewMode === '3d' ? (
               <ChessScene
                 fen={fen}
@@ -584,7 +590,7 @@ export default function PlayPage() {
                 customSquareStyles={optionSquares}
               />
             ) : (
-              <div className="w-full h-full bg-zinc-900">
+              <div className="w-full h-full">
                 <Chessboard2D
                   fen={fen}
                   onSquareClick={onSquareClick}
@@ -631,7 +637,7 @@ export default function PlayPage() {
 
       {/* Arena Path Dialog */}
       <Dialog open={!!selectedArena} onOpenChange={(open) => !open && setSelectedArena(null)}>
-        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800 text-white overflow-hidden glass-panel shadow-2xl">
+        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800 text-white overflow-hidden shadow-2xl rounded-3xl">
           <DialogHeader className="p-4 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl">
             <DialogTitle className="flex items-center gap-2 font-display uppercase tracking-wider text-sm">
               <Trophy className="h-4 w-4 text-amber-500" />
@@ -661,44 +667,44 @@ export default function PlayPage() {
 
       {/* Bot Proposal Modal */}
       <Dialog open={showBotModal} onOpenChange={setShowBotModal}>
-        <DialogContent className="glass-panel border-zinc-800 bg-zinc-950/90 text-white">
+        <DialogContent className="bg-zinc-900 border-zinc-700 text-white rounded-2xl max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-display text-amber-400">
-              <AlertCircle className="h-5 w-5" />
-              No Human Opponent Found
+            <DialogTitle className="flex items-center gap-2 font-display text-amber-500 uppercase tracking-wider text-xl">
+              <AlertCircle className="h-6 w-6" />
+              Oponent no trobat
             </DialogTitle>
-            <DialogDescription className="text-zinc-400">
-              Seems quiet right now. Want to play a ranked match against AI?
+            <DialogDescription className="text-zinc-400 font-medium">
+              Sembla que no hi ha ningú disponible. Vols jugar contra un Bot?
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid grid-cols-3 gap-3 py-4">
-            <Button variant="outline" className="flex flex-col h-28 gap-2 bg-zinc-900 border-zinc-800 hover:bg-emerald-900/20 hover:border-emerald-500/50 transition-all group" onClick={() => startBotGame('easy')}>
+            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-zinc-800 border-b-4 border-zinc-950 hover:border-emerald-500 hover:bg-zinc-700 transition-all group rounded-xl p-2" onClick={() => startBotGame('easy')}>
               <span className="text-2xl group-hover:scale-110 transition-transform">🌱</span>
               <div className="flex flex-col items-center">
-                <span className="font-bold text-white group-hover:text-emerald-400">Easy</span>
-                <span className="text-[10px] text-zinc-500 font-mono">800 ELO</span>
+                <span className="font-bold text-white group-hover:text-emerald-400 text-xs uppercase">Easy</span>
+                <span className="text-[8px] text-zinc-500 font-mono">800</span>
               </div>
             </Button>
-            <Button variant="outline" className="flex flex-col h-28 gap-2 bg-zinc-900 border-zinc-800 hover:bg-blue-900/20 hover:border-blue-500/50 transition-all group" onClick={() => startBotGame('medium')}>
+            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-zinc-800 border-b-4 border-zinc-950 hover:border-blue-500 hover:bg-zinc-700 transition-all group rounded-xl p-2" onClick={() => startBotGame('medium')}>
               <span className="text-2xl group-hover:scale-110 transition-transform">⚖️</span>
               <div className="flex flex-col items-center">
-                <span className="font-bold text-white group-hover:text-blue-400">Medium</span>
-                <span className="text-[10px] text-zinc-500 font-mono">1200 ELO</span>
+                <span className="font-bold text-white group-hover:text-blue-400 text-xs uppercase">Mid</span>
+                <span className="text-[8px] text-zinc-500 font-mono">1200</span>
               </div>
             </Button>
-            <Button variant="outline" className="flex flex-col h-28 gap-2 bg-zinc-900 border-zinc-800 hover:bg-red-900/20 hover:border-red-500/50 transition-all group" onClick={() => startBotGame('hard')}>
+            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-zinc-800 border-b-4 border-zinc-950 hover:border-red-500 hover:bg-zinc-700 transition-all group rounded-xl p-2" onClick={() => startBotGame('hard')}>
               <span className="text-2xl group-hover:scale-110 transition-transform">🔥</span>
               <div className="flex flex-col items-center">
-                <span className="font-bold text-white group-hover:text-red-400">Hard</span>
-                <span className="text-[10px] text-zinc-500 font-mono">1800 ELO</span>
+                <span className="font-bold text-white group-hover:text-red-400 text-xs uppercase">Hard</span>
+                <span className="text-[8px] text-zinc-500 font-mono">1800</span>
               </div>
             </Button>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setShowBotModal(false); setGameState('idle'); }} className="text-zinc-500 hover:text-white">
-              Cancel
+            <Button variant="ghost" onClick={() => { setShowBotModal(false); setGameState('idle'); }} className="text-zinc-500 hover:text-white font-bold uppercase tracking-wider text-xs">
+              Cancel·lar
             </Button>
           </DialogFooter>
         </DialogContent>

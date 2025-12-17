@@ -10,8 +10,6 @@ import {
     Target,
     ArrowRight,
     Loader2,
-    TrendingUp,
-    School,
     Trophy,
     BrainCircuit,
     Calculator,
@@ -21,7 +19,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
-import { AcademyCourse, AcademyModule, UserAcademyStats } from '@/types/academy';
+import { AcademyCourse, UserAcademyStats } from '@/types/academy';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { motion } from 'framer-motion';
 
 const TRACK_ICONS: Record<string, any> = {
     academic: GraduationCap,
@@ -31,17 +33,16 @@ const TRACK_ICONS: Record<string, any> = {
 };
 
 const TRACK_TITLES: Record<string, string> = {
-    academic: '🎓 Currículum Escolar Oficial',
-    pedagogical: '📐 Escacs Transversals (Interdisciplinar)',
-    sport: '⚽ Alt Rendiment Esportiu (Cross-Training)',
-    vocational: '💼 Carrera Professional i Investigació'
+    academic: 'Currículum Escolar',
+    pedagogical: 'Escacs Transversals',
+    sport: 'Alt Rendiment',
+    vocational: 'Carrera Professional'
 };
 
 export default function AcademyPage() {
-    const { user, role, loading: authLoading } = useAuth(); // Destructure role directly
+    const { user, role, loading: authLoading } = useAuth();
     const router = useRouter();
     const [courses, setCourses] = useState<AcademyCourse[]>([]);
-    const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
     const [stats, setStats] = useState<UserAcademyStats>({
         totalLessonsCompleted: 0,
         totalExercisesSolved: 0,
@@ -68,22 +69,19 @@ export default function AcademyPage() {
 
     const loadAcademyData = async () => {
         try {
-            // 1. Determine Courses to Load
             let accessibleCourseIds: string[] = [];
             let isSuperAdmin = role === 'SuperAdmin' || user?.email === 'marc@marc.com';
 
             if (isSuperAdmin) {
-                // Load ALL published courses
                 const { data: allCourses } = await supabase
                     .from('academy_courses')
                     .select('*')
                     .eq('published', true)
-                    .order('title'); // Sort consistently
+                    .order('title');
 
                 if (allCourses) setCourses(allCourses);
             } else {
-                // Load User's Clan Courses
-                const { data: clubMemberships, error: clubsError } = await supabase
+                const { data: clubMemberships } = await supabase
                     .from('club_members')
                     .select(`
                         club:clubs (
@@ -94,11 +92,10 @@ export default function AcademyPage() {
                     .eq('user_id', user!.id);
 
                 if (clubMemberships) {
-                    // Extract non-null course IDs
-                    // @ts-ignore - course_id is new
+                    // @ts-ignore
                     accessibleCourseIds = clubMemberships
                         .map((m: any) => m.club?.course_id)
-                        .filter((id: string) => id); // Remove nulls/undefined
+                        .filter((id: string) => id);
                 }
 
                 if (accessibleCourseIds.length > 0) {
@@ -111,45 +108,20 @@ export default function AcademyPage() {
 
                     if (userCourses) {
                         setCourses(userCourses);
-
-                        // OPTIMIZATION: Redirect immediately if single course
-                        // We check specifically if NOT SuperAdmin (though implicit by reaching this block)
-                        // but logic above handles 'isSuperAdmin' branch separately.
-                        // So if we are here, we are NOT SuperAdmin (or at least filtering by clan).
                         if (userCourses.length === 1) {
                             router.push(`/academy/course/${userCourses[0].id}`);
-                            return; // RETURN EARLY to keep loading=true and prevent flash
+                            return;
                         }
                     }
                 } else {
-                    setCourses([]); // No courses assigned
+                    setCourses([]);
                 }
             }
 
-            // 2. Load Enrollments (Legacy? Or still useful for progress?)
-            // We can keep this for compatibility if academy_enrollments is still used
-            // But now enrollment is effectively via Clan. 
-            // We'll just assume they are enrolled in what they can see.
-            const enrolledSet = new Set(accessibleCourseIds);
-            setEnrolledCourseIds(enrolledSet);
-
-            // 3. Load Stats
-            const { data: lessonsProgress } = await supabase
-                .from('user_lesson_progress')
-                .select('*')
-                .eq('user_id', user!.id)
-                .eq('completed', true);
-
-            const { data: exercisesProgress } = await supabase
-                .from('user_exercise_progress')
-                .select('*')
-                .eq('user_id', user!.id)
-                .eq('solved', true);
-
-            const { data: userAchievementsData } = await supabase
-                .from('user_achievements')
-                .select('*')
-                .eq('user_id', user!.id);
+            // Stats
+            const { data: lessonsProgress } = await supabase.from('user_lesson_progress').select('*').eq('user_id', user!.id).eq('completed', true);
+            const { data: exercisesProgress } = await supabase.from('user_exercise_progress').select('*').eq('user_id', user!.id).eq('solved', true);
+            const { data: userAchievementsData } = await supabase.from('user_achievements').select('*').eq('user_id', user!.id);
 
             setStats({
                 totalLessonsCompleted: lessonsProgress?.length || 0,
@@ -161,7 +133,6 @@ export default function AcademyPage() {
                 achievementsUnlocked: userAchievementsData?.length || 0
             });
 
-            // Only set loading false if we didn't redirect
             setLoading(false);
 
         } catch (error) {
@@ -173,15 +144,12 @@ export default function AcademyPage() {
     if (authLoading || loading || !user) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="animate-spin text-indigo-500" size={48} />
+                <Loader2 className="animate-spin text-amber-500" size={48} />
             </div>
         );
     }
 
-    // Filter courses by subject
     const visibleCourses = courses.filter(c => (c.subject || 'chess') === selectedSubject);
-
-    // Group courses by track
     const tracks = ['academic', 'pedagogical', 'sport', 'vocational'];
     const groupedCourses = tracks.reduce((acc, track) => {
         acc[track] = visibleCourses.filter(c => (c.track || 'academic') === track);
@@ -189,66 +157,64 @@ export default function AcademyPage() {
     }, {} as Record<string, AcademyCourse[]>);
 
     return (
-        <div className="h-full w-full p-6 overflow-y-auto scrollbar-subtle max-w-7xl mx-auto pb-24">
+        <div className="h-full w-full p-6 pb-24 max-w-[1600px] mx-auto flex flex-col gap-8">
 
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 uppercase tracking-widest italic font-display drop-shadow-lg mb-2">
-                        Acadèmia
-                    </h1>
-                    <p className="text-zinc-400 font-light flex items-center gap-2 text-sm">
-                        <GraduationCap size={18} className="text-emerald-500" />
-                        Mestratge i Sabiduria
-                    </p>
+            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-zinc-900/90 border-zinc-700">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg border border-white/20">
+                        <GraduationCap className="text-white" size={32} />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-500 uppercase tracking-tight font-display drop-shadow-sm text-stroke">
+                            Acadèmia
+                        </h1>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">
+                            Mestratge i Sabiduria
+                        </p>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <Link href="/academy/concepts" className="glass-panel px-4 py-2 rounded-lg bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20 transition flex items-center gap-2 group">
-                        <BrainCircuit size={20} className="text-purple-400 group-hover:text-purple-300" />
-                        <span className="text-sm font-bold text-white uppercase tracking-wider">Conceptes</span>
+                <div className="flex items-center gap-3 mt-4 md:mt-0">
+                    <Link href="/academy/concepts">
+                        <ShinyButton variant="secondary" className="px-6 h-12 text-xs uppercase tracking-wider">
+                            <BrainCircuit size={18} className="mr-2" /> Conceptes
+                        </ShinyButton>
                     </Link>
 
                     {stats.totalLessonsCompleted > 0 && (
-                        <div className="glass-panel px-4 py-2 rounded-lg flex items-center gap-4 bg-zinc-900/60">
-                            <div className="flex flex-col items-center">
-                                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Lliçons</span>
-                                <span className="text-xl font-black text-white font-display">{stats.totalLessonsCompleted}</span>
+                        <GameCard variant="default" className="px-6 py-2 flex items-center gap-6 bg-zinc-900/80 border-zinc-700 h-12">
+                            <div className="flex flex-col items-center leading-none">
+                                <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-0.5">Lliçons</span>
+                                <span className="text-lg font-black text-white font-display text-shadow">{stats.totalLessonsCompleted}</span>
                             </div>
-                            <div className="w-px h-8 bg-white/10" />
-                            <div className="flex flex-col items-center">
-                                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Exercicis</span>
-                                <span className="text-xl font-black text-white font-display">{stats.totalExercisesSolved}</span>
+                            <div className="w-px h-6 bg-white/10" />
+                            <div className="flex flex-col items-center leading-none">
+                                <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-0.5">Exercicis</span>
+                                <span className="text-lg font-black text-white font-display text-shadow">{stats.totalExercisesSolved}</span>
                             </div>
-                        </div>
+                        </GameCard>
                     )}
                 </div>
-            </div>
+            </Panel>
 
             {/* SUBJECT SELECTOR */}
             <SubjectSelector selected={selectedSubject} onSelect={setSelectedSubject} />
 
             {/* EMPTY STATE */}
             {visibleCourses.length === 0 && (
-                <div className="text-center py-20 bg-zinc-900/30 rounded-3xl border border-dashed border-zinc-800 mb-20 animate-in fade-in zoom-in duration-500">
-                    <Lock className="mx-auto text-zinc-700 mb-6" size={64} />
-                    <h2 className="text-2xl font-bold text-white mb-4 font-display uppercase tracking-wide">No hi ha cursos disponibles</h2>
-                    <p className="text-zinc-400 max-w-lg mx-auto mb-8 text-sm">
-                        De l'assignatura <span className="text-emerald-400 font-bold">{SUBJECTS[selectedSubject]?.label}</span>.
-                        {/** If student, tell them to contact school */}
-                        {role !== 'SuperAdmin' ? 'Demana al teu professor que t\'assigni un curs.' : 'Estem treballant en els continguts.'}
+                <GameCard variant="default" className="text-center py-20 bg-zinc-900/50 border-dashed border-zinc-700/50">
+                    <Lock className="mx-auto text-zinc-700 mb-6 opacity-50" size={64} />
+                    <h2 className="text-2xl font-black text-zinc-400 mb-2 font-display uppercase tracking-wide">No Courses Available</h2>
+                    <p className="text-zinc-500 max-w-lg mx-auto mb-8 text-sm font-bold">
+                        Subject: <span className="text-emerald-500">{SUBJECTS[selectedSubject]?.label}</span>
                     </p>
-                    <div className="flex justify-center gap-4">
-                        <Link href="/" className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl font-bold transition font-display uppercase text-xs tracking-wider">
-                            Tornar a l&apos;Inici
-                        </Link>
-                    </div>
-                </div>
+                </GameCard>
             )}
 
-            {/* TRACK SECTIONS (Only for Chess or if tracks exist) */}
+            {/* TRACK SECTIONS */}
             {visibleCourses.length > 0 && (
-                <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
+                <div className="space-y-12">
                     {selectedSubject === 'chess' ? (
                         tracks.map(track => {
                             const trackCourses = groupedCourses[track];
@@ -256,13 +222,15 @@ export default function AcademyPage() {
                             const TrackIcon = TRACK_ICONS[track] || BookOpen;
                             return (
                                 <section key={track} className="relative">
-                                    <div className="flex items-center gap-3 mb-4 pl-1">
-                                        <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                                            <TrackIcon className="text-emerald-400" size={20} />
+                                    <div className="flex items-center gap-3 mb-6 pl-2">
+                                        <div className="p-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-inner">
+                                            <TrackIcon className="text-emerald-500" size={20} />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-bold text-white font-display uppercase tracking-wide">{TRACK_TITLES[track]}</h2>
-                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}</p>
+                                            <h2 className="text-xl font-black text-white font-display uppercase tracking-wide leading-none">{TRACK_TITLES[track]}</h2>
+                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold mt-1">
+                                                Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -275,13 +243,13 @@ export default function AcademyPage() {
                         })
                     ) : (
                         <section className="relative">
-                            <div className="flex items-center gap-3 mb-4 pl-1">
-                                <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                                    <GraduationCap className="text-emerald-400" size={20} />
+                            <div className="flex items-center gap-3 mb-6 pl-2">
+                                <div className="p-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-inner">
+                                    <GraduationCap className="text-emerald-500" size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-white font-display uppercase tracking-wide">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
-                                    <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Des de P3 fins al Doctorat</p>
+                                    <h2 className="text-xl font-black text-white font-display uppercase tracking-wide leading-none">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
+                                    <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold mt-1">Des de P3 fins al Doctorat</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -308,7 +276,7 @@ const SUBJECTS: Record<string, { label: string, icon: any, color: string }> = {
 
 function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (s: string) => void }) {
     return (
-        <div className="flex overflow-x-auto gap-2 pb-6 mb-2 no-scrollbar pl-1">
+        <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
             {Object.entries(SUBJECTS).map(([key, data]) => {
                 const Icon = data.icon;
                 const isSelected = selected === key;
@@ -317,14 +285,15 @@ function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (
                         key={key}
                         onClick={() => onSelect(key)}
                         className={`
-                            glass-panel px-4 py-2 rounded-lg flex items-center gap-2 transition-all
+                            relative px-5 py-3 rounded-xl flex items-center gap-3 transition-all min-w-[140px]
+                            border-2
                             ${isSelected
-                                ? 'bg-zinc-800 border-emerald-500/50 text-white shadow-lg'
-                                : 'hover:bg-zinc-800/50 text-zinc-400 hover:text-white'}
+                                ? 'bg-zinc-800 border-emerald-500 shadow-lg shadow-emerald-900/20 translate-y-[-2px]'
+                                : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:border-zinc-700 hover:text-zinc-300'}
                         `}
                     >
-                        <Icon size={16} className={isSelected ? 'text-emerald-400' : 'opacity-50'} />
-                        <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? 'text-emerald-100' : ''}`}>{data.label}</span>
+                        <Icon size={18} className={isSelected ? 'text-emerald-400' : 'opacity-50'} />
+                        <span className={`text-xs font-black uppercase tracking-wider ${isSelected ? 'text-emerald-100' : ''}`}>{data.label}</span>
                     </button>
                 )
             })}
@@ -335,51 +304,62 @@ function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (
 
 function CourseCard({ course }: { course: AcademyCourse }) {
     return (
-        <Link href={`/academy/course/${course.id}`} className="block h-full group">
-            <div className="glass-panel p-0 rounded-2xl overflow-hidden h-full flex flex-col transition-all duration-300 group-hover:border-emerald-500/30 group-hover:shadow-lg group-hover:shadow-emerald-900/20 group-hover:-translate-y-1">
-                {/* Cover Image */}
-                <div className="h-32 bg-zinc-900 relative overflow-hidden">
-                    {course.image_url ? (
-                        <Image
-                            src={course.image_url}
-                            alt={course.title}
-                            fill
-                            className="object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 group-hover:scale-105"
-                            unoptimized
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
-                            <School className="text-zinc-800 group-hover:text-emerald-900/50 transition-colors duration-500" size={48} />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -5 }}
+            transition={{ duration: 0.2 }}
+        >
+            <Link href={`/academy/course/${course.id}`} className="block h-full cursor-pointer">
+                <GameCard variant="default" className="h-full flex flex-col p-0 overflow-hidden group hover:border-emerald-500/50 transition-colors bg-zinc-900/80">
+                    {/* Cover Image */}
+                    <div className="h-40 bg-zinc-950 relative overflow-hidden border-b border-zinc-800">
+                        {course.image_url ? (
+                            <Image
+                                src={course.image_url}
+                                alt={course.title}
+                                fill
+                                className="object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-105"
+                                unoptimized
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-zinc-950 flex items-center justify-center relative">
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                                <School className="text-zinc-800 group-hover:text-emerald-900/40 transition-colors duration-500" size={64} />
+                            </div>
+                        )}
+
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-zinc-900 to-transparent" />
+
+                        {/* Grade Badge */}
+                        <div className="absolute top-3 left-3">
+                            <span className="bg-black/80 backdrop-blur-md border border-emerald-500/30 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider font-display shadow-lg">
+                                {course.target_grade}
+                            </span>
                         </div>
-                    )}
-
-                    {/* Grade Badge */}
-                    <div className="absolute top-2 left-2">
-                        <span className="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider font-display shadow-sm">
-                            {course.target_grade}
-                        </span>
                     </div>
-                </div>
 
-                <div className="p-5 flex flex-col flex-1 bg-zinc-950/20">
-                    <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide">
-                        {course.title}
-                    </h3>
-                    <p className="text-zinc-400 text-xs line-clamp-3 mb-4 flex-1 leading-relaxed">
-                        {course.description}
-                    </p>
+                    <div className="p-5 flex flex-col flex-1 relative z-10">
+                        <h3 className="text-lg font-black text-white mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide uppercase">
+                            {course.title}
+                        </h3>
+                        <p className="text-zinc-500 text-xs line-clamp-3 mb-6 flex-1 leading-relaxed font-bold">
+                            {course.description}
+                        </p>
 
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                        <span className="flex items-center gap-1.5">
-                            <Target size={12} className="text-emerald-500" />
-                            {course.difficulty_level === 'beginner' ? 'Novell' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
-                        </span>
-                        <span className="text-emerald-500/80 flex items-center gap-1 group-hover:translate-x-1 transition-transform group-hover:text-emerald-400">
-                            Entrar <ArrowRight size={12} />
-                        </span>
+                        <div className="border-t border-zinc-800 pt-4 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-auto">
+                            <span className="flex items-center gap-1.5 bg-zinc-950/50 px-2 py-1 rounded border border-zinc-800">
+                                <Target size={12} className="text-amber-500" />
+                                {course.difficulty_level === 'beginner' ? 'Novell' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
+                            </span>
+                            <ShinyButton variant="neutral" className="h-7 text-[9px] px-3">
+                                Entrar
+                            </ShinyButton>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </Link>
+                </GameCard>
+            </Link>
+        </motion.div>
     );
 }

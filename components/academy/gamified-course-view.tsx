@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Star, Lock, Play, Check, Map as MapIcon } from 'lucide-react';
+import { Star, Lock, Play, Check, Map as MapIcon, GraduationCap } from 'lucide-react';
 import { AcademyModule, ModuleProgress } from '@/types/academy';
 
 interface GamifiedCourseViewProps {
@@ -16,9 +16,10 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
         <div className="relative max-w-2xl mx-auto py-12">
 
             {/* Background Path (Simulated with dashed line) */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-dashed border-l-2 border-indigo-500/20 -translate-x-1/2 hidden md:block" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-3 bg-zinc-900 border-x border-zinc-700/50 -translate-x-1/2 hidden md:block rounded-full" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-dashed border-l-2 border-emerald-500/20 -translate-x-1/2 hidden md:block" />
 
-            <div className="space-y-16 relative">
+            <div className="space-y-24 relative">
                 {modules.map((module, index) => {
                     const progress = progressMap[module.id];
                     const isCompleted = progress?.progressPercentage === 100;
@@ -29,34 +30,44 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
                     const isLeft = index % 2 === 0;
 
                     return (
-                        <div key={module.id} className={`flex items-center ${isLeft ? 'md:flex-row' : 'md:flex-row-reverse'} flex-col gap-8`}>
+                        <div key={module.id} className={`flex items-center ${isLeft ? 'md:flex-row' : 'md:flex-row-reverse'} flex-col gap-8 md:gap-16`}>
 
                             {/* The Node/Circle */}
-                            <div className="relative z-10">
+                            <div className="relative z-10 group">
                                 <Link
                                     href={isLocked ? '#' : `/academy/${module.id}`}
                                     className={`
-                                        w-20 h-20 rounded-full flex items-center justify-center border-4 shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all transform hover:scale-110
+                                        w-24 h-24 rounded-3xl flex items-center justify-center border-b-8 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all transform hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-2
                                         ${isCompleted
-                                            ? 'bg-emerald-500 border-emerald-300 text-white'
+                                            ? 'bg-emerald-500 border-emerald-700 text-white'
                                             : isLocked
-                                                ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed'
-                                                : 'bg-indigo-600 border-indigo-400 text-white animate-pulse shadow-indigo-500/50'
+                                                ? 'bg-zinc-800 border-zinc-950 text-zinc-600 cursor-not-allowed'
+                                                : 'bg-amber-400 border-amber-600 text-white animate-pulse-subtle shadow-amber-500/20'
                                         }
                                     `}
                                     onClick={(e) => isLocked && e.preventDefault()}
                                 >
                                     {isCompleted ? (
-                                        <Star size={32} fill="currentColor" />
+                                        <div className="stack relative z-10 drop-shadow-md">
+                                            <Star size={40} fill="currentColor" className="text-emerald-100" />
+                                        </div>
                                     ) : isLocked ? (
-                                        <Lock size={24} />
+                                        <Lock size={32} />
                                     ) : (
-                                        <Play size={32} fill="currentColor" className="ml-0.5" />
+                                        <Play size={40} fill="currentColor" className="ml-1 text-amber-100 drop-shadow-md" />
+                                    )}
+
+                                    {/* Ripple Effect for Current */}
+                                    {isCurrent && (
+                                        <span className="absolute inset-0 rounded-3xl bg-amber-400 opacity-20 animate-ping -z-10" />
                                     )}
 
                                     {/* Level Badge */}
-                                    <div className="absolute -bottom-2 bg-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-700 whitespace-nowrap">
-                                        Nivell {index + 1}
+                                    <div className={`
+                                        absolute -bottom-4 bg-zinc-950 text-[10px] font-black px-3 py-1 rounded-full border-2 whitespace-nowrap shadow-xl z-20
+                                        ${isCurrent ? 'border-amber-500 text-amber-400' : 'border-zinc-700 text-zinc-500'}
+                                    `}>
+                                        LEVEL {index + 1}
                                     </div>
                                 </Link>
                             </div>
@@ -64,27 +75,31 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
                             {/* The Card/Content */}
                             <div className={`flex-1 ${isLeft ? 'md:text-left' : 'md:text-right'} text-center md:items-start items-center flex flex-col`}>
                                 <div className={`
-                                    p-4 rounded-xl border backdrop-blur-sm transition-all
+                                    p-5 rounded-2xl border backdrop-blur-md transition-all relative overflow-hidden group
                                     ${isCurrent
-                                        ? 'bg-indigo-900/40 border-indigo-500/50 shadow-lg shadow-indigo-900/20'
-                                        : 'bg-slate-900/50 border-slate-800'
+                                        ? 'bg-amber-950/30 border-amber-500/30 shadow-lg shadow-amber-500/10'
+                                        : 'bg-zinc-900/80 border-zinc-800'
                                     }
                                     ${isLocked ? 'opacity-50 grayscale' : 'opacity-100'}
                                 `}>
-                                    <h3 className="text-lg font-bold text-white mb-1.5">{module.title}</h3>
-                                    <p className="text-slate-400 text-xs mb-3 max-w-xs mx-auto md:mx-0">
+                                    <h3 className="text-xl font-black text-white mb-2 font-display tracking-wide uppercase leading-none text-stroke-sm">
+                                        {module.title}
+                                    </h3>
+                                    <p className="text-zinc-400 text-xs font-bold mb-4 max-w-xs mx-auto md:mx-0">
                                         {module.description}
                                     </p>
 
                                     {!isLocked && (
-                                        <div className="flex items-center gap-2 justify-center md:justify-start">
-                                            <div className="h-1.5 w-20 bg-slate-700 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-emerald-500 transition-all duration-1000"
-                                                    style={{ width: `${progress?.progressPercentage || 0}%` }}
+                                        <div className="flex items-center gap-3 justify-center md:justify-start bg-black/20 p-2 rounded-lg border border-white/5 inline-flex">
+                                            <div className="h-2 w-24 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${progress?.progressPercentage || 0}%` }}
+                                                    transition={{ duration: 1, ease: "easeOut" }}
+                                                    className="h-full bg-emerald-500"
                                                 />
                                             </div>
-                                            <span className="text-[10px] font-bold text-emerald-400">
+                                            <span className="text-[10px] font-black text-emerald-400">
                                                 {progress?.completedLessons || 0}/{progress?.totalLessons || 0}
                                             </span>
                                         </div>
@@ -98,9 +113,9 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
             </div>
 
             {/* Start Flag */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-12 flex flex-col items-center opacity-50">
-                <MapIcon size={32} className="text-slate-600 mb-2" />
-                <span className="text-xs uppercase font-bold text-slate-600 tracking-widest">Inici de l'Aventura</span>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-16 flex flex-col items-center opacity-40">
+                <MapIcon size={48} className="text-zinc-600 mb-2" />
+                <span className="text-xs uppercase font-black text-zinc-600 tracking-widest bg-zinc-900/80 px-4 py-1 rounded-full">Start Adventure</span>
             </div>
         </div>
     );

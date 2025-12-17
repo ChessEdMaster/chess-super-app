@@ -21,6 +21,9 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ChestGrid } from '@/components/lobby/chest-grid';
 import { LobbyMap } from '@/components/lobby/lobby-map';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
 
 import { Challenge } from '@/types/lobby';
 
@@ -133,15 +136,15 @@ export default function LobbyPage() {
     if (!loading && !user) router.push('/');
   }, [user, loading, router]);
 
-  if (loading || !user) return <div className="h-screen flex items-center justify-center"><div className="animate-pulse text-zinc-500">Loading...</div></div>;
+  if (loading || !user) return <div className="h-screen flex items-center justify-center bg-zinc-950"><div className="animate-pulse text-zinc-500 font-bold uppercase tracking-widest">Loading...</div></div>;
 
   return (
     <div className="h-full w-full p-6 max-w-7xl mx-auto flex flex-col gap-6">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between shrink-0">
+      <Panel className="flex items-center justify-between shrink-0 py-4 px-6 bg-zinc-900/80 border-black/20">
         <div>
-          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400 uppercase tracking-widest italic font-display drop-shadow-lg mb-1">
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400 uppercase tracking-widest italic font-display drop-shadow-lg mb-1 text-stroke">
             Battle Arena
           </h1>
           <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -151,52 +154,53 @@ export default function LobbyPage() {
         </div>
         <div className="flex gap-4">
           {/* ELO Display */}
-          <div className="hidden md:flex items-center gap-2 glass-panel px-4 py-2 rounded-lg bg-zinc-900/60">
+          <div className="hidden md:flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-white/5 shadow-inner">
             <div className="flex flex-col items-center">
-              <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Blitz</span>
-              <span className="text-base font-black text-white font-display">{profile?.elo_blitz || 800}</span>
+              <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Blitz</span>
+              <span className="text-base font-black text-white font-mono">{profile?.elo_blitz || 800}</span>
             </div>
             <div className="w-px h-8 bg-white/10" />
             <div className="flex flex-col items-center">
-              <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Rapid</span>
-              <span className="text-base font-black text-white font-display">{profile?.elo_rapid || 800}</span>
+              <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Rapid</span>
+              <span className="text-base font-black text-white font-mono">{profile?.elo_rapid || 800}</span>
             </div>
           </div>
 
-          <Button
+          <ShinyButton
+            variant="primary"
             onClick={() => setIsChallengeModalOpen(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-lg shadow-orange-900/40 border border-orange-400/50 font-display uppercase tracking-wide px-6 py-6 h-auto text-sm"
+            className="h-auto text-sm px-6"
           >
             <Plus size={18} className="mr-2" />
             Create Match
-          </Button>
+          </ShinyButton>
         </div>
-      </div>
+      </Panel>
 
       {/* MAIN CONTENT GRID */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
 
         {/* LEFT: CHALLENGE LIST */}
-        <div className="lg:col-span-8 glass-panel rounded-2xl p-0 flex flex-col overflow-hidden bg-zinc-900/40 border-zinc-800">
-          <div className="p-4 border-b border-white/5 bg-zinc-900/50 flex justify-between items-center">
-            <h2 className="text-sm font-bold text-white font-display uppercase tracking-wider flex items-center gap-2">
-              <Zap size={16} className="text-amber-400" /> Active Games
+        <GameCard variant="default" className="lg:col-span-8 p-0 flex flex-col overflow-hidden bg-zinc-900/90 border-zinc-700">
+          <div className="p-4 border-b border-black/20 bg-zinc-900/50 flex justify-between items-center shadow-md z-10">
+            <h2 className="text-sm font-black text-white font-display uppercase tracking-wider flex items-center gap-2">
+              <Zap size={16} className="text-amber-400 fill-amber-400" /> Active Games
             </h2>
-            <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-1 rounded-full border border-white/5">
+            <span className="text-[10px] font-bold bg-zinc-950 text-zinc-400 px-3 py-1 rounded-full border border-white/10 shadow-inner">
               {challenges.length} Online
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-subtle p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto scrollbar-subtle p-4 space-y-3 bg-zinc-950/30">
             <AnimatePresence>
               {challenges.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-4">
-                  <div className="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center animate-pulse">
-                    <Swords size={32} className="text-zinc-600" />
+                  <div className="w-24 h-24 rounded-full bg-zinc-900/50 flex items-center justify-center animate-pulse border-4 border-zinc-800">
+                    <Swords size={40} className="text-zinc-700" />
                   </div>
                   <div className="text-center">
-                    <p className="font-bold text-zinc-300 font-display tracking-wide">The Arena is Quiet</p>
-                    <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Be the first to start a battle</p>
+                    <p className="font-black text-zinc-400 font-display tracking-wide text-lg uppercase">The Arena is Quiet</p>
+                    <p className="text-xs text-zinc-600 uppercase tracking-wider mt-1 font-bold">Be the first to start a battle</p>
                   </div>
                 </div>
               ) : (
@@ -206,73 +210,75 @@ export default function LobbyPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="glass-panel p-4 rounded-xl flex items-center justify-between group hover:border-amber-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-amber-900/10 bg-zinc-900/40"
+                    className="p-1 rounded-2xl bg-gradient-to-b from-white/5 to-transparent hover:from-amber-500/10 transition-all duration-300"
                   >
-                    <div className="flex items-center gap-4">
-                      {/* Host Avatar */}
-                      <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 overflow-hidden relative shadow-inner group-hover:border-amber-500/50 transition-colors">
-                        {challenge.host?.avatar_url ? (
-                          <img src={challenge.host.avatar_url} alt={challenge.host.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                            <span className="text-lg font-black text-zinc-600 select-none">
-                              {challenge.host?.username?.[0]?.toUpperCase() || '?'}
+                    <div className="bg-zinc-900/80 p-4 rounded-xl flex items-center justify-between border border-white/5 hover:border-amber-500/50 transition-colors shadow-lg">
+                      <div className="flex items-center gap-4">
+                        {/* Host Avatar */}
+                        <div className="w-14 h-14 rounded-xl bg-zinc-950 border-2 border-zinc-700 overflow-hidden relative shadow-inner">
+                          {challenge.host?.avatar_url ? (
+                            <img src={challenge.host.avatar_url} alt={challenge.host.username} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                              <div className="text-xl font-black text-zinc-700 select-none">
+                                {challenge.host?.username?.[0]?.toUpperCase() || '?'}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Challenge Info */}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-black text-white font-display tracking-wide text-base group-hover:text-amber-400 transition-colors">
+                              {challenge.host?.username || 'Unknown Warrior'}
+                            </h3>
+                            <span className="text-[9px] bg-black text-amber-500 px-1.5 py-0.5 rounded border border-amber-900/50 font-mono font-bold">
+                              {profile?.elo_blitz || 1200}
                             </span>
                           </div>
-                        )}
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-[10px] font-bold text-zinc-300 flex items-center gap-1 bg-black/40 px-2 py-1 rounded border border-white/5 uppercase tracking-wider">
+                              <Timer size={10} className="text-emerald-400" />
+                              {challenge.time_control}
+                            </span>
+                            <span className="text-[10px] font-bold text-zinc-300 flex items-center gap-1 bg-black/40 px-2 py-1 rounded border border-white/5 uppercase tracking-wider">
+                              <Trophy size={10} className="text-amber-400" />
+                              {challenge.rated ? 'Rated' : 'Casual'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Challenge Info */}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-white font-display tracking-wide text-sm group-hover:text-amber-400 transition-colors">
-                            {challenge.host?.username || 'Unknown Warrior'}
-                          </h3>
-                          <span className="text-[10px] bg-zinc-950 text-zinc-400 px-1.5 py-0.5 rounded border border-zinc-800 font-mono">
-                            {profile?.elo_blitz || 1200}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1 bg-zinc-950/50 px-2 py-0.5 rounded border border-zinc-800 uppercase tracking-wider">
-                            <Timer size={10} className="text-emerald-400" />
-                            {challenge.time_control}
-                          </span>
-                          <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1 bg-zinc-950/50 px-2 py-0.5 rounded border border-zinc-800 uppercase tracking-wider">
-                            <Trophy size={10} className="text-amber-400" />
-                            {challenge.rated ? 'Rated' : 'Casual'}
-                          </span>
-                        </div>
-                      </div>
+                      <ShinyButton
+                        onClick={() => handleJoin(challenge)}
+                        disabled={challenge.host_id === user?.id}
+                        variant={challenge.host_id === user?.id ? 'neutral' : 'success'}
+                        className="text-xs h-10 px-6 min-w-[120px]"
+                      >
+                        {challenge.host_id === user?.id ? 'Waiting...' : 'FIGHT'}
+                      </ShinyButton>
                     </div>
-
-                    <Button
-                      onClick={() => handleJoin(challenge)}
-                      disabled={challenge.host_id === user?.id}
-                      className={`font-display tracking-wider uppercase text-xs h-9 ${challenge.host_id === user?.id ? 'opacity-50 cursor-default bg-zinc-800 text-zinc-500 border-zinc-700' : 'bg-white/5 hover:bg-emerald-500/20 text-white border-white/10 hover:border-emerald-500/50 hover:text-emerald-400 shadow-lg'}`}
-                      variant="outline"
-                    >
-                      {challenge.host_id === user?.id ? 'Waiting...' : 'Accept Duel'}
-                    </Button>
                   </motion.div>
                 ))
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </GameCard>
 
         {/* RIGHT: ARENA & CHESTS */}
         <div className="lg:col-span-4 flex flex-col gap-6">
 
           {/* Arena Map Preview */}
-          <div className="glass-panel p-5 rounded-2xl flex-1 flex flex-col bg-zinc-900/40 border-zinc-800 relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <h2 className="text-xs font-bold text-zinc-400 font-display uppercase tracking-widest flex items-center gap-2">
-                <Trophy size={14} className="text-amber-500" /> Arena Journey
+          <GameCard variant="blue" className="flex-1 flex flex-col bg-zinc-900/80 p-0 overflow-hidden">
+            <div className="p-4 border-b border-white/5 bg-blue-950/20 flex justify-between items-center">
+              <h2 className="text-xs font-black text-blue-200 font-display uppercase tracking-widest flex items-center gap-2">
+                <Trophy size={14} className="text-blue-400" /> Arena Journey
               </h2>
-              <span className="text-[10px] text-amber-500 font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Season 1</span>
+              <span className="text-[9px] text-blue-300 font-bold bg-blue-500/20 px-2 py-0.5 rounded border border-blue-400/20 uppercase tracking-wider">Season 1</span>
             </div>
 
-            <div className="flex-1 relative rounded-xl overflow-hidden bg-zinc-950/50 border border-white/5 shadow-inner">
+            <div className="flex-1 relative bg-zinc-950/50 shadow-inner p-4">
               {progress.blitz ? (
                 <ArenaPath
                   progress={progress.blitz}
@@ -281,25 +287,29 @@ export default function LobbyPage() {
                   compact
                 />
               ) : (
-                <div className="h-full flex items-center justify-center text-zinc-500 text-xs">
+                <div className="h-full flex items-center justify-center text-zinc-500 text-xs font-bold uppercase tracking-widest">
                   Loading Arena...
                 </div>
               )}
             </div>
-          </div>
+          </GameCard>
 
           {/* Chests */}
-          <div className="glass-panel p-5 rounded-2xl shrink-0 bg-zinc-900/40 border-zinc-800">
-            <h2 className="text-xs font-bold text-zinc-400 mb-4 font-display uppercase tracking-widest flex items-center gap-2">
-              <Archive size={14} className="text-indigo-400" /> Chest Slots
-            </h2>
-            <ChestGrid
-              chests={chests || []}
-              slots={4}
-              onOpenChest={() => { }}
-              compact
-            />
-          </div>
+          <GameCard variant="gold" className="shrink-0 bg-zinc-900/80 p-0 overflow-hidden">
+            <div className="p-4 border-b border-white/5 bg-amber-950/20">
+              <h2 className="text-xs font-black text-amber-200 font-display uppercase tracking-widest flex items-center gap-2">
+                <Archive size={14} className="text-amber-400" /> Chest Slots
+              </h2>
+            </div>
+            <div className="p-4 bg-zinc-950/30">
+              <ChestGrid
+                chests={chests || []}
+                slots={4}
+                onOpenChest={() => { }}
+                compact
+              />
+            </div>
+          </GameCard>
         </div>
 
       </div>
@@ -329,6 +339,3 @@ export default function LobbyPage() {
     </div>
   );
 }
-
-// Helper types if needed, otherwise rely on existing imports.
-// SidebarContent removed as it's now integrated into the main layout or not needed in this simplified premium view.

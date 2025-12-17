@@ -2,19 +2,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --background: #09090b;
-  /* zinc-950 */
-  --foreground: #fafafa;
-  /* zinc-50 */
+  /* Clash Royale / Mobile Game Theme */
+  --background: #1e1b2e;
+  /* Deep purple/slate background */
+  --foreground: #ffffff;
 
-  /* Premium Colors */
-  --color-gold-400: #fbbf24;
-  --color-gold-500: #f59e0b;
-  --color-gold-600: #d97706;
+  /* Primary Brand Colors (Gold/Amber) */
+  --color-gold-300: #ffd700;
+  --color-gold-400: #ffb700;
+  --color-gold-500: #ff8c00;
+  --color-gold-600: #e67e22;
 
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(9, 9, 11, 0.6);
-  /* darker for premium feel */
+  /* Secondary Brand Colors (Royal Blue) */
+  --color-blue-300: #448aff;
+  --color-blue-500: #2962ff;
+  --color-blue-700: #1a237e;
+
+  /* Accent Colors */
+  --color-accent-cyan: #00e5ff;
+  --color-accent-pink: #f50057;
+
+  /* Semantic */
+  --color-success: #00c853;
+  --color-danger: #d50000;
+
+  /* Surfaces */
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-bg: rgba(30, 27, 46, 0.7);
+
+  /* Effects */
+  --shadow-comic: 0px 4px 0px 0px rgba(0, 0, 0, 0.4);
+  --shadow-comic-hover: 0px 2px 0px 0px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
@@ -50,33 +68,33 @@ body {
 
 /* Glassmorphism Utilities */
 .glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(12px);
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 1.5rem;
+  /* rounded-3xl */
 }
 
-.glass-card {
-  background: rgba(24, 24, 27, 0.5);
-  /* zinc-900/50 */
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.glass-card:hover {
-  background: rgba(39, 39, 42, 0.6);
-  /* zinc-800/60 */
-  border-color: rgba(255, 255, 255, 0.1);
+.text-stroke {
+  -webkit-text-stroke: 1px black;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
 
 .text-gold-gradient {
-  background: linear-gradient(to bottom, #fcd34d, #f59e0b);
-  /* amber-300 to amber-500 */
+  background: linear-gradient(to bottom, #ffd700, #ff8c00);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
+}
+
+.text-blue-gradient {
+  background: linear-gradient(to bottom, #448aff, #2962ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
 }
 
 /* === SCROLLBAR UTILITIES === */
