@@ -166,7 +166,7 @@ export default function PublicProfilePage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                     {profile.attributes && Object.entries(profile.attributes).map(([key, value]) => (
                         <div key={key} className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl flex flex-col items-center">
-                            <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">{key}</span>
+                            <span className="text-[10px] text-zinc-500 font-bold tracking-wide mb-1">{key}</span>
                             <span className="text-2xl font-black text-white">{value as React.ReactNode}</span>
                         </div>
                     ))}

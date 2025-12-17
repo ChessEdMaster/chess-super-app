@@ -65,7 +65,7 @@ function SocialPageContent() {
                                 key={tab.id}
                                 variant={isActive ? tab.color : 'neutral'}
                                 className={cn(
-                                    "flex-1 min-w-[100px] h-[40px] text-xs font-black uppercase tracking-wider transition-all",
+                                    "flex-1 min-w-[100px] h-[40px] text-xs font-black tracking-wide transition-all",
                                     !isActive && "opacity-70 hover:opacity-100"
                                 )}
                                 onClick={() => handleTabChange(tab.id)}
@@ -125,7 +125,7 @@ export default function SocialPage() {
             <div className="h-full w-full flex items-center justify-center bg-zinc-950 text-white">
                 <div className="flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-amber-500"></div>
-                    <p className="text-amber-500 font-bold uppercase tracking-widest text-xs animate-pulse">Carregant...</p>
+                    <p className="text-amber-500 font-bold tracking-wide text-xs animate-pulse">Carregant...</p>
                 </div>
             </div>
         }>

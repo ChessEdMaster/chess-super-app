@@ -32,7 +32,7 @@ function AdminNavLink({ href, children, icon: Icon, exact }: { href: string; chi
     return (
         <Link
             href={href}
-            className="flex-1 min-w-[120px] px-4 py-3 flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wide text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all group"
+            className="flex-1 min-w-[120px] px-4 py-3 flex items-center justify-center gap-2 text-sm font-bold text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all group"
         >
             <Icon size={16} className="group-hover:text-indigo-400 transition-colors" />
             {children}

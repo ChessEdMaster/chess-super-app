@@ -167,7 +167,7 @@ export default function AcademyPage() {
                         <GraduationCap className="text-white" size={32} />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-500 uppercase tracking-tight font-display drop-shadow-sm text-stroke">
+                        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-500 tracking-tight font-display drop-shadow-sm text-stroke">
                             Acadèmia
                         </h1>
                         <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">
@@ -228,7 +228,7 @@ export default function AcademyPage() {
                                             <TrackIcon className="text-emerald-500" size={20} />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-black text-white font-display uppercase tracking-wide leading-none">{TRACK_TITLES[track]}</h2>
+                                            <h2 className="text-xl font-black text-white font-display tracking-wide leading-none">{TRACK_TITLES[track]}</h2>
                                             <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold mt-1">
                                                 Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}
                                             </p>
@@ -342,7 +342,7 @@ function CourseCard({ course }: { course: AcademyCourse }) {
                     </div>
 
                     <div className="p-5 flex flex-col flex-1 relative z-10">
-                        <h3 className="text-lg font-black text-white mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide uppercase">
+                        <h3 className="text-lg font-black text-white mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide">
                             {course.title}
                         </h3>
                         <p className="text-zinc-500 text-xs line-clamp-3 mb-6 flex-1 leading-relaxed font-bold">

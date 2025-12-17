@@ -66,7 +66,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                             />
                             <div className="absolute top-14 left-0 w-52 bg-zinc-900 border-2 border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
                                 <div className="px-4 py-2 border-b border-zinc-800 mb-1 bg-zinc-800/50">
-                                    <p className="text-xs text-zinc-400 uppercase font-bold tracking-wider">Mestre</p>
+                                    <p className="text-xs text-zinc-400 font-bold tracking-wider">Mestre</p>
                                     <p className="text-sm font-bold truncate text-gold-400">{profile.username}</p>
                                 </div>
                                 {profile.role === 'SuperAdmin' && (
@@ -197,7 +197,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                             </div>
 
                             {isActive && (
-                                <span className="absolute -bottom-6 text-[10px] font-black uppercase tracking-wider text-amber-400 bg-black/80 px-2 py-0.5 rounded-full whitespace-nowrap border border-amber-500/30">
+                                <span className="absolute -bottom-6 text-[10px] font-bold text-amber-400 bg-black/80 px-2 py-0.5 rounded-full whitespace-nowrap border border-amber-500/30">
                                     {tab.name}
                                 </span>
                             )}

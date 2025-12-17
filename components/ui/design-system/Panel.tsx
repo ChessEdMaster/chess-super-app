@@ -16,7 +16,7 @@ const Panel = React.forwardRef<HTMLDivElement, PanelProps>(
                     'relative rounded-3xl border-2 border-white/10',
                     'bg-zinc-900/60 backdrop-blur-xl',
                     'shadow-xl',
-                    'p-6 md:p-8',
+                    'p-4 md:p-6',
                     className
                 )}
                 {...props}

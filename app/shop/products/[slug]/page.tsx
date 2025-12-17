@@ -99,12 +99,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
                         <div className="mb-6">
                             {product.category && (
                                 <Link href={`/shop/products?category=${product.category.id}`} className="inline-block mb-2">
-                                    <span className="text-emerald-400 text-xs font-black uppercase tracking-widest hover:underline">
+                                    <span className="text-emerald-400 text-xs font-black tracking-widest hover:underline">
                                         {product.category.name}
                                     </span>
                                 </Link>
                             )}
-                            <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-wide font-display text-stroke shadow-black drop-shadow-lg mb-2 leading-tight">
+                            <h1 className="text-3xl lg:text-4xl font-black text-white font-display text-stroke shadow-black drop-shadow-lg mb-2 leading-tight">
                                 {product.name}
                             </h1>
 
@@ -117,7 +117,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                     <span className="text-sm font-bold text-zinc-400 ml-2">(4.8/5)</span>
                                 </div>
                                 <div className="h-4 w-px bg-zinc-700"></div>
-                                <span className={`text-sm font-black uppercase tracking-wide ${stockStatus.color}`}>
+                                <span className={`text-sm font-black tracking-wide ${stockStatus.color}`}>
                                     {stockStatus.label}
                                 </span>
                             </div>

@@ -28,7 +28,7 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
                 whileHover={{ filter: 'brightness(1.1)', translateY: 2 }}
                 whileTap={{ translateY: 6 }}
                 className={cn(
-                    'relative px-6 py-3 rounded-xl font-display font-bold text-white uppercase tracking-wider',
+                    'relative px-6 py-3 rounded-xl font-display font-bold text-white',
                     'bg-gradient-to-b border-t-4 border-b border-x border-black/20',
                     'transition-all duration-100 ease-out select-none',
                     'flex items-center justify-center gap-2',

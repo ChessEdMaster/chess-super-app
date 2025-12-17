@@ -144,10 +144,10 @@ export default function LobbyPage() {
       {/* HEADER */}
       <Panel className="flex items-center justify-between shrink-0 py-4 px-6 bg-zinc-900/80 border-black/20">
         <div>
-          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400 uppercase tracking-widest italic font-display drop-shadow-lg mb-1 text-stroke">
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400 italic font-display drop-shadow-lg mb-1 text-stroke tracking-wide">
             Battle Arena
           </h1>
-          <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+          <p className="text-zinc-400 text-xs font-bold flex items-center gap-2 tracking-wide">
             <Swords size={12} className="text-amber-500" />
             Live Global Challenges
           </p>
@@ -183,7 +183,7 @@ export default function LobbyPage() {
         {/* LEFT: CHALLENGE LIST */}
         <GameCard variant="default" className="lg:col-span-8 p-0 flex flex-col overflow-hidden bg-zinc-900/90 border-zinc-700">
           <div className="p-4 border-b border-black/20 bg-zinc-900/50 flex justify-between items-center shadow-md z-10">
-            <h2 className="text-sm font-black text-white font-display uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-sm font-black text-white font-display tracking-wide flex items-center gap-2">
               <Zap size={16} className="text-amber-400 fill-amber-400" /> Active Games
             </h2>
             <span className="text-[10px] font-bold bg-zinc-950 text-zinc-400 px-3 py-1 rounded-full border border-white/10 shadow-inner">
@@ -199,8 +199,8 @@ export default function LobbyPage() {
                     <Swords size={40} className="text-zinc-700" />
                   </div>
                   <div className="text-center">
-                    <p className="font-black text-zinc-400 font-display tracking-wide text-lg uppercase">The Arena is Quiet</p>
-                    <p className="text-xs text-zinc-600 uppercase tracking-wider mt-1 font-bold">Be the first to start a battle</p>
+                    <p className="font-black text-zinc-400 font-display tracking-wide text-lg">The Arena is Quiet</p>
+                    <p className="text-xs text-zinc-600 tracking-wider mt-1 font-bold">Be the first to start a battle</p>
                   </div>
                 </div>
               ) : (
@@ -256,7 +256,7 @@ export default function LobbyPage() {
                         variant={challenge.host_id === user?.id ? 'neutral' : 'success'}
                         className="text-xs h-10 px-6 min-w-[120px]"
                       >
-                        {challenge.host_id === user?.id ? 'Waiting...' : 'FIGHT'}
+                        {challenge.host_id === user?.id ? 'Waiting...' : 'Fight'}
                       </ShinyButton>
                     </div>
                   </motion.div>
@@ -272,10 +272,10 @@ export default function LobbyPage() {
           {/* Arena Map Preview */}
           <GameCard variant="blue" className="flex-1 flex flex-col bg-zinc-900/80 p-0 overflow-hidden">
             <div className="p-4 border-b border-white/5 bg-blue-950/20 flex justify-between items-center">
-              <h2 className="text-xs font-black text-blue-200 font-display uppercase tracking-widest flex items-center gap-2">
+              <h2 className="text-xs font-black text-blue-200 font-display tracking-wide flex items-center gap-2">
                 <Trophy size={14} className="text-blue-400" /> Arena Journey
               </h2>
-              <span className="text-[9px] text-blue-300 font-bold bg-blue-500/20 px-2 py-0.5 rounded border border-blue-400/20 uppercase tracking-wider">Season 1</span>
+              <span className="text-[9px] text-blue-300 font-bold bg-blue-500/20 px-2 py-0.5 rounded border border-blue-400/20 tracking-wider">Season 1</span>
             </div>
 
             <div className="flex-1 relative bg-zinc-950/50 shadow-inner p-4">
@@ -297,7 +297,7 @@ export default function LobbyPage() {
           {/* Chests */}
           <GameCard variant="gold" className="shrink-0 bg-zinc-900/80 p-0 overflow-hidden">
             <div className="p-4 border-b border-white/5 bg-amber-950/20">
-              <h2 className="text-xs font-black text-amber-200 font-display uppercase tracking-widest flex items-center gap-2">
+              <h2 className="text-xs font-black text-amber-200 font-display tracking-wide flex items-center gap-2">
                 <Archive size={14} className="text-amber-400" /> Chest Slots
               </h2>
             </div>

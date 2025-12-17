@@ -53,7 +53,7 @@ export default async function ShopPage() {
                     <div className="mb-4 animate-bounce-slow">
                         <ShoppingBag size={64} className="text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-wider font-display text-stroke shadow-black drop-shadow-xl mb-4">
+                    <h1 className="text-4xl md:text-6xl font-black text-white font-display text-stroke shadow-black drop-shadow-xl mb-4">
                         Royal Store
                     </h1>
                     <p className="text-zinc-300 text-lg md:text-xl font-bold max-w-2xl mx-auto mb-8 leading-relaxed text-shadow-sm">

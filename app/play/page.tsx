@@ -375,7 +375,7 @@ export default function PlayPage() {
     <div className="h-dvh w-full flex flex-col overflow-hidden">
       {/* Header - Compact */}
       <header className="flex-none py-3 px-4 border-b border-black/20 bg-zinc-950/80 backdrop-blur-md flex items-center justify-between z-20 shadow-xl">
-        <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 font-display uppercase tracking-widest text-stroke drop-shadow-sm">
+        <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 font-display tracking-wide text-stroke drop-shadow-sm">
           <Sword className="h-6 w-6 text-amber-500 fill-amber-500 stroke-amber-900 stroke-2" />
           Arena Competitiva
         </h1>
@@ -383,15 +383,15 @@ export default function PlayPage() {
           <div className="flex gap-2 text-xs md:text-xs">
             <div className="hidden md:flex gap-2">
               <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-                <span className="font-bold text-zinc-500 uppercase tracking-wider">Bullet</span>
+                <span className="font-bold text-zinc-500 tracking-wide">Bullet</span>
                 <strong className="text-white font-mono">{userProfile.elo_bullet || 1200}</strong>
               </div>
               <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-                <span className="font-bold text-zinc-500 uppercase tracking-wider">Blitz</span>
+                <span className="font-bold text-zinc-500 tracking-wide">Blitz</span>
                 <strong className="text-white font-mono">{userProfile.elo_blitz || 1200}</strong>
               </div>
               <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-                <span className="font-bold text-zinc-500 uppercase tracking-wider">Rapid</span>
+                <span className="font-bold text-zinc-500 tracking-wide">Rapid</span>
                 <strong className="text-white font-mono">{userProfile.elo_rapid || 1200}</strong>
               </div>
             </div>
@@ -412,7 +412,7 @@ export default function PlayPage() {
           <div className="space-y-6">
             {gameState === 'idle' && (
               <GameCard className="p-4 space-y-3 bg-zinc-900/90 border-zinc-700">
-                <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 uppercase tracking-widest">
+                <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 tracking-wide">
                   <Trophy className="h-3 w-3 text-amber-500" />
                   Arenas
                 </h3>
@@ -426,7 +426,7 @@ export default function PlayPage() {
 
             {/* Chests Section */}
             <GameCard className="p-4 space-y-3 bg-zinc-900/90 border-zinc-700">
-              <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 uppercase tracking-widest">
+              <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 tracking-wide">
                 <Archive className="h-3 w-3 text-indigo-400" />
                 Cofres
               </h3>
@@ -447,7 +447,7 @@ export default function PlayPage() {
                             chest.type === 'SILVER' ? 'text-slate-300' :
                               'text-amber-700'
                           }`} />
-                        <span className="text-[7px] font-black text-white/50 uppercase tracking-widest">{chest.type.substring(0, 1)}</span>
+                        <span className="text-[7px] font-black text-white/50 tracking-wider">{chest.type.substring(0, 1)}</span>
 
                         {/* Status Overlay */}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -475,7 +475,7 @@ export default function PlayPage() {
             </GameCard>
 
             <GameCard className="p-4 bg-zinc-900/90 border-zinc-700">
-              <h3 className="font-black text-xs mb-4 flex items-center gap-2 text-zinc-400 uppercase tracking-widest">
+              <h3 className="font-black text-xs mb-4 flex items-center gap-2 text-zinc-400 tracking-wide">
                 <Timer className="h-3 w-3 text-emerald-500" />
                 Ritme de Joc
               </h3>
@@ -487,7 +487,7 @@ export default function PlayPage() {
                   onClick={() => setGameMode('bullet')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">🚀 Bullet</span>
+                  <span className="flex items-center gap-2 text-xs font-bold tracking-wide">🚀 Bullet</span>
                   <span className="text-[10px] font-mono opacity-80 bg-black/20 px-1.5 rounded">1+0</span>
                 </Button>
                 <Button
@@ -496,7 +496,7 @@ export default function PlayPage() {
                   onClick={() => setGameMode('blitz')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">⚡ Blitz</span>
+                  <span className="flex items-center gap-2 text-xs font-bold tracking-wide">⚡ Blitz</span>
                   <span className="text-[10px] font-mono opacity-80 bg-black/20 px-1.5 rounded">3+2</span>
                 </Button>
                 <Button
@@ -505,7 +505,7 @@ export default function PlayPage() {
                   onClick={() => setGameMode('rapid')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
-                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">🐢 Rapid</span>
+                  <span className="flex items-center gap-2 text-xs font-bold tracking-wide">🐢 Rapid</span>
                   <span className="text-[10px] font-mono opacity-80 bg-black/20 px-1.5 rounded">10+0</span>
                 </Button>
               </div>
@@ -517,7 +517,7 @@ export default function PlayPage() {
                   </ShinyButton>
                 ) : gameState === 'searching' ? (
                   <GameCard className="flex flex-col items-center gap-3 py-4 bg-zinc-950/50 border-dashed border-zinc-800">
-                    <div className="flex items-center gap-2 text-emerald-400 font-bold animate-pulse text-xs uppercase tracking-widest">
+                    <div className="flex items-center gap-2 text-emerald-400 font-bold animate-pulse text-xs tracking-wide">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Cercant...
                     </div>
@@ -639,11 +639,11 @@ export default function PlayPage() {
       <Dialog open={!!selectedArena} onOpenChange={(open) => !open && setSelectedArena(null)}>
         <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800 text-white overflow-hidden shadow-2xl rounded-3xl">
           <DialogHeader className="p-4 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl">
-            <DialogTitle className="flex items-center gap-2 font-display uppercase tracking-wider text-sm">
+            <DialogTitle className="flex items-center gap-2 font-display tracking-wide text-sm">
               <Trophy className="h-4 w-4 text-amber-500" />
               {selectedArena === 'bullet' ? 'Bullet Arena' : selectedArena === 'blitz' ? 'Blitz Arena' : 'Rapid Arena'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 text-xs font-bold uppercase tracking-widest">
+            <DialogDescription className="text-zinc-500 text-xs font-bold tracking-wide">
               Journey to Glory (0 - 1000 Cups)
             </DialogDescription>
           </DialogHeader>

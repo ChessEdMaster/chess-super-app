@@ -51,7 +51,7 @@ export default function HomePage() {
                 key={league.id}
                 onClick={() => setSelectedLeague(league.id)}
                 className={cn(
-                  "px-4 py-2 rounded-full flex items-center gap-2 transition-all font-display uppercase tracking-wider text-[10px]",
+                  "px-4 py-2 rounded-full flex items-center gap-2 transition-all font-bold text-[10px]",
                   selectedLeague === league.id
                     ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
                     : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
@@ -70,7 +70,7 @@ export default function HomePage() {
 
           {/* Battle Button Area */}
           <div className="flex flex-col items-center gap-4 py-6 pointer-events-auto">
-            <div className="text-amber-400/80 text-[10px] font-bold uppercase tracking-[0.3em] font-display drop-shadow-md">
+            <div className="text-amber-400/80 text-[10px] font-bold tracking-widest font-display drop-shadow-md">
               Enter the Arena
             </div>
             <Link href="/lobby">
@@ -85,12 +85,12 @@ export default function HomePage() {
                   repeat: Infinity,
                   repeatType: "loop"
                 }}
-                className="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-700 text-black font-black text-2xl px-12 py-5 rounded-2xl border-2 border-amber-300 shadow-2xl relative overflow-hidden group font-display tracking-widest"
+                className="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-700 text-black font-black text-2xl px-12 py-5 rounded-2xl border-2 border-amber-300 shadow-2xl relative overflow-hidden group font-display tracking-wide"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 skew-y-12" />
                 <div className="flex items-center gap-3 relative z-10">
                   <Swords size={28} className="text-amber-950" />
-                  <span>BATTLE</span>
+                  <span>Battle</span>
                 </div>
               </motion.button>
             </Link>
@@ -106,7 +106,7 @@ export default function HomePage() {
                 {chest ? (
                   <>
                     <div className="text-2xl mb-1 drop-shadow-md transition-transform group-hover:scale-110">📦</div>
-                    <span className="text-[10px] font-bold text-amber-500 uppercase font-display tracking-wider">{chest.type}</span>
+                    <span className="text-[10px] font-bold text-amber-500 font-display tracking-wide">{chest.type}</span>
                     <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{Math.floor(chest.unlockTime / 60)}m</span>
                   </>
                 ) : (

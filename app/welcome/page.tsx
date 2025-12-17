@@ -47,7 +47,7 @@ export default function WelcomePage() {
                         </div>
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-black text-white mb-4 uppercase tracking-tight font-display drop-shadow-[0_5px_0_rgba(0,0,0,0.5)] text-stroke">
+                    <h1 className="text-6xl md:text-8xl font-black text-white mb-4 tracking-tight font-display drop-shadow-[0_5px_0_rgba(0,0,0,0.5)] text-stroke">
                         Chess <span className="text-gold-gradient">Clans</span>
                     </h1>
                     <p className="text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-md">
@@ -90,7 +90,7 @@ export default function WelcomePage() {
                             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mb-6 shadow-lg border-t-2 border-emerald-400 group-hover:scale-110 transition-transform">
                                 <BookOpen className="text-white w-10 h-10 drop-shadow-md" />
                             </div>
-                            <h3 className="text-2xl font-black text-white mb-3 font-display uppercase tracking-wider text-stroke">Acadèmia</h3>
+                            <h3 className="text-2xl font-black text-white mb-3 font-display tracking-wider text-stroke">Acadèmia</h3>
                             <p className="text-amber-100/80 text-sm mb-8 leading-relaxed font-medium">
                                 Mestre els fonaments i estratègies amb lliçons interactives i exercicis tàctics.
                             </p>

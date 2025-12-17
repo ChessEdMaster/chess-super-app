@@ -575,14 +575,14 @@ function AnalysisContent() {
               className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'analysis' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
               <ActivityIcon size={20} />
-              <span className="text-[10px] uppercase font-bold tracking-widest">Analysis</span>
+              <span className="text-[10px] font-bold tracking-wide">Analysis</span>
             </button>
             <button
               onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
               className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'database' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
             >
               <DatabaseIcon />
-              <span className="text-[10px] uppercase font-bold tracking-widest">Database</span>
+              <span className="text-[10px] font-bold tracking-wide">Database</span>
             </button>
             <button
               onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
