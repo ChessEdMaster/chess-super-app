@@ -178,8 +178,8 @@ export function UserProfile() {
             {/* Capçalera */}
             <Panel className="flex flex-col md:flex-row items-center justify-between p-6 mb-8 gap-6 shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
-                <h1 className="text-3xl font-black text-white flex items-center gap-3 uppercase tracking-wider font-display text-stroke">
-                    <User className="text-white drop-shadow-md" size={32} /> El teu Perfil
+                <h1 className="text-3xl font-black text-foreground flex items-center gap-3 uppercase tracking-wider font-display text-stroke">
+                    <User className="text-foreground drop-shadow-md" size={32} /> El teu Perfil
                 </h1>
                 <div className="flex flex-wrap justify-center items-center gap-3">
                     {checkPermission('admin.all') && (
@@ -200,7 +200,7 @@ export function UserProfile() {
                 {/* Columna Esquerra: Info Usuari */}
                 <div className="md:col-span-1 space-y-6">
                     {/* Targeta d'Usuari */}
-                    <GameCard variant="default" className="flex flex-col items-center text-center relative overflow-hidden p-0 border-zinc-700">
+                    <GameCard variant="default" className="flex flex-col items-center text-center relative overflow-hidden p-0 border-[var(--card-border)]">
                         {/* Banner Background */}
                         <div className="w-full h-32 bg-gradient-to-b from-indigo-900 via-indigo-950 to-zinc-950/0 relative">
                             <div className="absolute inset-0 bg-[url('/patterns/topography.svg')] opacity-10"></div>
@@ -209,7 +209,7 @@ export function UserProfile() {
                         <div className="relative -mt-16 mb-4 group">
                             {/* Avatar Glow */}
                             <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500 via-purple-500 to-amber-500 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-500 animate-spin-slow"></div>
-                            <div className="relative w-32 h-32 bg-zinc-950 rounded-full p-1.5 flex items-center justify-center overflow-hidden border-4 border-zinc-800 shadow-2xl z-10">
+                            <div className="relative w-32 h-32 bg-zinc-950 rounded-full p-1.5 flex items-center justify-center overflow-hidden border-4 border-[var(--card-border)] shadow-2xl z-10">
                                 {user.user_metadata?.avatar_url ? (
                                     <Image
                                         src={user.user_metadata.avatar_url}
@@ -219,12 +219,12 @@ export function UserProfile() {
                                         className="w-full h-full rounded-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-4xl font-black text-white font-display">
+                                    <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-4xl font-black text-foreground font-display">
                                         {user.email?.[0].toUpperCase()}
                                     </div>
                                 )}
                             </div>
-                            <div className="absolute bottom-1 right-1 bg-zinc-900 rounded-full p-2 border-2 border-amber-500 text-amber-500 shadow-lg z-20">
+                            <div className="absolute bottom-1 right-1 bg-[var(--card-bg)] rounded-full p-2 border-2 border-amber-500 text-amber-500 shadow-lg z-20">
                                 <Trophy size={16} fill="currentColor" />
                             </div>
                         </div>
@@ -236,22 +236,22 @@ export function UserProfile() {
                                         type="text"
                                         value={editUsername}
                                         onChange={(e) => setEditUsername(e.target.value)}
-                                        className="bg-zinc-950 border-2 border-indigo-500/50 rounded-xl px-3 py-2 text-white text-center w-full focus:outline-none focus:border-indigo-500 font-bold"
+                                        className="bg-zinc-950 border-2 border-indigo-500/50 rounded-xl px-3 py-2 text-foreground text-center w-full focus:outline-none focus:border-indigo-500 font-bold"
                                         autoFocus
                                     />
-                                    <button onClick={handleSaveProfile} className="p-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white shadow-lg shadow-emerald-900/20 active:translate-y-0.5 transition-all outline-none">
+                                    <button onClick={handleSaveProfile} className="p-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-foreground shadow-lg shadow-emerald-900/20 active:translate-y-0.5 transition-all outline-none">
                                         <Save size={18} />
                                     </button>
-                                    <button onClick={() => setIsEditing(false)} className="p-2 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-white shadow-lg active:translate-y-0.5 transition-all outline-none">
+                                    <button onClick={() => setIsEditing(false)} className="p-2 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-foreground shadow-lg active:translate-y-0.5 transition-all outline-none">
                                         <X size={18} />
                                     </button>
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center gap-2 mb-2">
-                                    <h2 className="text-2xl font-black text-white font-display uppercase tracking-wide text-stroke shadow-black drop-shadow-md">
+                                    <h2 className="text-2xl font-black text-foreground font-display uppercase tracking-wide text-stroke shadow-black drop-shadow-md">
                                         {profile.username || user.user_metadata?.full_name || 'Jugador'}
                                     </h2>
-                                    <button onClick={() => setIsEditing(true)} className="text-zinc-500 hover:text-indigo-400 transition-colors bg-zinc-900/50 p-1.5 rounded-lg">
+                                    <button onClick={() => setIsEditing(true)} className="text-zinc-500 hover:text-indigo-400 transition-colors bg-[var(--card-bg)]/50 p-1.5 rounded-lg">
                                         <Edit2 size={14} />
                                     </button>
                                 </div>
@@ -260,14 +260,14 @@ export function UserProfile() {
                             <p className="text-amber-500 font-black uppercase text-xs tracking-[0.2em] mb-4">Level {profile.level}</p>
 
                             {/* XP Bar */}
-                            <div className="w-full h-4 bg-zinc-900 rounded-full overflow-hidden mb-2 border border-zinc-700 shadow-inner relative">
+                            <div className="w-full h-4 bg-[var(--card-bg)] rounded-full overflow-hidden mb-2 border border-[var(--card-border)] shadow-inner relative">
                                 <div
                                     className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 transition-all duration-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
                                     style={{ width: `${Math.min((profile.xp / xpToNextLevel) * 100, 100)}%` }}
                                 />
                                 <div className="absolute inset-0 bg-[url('/patterns/stripes.png')] opacity-20 bg-repeat-x animate-slide"></div>
                             </div>
-                            <p className="text-[10px] text-zinc-400 font-bold w-full flex justify-between uppercase tracking-wider">
+                            <p className="text-[10px] text-muted-foreground font-bold w-full flex justify-between uppercase tracking-wider">
                                 <span>{profile.xp} XP</span>
                                 <span>{xpToNextLevel} XP</span>
                             </p>
@@ -276,13 +276,13 @@ export function UserProfile() {
 
                     {/* Configuració */}
                     <Panel className="p-6 space-y-4">
-                        <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2 uppercase tracking-wide font-display text-stroke">
-                            <Settings size={20} className="text-zinc-400" /> Configuració
+                        <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2 uppercase tracking-wide font-display text-stroke">
+                            <Settings size={20} className="text-muted-foreground" /> Configuració
                         </h3>
 
                         <div className="space-y-3">
                             {/* Language */}
-                            <div className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
+                            <div className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <Globe size={18} className="text-indigo-400" />
                                     <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Idioma</span>
@@ -300,7 +300,7 @@ export function UserProfile() {
                                         saveProfile();
                                         toast.success("Idioma actualitzat");
                                     }}
-                                    className="bg-zinc-950 border border-zinc-700 rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                    className="bg-zinc-950 border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
                                 >
                                     <option value="ca">Català</option>
                                     <option value="es">Español</option>
@@ -320,7 +320,7 @@ export function UserProfile() {
                                     saveProfile();
                                     toast.success(`Notificacions ${newNotif ? 'activades' : 'desactivades'}`);
                                 }}
-                                className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
+                                className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
                             >
                                 <div className="flex items-center gap-3">
                                     <Bell size={18} className={profile.settings?.notifications ? "text-indigo-400" : "text-zinc-600"} />
@@ -332,7 +332,7 @@ export function UserProfile() {
                             </div>
 
                             {/* Theme Selector */}
-                            <div className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
+                            <div className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <Palette size={18} className="text-pink-400" />
                                     <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Tema Visual</span>
@@ -344,7 +344,7 @@ export function UserProfile() {
                                         setTheme(newTheme);
                                         toast.success(`Tema canviat a ${newTheme === 'light' ? 'Professional' : 'Gamer'}`);
                                     }}
-                                    className="bg-zinc-950 border border-zinc-700 rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                    className="bg-zinc-950 border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
                                 >
                                     <option value="light">Professional</option>
                                     <option value="clash">Gamer (Clash)</option>
@@ -360,7 +360,7 @@ export function UserProfile() {
                                     <div className="h-px bg-zinc-800 my-4 bg-gradient-to-r from-transparent via-zinc-700 to-transparent"></div>
 
                                     {/* Privacy Level */}
-                                    <div className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
+                                    <div className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm">
                                         <div className="flex items-center gap-3">
                                             <Shield size={18} className="text-emerald-400" />
                                             <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Privacitat</span>
@@ -368,7 +368,7 @@ export function UserProfile() {
                                         <select
                                             value={socialSettings.privacy_level}
                                             onChange={(e) => updateSettings({ privacy_level: e.target.value as any })}
-                                            className="bg-zinc-950 border border-zinc-700 rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                            className="bg-zinc-950 border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
                                         >
                                             <option value="public">Públic</option>
                                             <option value="friends_only">Només Amics</option>
@@ -379,7 +379,7 @@ export function UserProfile() {
                                     {/* Show Online Status */}
                                     <div
                                         onClick={() => updateSettings({ show_online_status: !socialSettings.show_online_status })}
-                                        className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
+                                        className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Activity size={18} className={socialSettings.show_online_status ? "text-green-400" : "text-zinc-600"} />
@@ -393,7 +393,7 @@ export function UserProfile() {
                                     {/* Allow Friend Requests */}
                                     <div
                                         onClick={() => updateSettings({ allow_friend_requests: !socialSettings.allow_friend_requests })}
-                                        className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
+                                        className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
                                     >
                                         <div className="flex items-center gap-3">
                                             <User size={18} className={socialSettings.allow_friend_requests ? "text-blue-400" : "text-zinc-600"} />
@@ -414,31 +414,31 @@ export function UserProfile() {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-amber-500/20 bg-zinc-900">
+                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-amber-500/20 bg-[var(--card-bg)]">
                             <Zap className="text-amber-400 mb-2 drop-shadow-md" size={32} />
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Agressivitat</span>
-                            <span className="text-2xl font-black text-white font-display text-stroke">{profile.attributes.AGGRESSION}</span>
+                            <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.AGGRESSION}</span>
                         </GameCard>
-                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-emerald-500/20 bg-zinc-900">
+                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-emerald-500/20 bg-[var(--card-bg)]">
                             <ShieldCheck className="text-emerald-400 mb-2 drop-shadow-md" size={32} />
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Solidesa</span>
-                            <span className="text-2xl font-black text-white font-display text-stroke">{profile.attributes.SOLIDITY}</span>
+                            <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.SOLIDITY}</span>
                         </GameCard>
-                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-blue-500/20 bg-zinc-900">
+                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-blue-500/20 bg-[var(--card-bg)]">
                             <Brain className="text-blue-400 mb-2 drop-shadow-md" size={32} />
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Coneixement</span>
-                            <span className="text-2xl font-black text-white font-display text-stroke">{profile.attributes.KNOWLEDGE}</span>
+                            <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.KNOWLEDGE}</span>
                         </GameCard>
-                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-purple-500/20 bg-zinc-900">
+                        <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-purple-500/20 bg-[var(--card-bg)]">
                             <Activity className="text-purple-400 mb-2 drop-shadow-md" size={32} />
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Velocitat</span>
-                            <span className="text-2xl font-black text-white font-display text-stroke">{profile.attributes.SPEED}</span>
+                            <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.SPEED}</span>
                         </GameCard>
                     </div>
 
                     {/* Social Wall */}
                     <div className="space-y-4">
-                        <h3 className="text-xl font-black text-white flex items-center gap-2 uppercase tracking-wide font-display text-stroke">
+                        <h3 className="text-xl font-black text-foreground flex items-center gap-2 uppercase tracking-wide font-display text-stroke">
                             <Activity size={24} className="text-indigo-400" /> Activitat Recent
                         </h3>
                         <Feed userId={user.id} limit={3} />
@@ -446,17 +446,17 @@ export function UserProfile() {
 
                     {/* Historial de Partides */}
                     <div className="space-y-4">
-                        <h3 className="text-xl font-black text-white flex items-center gap-2 uppercase tracking-wide font-display text-stroke">
+                        <h3 className="text-xl font-black text-foreground flex items-center gap-2 uppercase tracking-wide font-display text-stroke">
                             <Swords size={24} className="text-indigo-400" /> Partides Recents
                         </h3>
 
-                        <Panel className="p-0 overflow-hidden bg-zinc-900/50">
+                        <Panel className="p-0 overflow-hidden bg-[var(--card-bg)]/50">
                             {games.length === 0 ? (
                                 <div className="p-12 text-center flex flex-col items-center justify-center">
                                     <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
                                         <Swords className="text-zinc-600" size={32} />
                                     </div>
-                                    <p className="text-zinc-400 font-bold mb-4">Encara no has jugat cap partida.</p>
+                                    <p className="text-muted-foreground font-bold mb-4">Encara no has jugat cap partida.</p>
                                     <Link href="/play">
                                         <ShinyButton variant="primary" className="px-6 py-3">
                                             Juga ara!
@@ -477,10 +477,10 @@ export function UserProfile() {
                                             }
 
                                             // Determinem si has guanyat tu
-                                            let outcomeColor = 'text-zinc-400';
+                                            let outcomeColor = 'text-muted-foreground';
                                             let outcomeLabel = 'Taules';
                                             let outcomeBg = 'bg-zinc-800/50';
-                                            let outcomeBorder = 'border-zinc-700';
+                                            let outcomeBorder = 'border-[var(--card-border)]';
 
                                             if (game.result === '1/2-1/2') {
                                                 outcomeLabel = 'Taules';
@@ -507,7 +507,7 @@ export function UserProfile() {
                                                             {isWhite ? 'W' : 'B'}
                                                         </div>
                                                         <div>
-                                                            <p className="font-bold text-white group-hover:text-indigo-400 transition-colors text-lg">vs {opponentName}</p>
+                                                            <p className="font-bold text-foreground group-hover:text-indigo-400 transition-colors text-lg">vs {opponentName}</p>
                                                             <p className="text-xs text-zinc-500 flex items-center gap-1 font-bold uppercase tracking-wider">
                                                                 <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
                                                             </p>

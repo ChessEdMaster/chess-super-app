@@ -39,8 +39,11 @@ export function GlobalBackground() {
                     quality={100}
                 />
             </div>
-            {/* Gradient Overlay - Darker for premium feel */}
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-indigo-950/50 to-slate-950/90 pointer-events-none" />
+            {/* Gradient Overlay - Theme Aware */}
+            <div
+                className="absolute inset-0 pointer-events-none transition-colors duration-500"
+                style={{ background: 'linear-gradient(to bottom, var(--overlay-start), var(--overlay-mid), var(--overlay-end))' }}
+            />
         </div>
     );
 }

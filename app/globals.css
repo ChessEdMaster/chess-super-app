@@ -13,9 +13,27 @@
   /* Panel / Surface */
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(148, 163, 184, 0.2);
+  --border: #e2e8f0;
+  /* Slate-200 */
   /* Slate-400 alpha */
 
-  /* Brand Colors (Light Mode Muted) */
+  /* Slate-400 alpha */
+
+  --header-bg: rgba(255, 255, 255, 0.9);
+  --nav-bg: #ffffff;
+
+  --overlay-start: rgba(248, 250, 252, 0.9);
+  --overlay-mid: rgba(248, 250, 252, 0.7);
+  --overlay-end: rgba(248, 250, 252, 0.9);
+
+  --overlay-mid: rgba(248, 250, 252, 0.7);
+  --overlay-end: rgba(248, 250, 252, 0.9);
+
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  /* Slate-200 */
+  --muted-bg: #f1f5f9;
+  /* Slate-100 */
   --color-primary: #0f172a;
   /* Slate-900 (Main text/actions) */
   --color-secondary: #475569;
@@ -48,8 +66,27 @@
 
   --glass-bg: rgba(30, 27, 46, 0.7);
   --glass-border: rgba(255, 255, 255, 0.2);
+  --border: #27272a;
+  /* Zinc-800 */
 
-  --color-primary: #ffffff;
+  --header-bg: rgba(30, 58, 138, 0.9);
+  /* Blue-900 */
+  --nav-bg: #18181b;
+  /* Zinc-900 */
+
+  --overlay-start: rgba(2, 6, 23, 0.8);
+  --overlay-mid: rgba(30, 27, 75, 0.5);
+  --overlay-end: rgba(2, 6, 23, 0.9);
+
+  --overlay-mid: rgba(30, 27, 75, 0.5);
+  --overlay-end: rgba(2, 6, 23, 0.9);
+
+  --card-bg: #18181b;
+  /* Zinc-900 */
+  --card-border: #27272a;
+  /* Zinc-800 */
+  --muted-bg: #27272a;
+  /* Zinc-800 */
   --color-secondary: #94a3b8;
 
   --color-accent: #00e5ff;
@@ -66,16 +103,26 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-gold: var(--color-gold);
+
+  --color-border: var(--border);
+
+  --color-border: var(--border);
+
+  --color-card: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-muted: var(--muted-bg);
+
+  --color-success: var(--color-success);
+  --color-danger: var(--color-danger);
+
   --font-sans: 'Exo 2', sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-display: 'Exo 2', sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-  }
 }
 
 html,
@@ -98,10 +145,10 @@ body {
 
 /* Glassmorphism Utilities */
 .glass-panel {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   border: 2px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
   border-radius: 1.5rem;
   /* rounded-3xl */
 }

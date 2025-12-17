@@ -9,9 +9,9 @@ interface GameCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variants = {
-    default: 'border-zinc-600 bg-zinc-800/90 shadow-[0_4px_0_#27272a]',
-    gold: 'border-amber-500 bg-zinc-900/90 shadow-[0_4px_0_#b45309]',
-    blue: 'border-blue-500 bg-zinc-900/90 shadow-[0_4px_0_#1d4ed8]',
+    default: 'border-border bg-secondary/10 shadow-comic hover:shadow-comic-hover',
+    gold: 'border-amber-500 bg-secondary/10 shadow-[0_4px_0_var(--color-gold)]',
+    blue: 'border-blue-500 bg-secondary/10 shadow-[0_4px_0_var(--color-accent)]',
 };
 
 const GameCard = React.forwardRef<HTMLDivElement, GameCardProps>(

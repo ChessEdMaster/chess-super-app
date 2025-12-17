@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased text-white font-sans min-h-screen flex flex-col`}
+        className={`antialiased font-sans min-h-screen flex flex-col`}
       >
         {/* Global Background Layer */}
         <GlobalBackground />

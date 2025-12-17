@@ -34,9 +34,9 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     }
 
     return (
-        <div className="h-dvh w-full flex flex-col text-white overflow-hidden fixed inset-0">
+        <div className="h-dvh w-full flex flex-col text-foreground overflow-hidden fixed inset-0 bg-background">
             {/* Top Bar */}
-            <header className="h-16 px-4 flex items-center justify-between bg-gradient-to-b from-blue-900/90 to-blue-950/90 backdrop-blur-md border-b-4 border-blue-800 shadow-lg z-50 shrink-0">
+            <header className="h-16 px-4 flex items-center justify-between bg-[var(--header-bg)] backdrop-blur-md border-b border-border shadow-lg z-50 shrink-0">
                 <div className="flex items-center gap-3 relative">
                     <button
                         onClick={() => setProfileOpen(!profileOpen)}
@@ -44,10 +44,10 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                     >
                         <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center border-2 border-blue-300 shadow-[0_2px_0_#1e3a8a] relative shrink-0 group-active:translate-y-0.5 group-active:shadow-none transition-all">
                             {/* Placeholder Avatar */}
-                            <span className="text-[12px] font-display font-bold text-white drop-shadow-md">{profile.level}</span>
+                            <span className="text-[12px] font-display font-bold text-foreground drop-shadow-md">{profile.level}</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-bold font-display text-white drop-shadow-md tracking-wide">{profile.username}</span>
+                            <span className="text-sm font-bold font-display text-foreground drop-shadow-md tracking-wide">{profile.username}</span>
                             <div className="h-2 w-24 bg-black/40 rounded-full overflow-hidden mt-0.5 border border-white/10">
                                 <div
                                     className="h-full bg-gradient-to-r from-blue-400 to-cyan-400"
@@ -64,8 +64,8 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                 className="fixed inset-0 z-40 bg-transparent"
                                 onClick={() => setProfileOpen(false)}
                             />
-                            <div className="absolute top-14 left-0 w-52 bg-zinc-900 border-2 border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="px-4 py-2 border-b border-zinc-800 mb-1 bg-zinc-800/50">
+                            <div className="absolute top-14 left-0 w-52 bg-card border-2 border-card-border rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="px-4 py-2 border-b border-card-border mb-1 bg-muted/50">
                                     <p className="text-xs text-zinc-400 font-bold tracking-wider">Mestre</p>
                                     <p className="text-sm font-bold truncate text-gold-400">{profile.username}</p>
                                 </div>
@@ -73,7 +73,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                     <>
                                         <Link
                                             href="/admin/users"
-                                            className="w-full text-left px-4 py-3 text-sm text-indigo-400 hover:bg-zinc-800 hover:text-indigo-300 flex items-center gap-3 font-medium"
+                                            className="w-full text-left px-4 py-3 text-sm text-indigo-400 hover:bg-muted hover:text-indigo-300 flex items-center gap-3 font-medium"
                                             onClick={() => setProfileOpen(false)}
                                         >
                                             <Shield size={16} />
@@ -81,7 +81,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                         </Link>
                                         <Link
                                             href="/features"
-                                            className="w-full text-left px-4 py-3 text-sm text-emerald-400 hover:bg-zinc-800 hover:text-emerald-300 flex items-center gap-3 font-medium"
+                                            className="w-full text-left px-4 py-3 text-sm text-emerald-400 hover:bg-muted hover:text-emerald-300 flex items-center gap-3 font-medium"
                                             onClick={() => setProfileOpen(false)}
                                         >
                                             <Sparkles size={16} />
@@ -91,7 +91,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                 )}
                                 <Link
                                     href="/openings"
-                                    className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 font-medium"
+                                    className="w-full text-left px-4 py-3 text-sm text-muted-foreground hover:bg-muted hover:text-white flex items-center gap-3 font-medium"
                                     onClick={() => setProfileOpen(false)}
                                 >
                                     <BookOpen size={16} />
@@ -99,14 +99,14 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                 </Link>
                                 <Link
                                     href="/profile"
-                                    className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 font-medium"
+                                    className="w-full text-left px-4 py-3 text-sm text-muted-foreground hover:bg-muted hover:text-white flex items-center gap-3 font-medium"
                                     onClick={() => setProfileOpen(false)}
                                 >
                                     <User size={16} />
                                     El meu perfil
                                 </Link>
                                 <button
-                                    className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 font-medium"
+                                    className="w-full text-left px-4 py-3 text-sm text-muted-foreground hover:bg-muted hover:text-white flex items-center gap-3 font-medium"
                                     onClick={() => {/* TODO: Settings Link */ }}
                                 >
                                     <Settings size={16} />
@@ -145,7 +145,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                         onClick={toggleAssistant}
                         className={`p-2.5 rounded-xl transition-all relative border-b-4 active:border-b-0 active:translate-y-1 ${isAssistantOpen
                             ? 'bg-indigo-600 border-indigo-800 text-white shadow-lg'
-                            : 'bg-zinc-800 border-zinc-950 text-zinc-400 hover:text-indigo-400 hover:bg-zinc-700'
+                            : 'bg-card border-card-border text-muted-foreground hover:text-indigo-400 hover:bg-muted'
                             }`}
                     >
                         <Bot size={20} className="drop-shadow-sm" />
@@ -169,7 +169,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
             </main>
 
             {/* Bottom Navigation */}
-            <nav className="h-20 bg-zinc-900 border-t-4 border-zinc-800 flex items-center justify-around z-50 pb-safe shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
+            <nav className="h-20 bg-[var(--nav-bg)] border-t border-border flex items-center justify-around z-50 pb-safe shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href;
                     return (
@@ -191,9 +191,9 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                 "p-2.5 rounded-xl transition-all duration-200 border-2 shadow-lg",
                                 isActive
                                     ? "bg-gradient-to-br from-amber-400 to-amber-600 border-amber-200 shadow-amber-500/20 rotate-3 scale-110"
-                                    : "bg-zinc-800 border-zinc-700 shadow-black"
+                                    : "bg-secondary/10 border-border text-foreground/50"
                             )}>
-                                <tab.icon className={cn("w-6 h-6 drop-shadow-md", isActive ? "text-white fill-white/20" : "text-zinc-400")} />
+                                <tab.icon className={cn("w-6 h-6 drop-shadow-md", isActive ? "text-white fill-white/20" : "text-muted-foreground")} />
                             </div>
 
                             {isActive && (
