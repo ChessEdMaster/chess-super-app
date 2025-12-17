@@ -28,6 +28,8 @@ interface PGNEditorProps {
     autoAnnotate?: boolean; // Auto-add engine evaluations
     engineEval?: Evaluation | null;
     isWorkMode?: boolean;
+    onAddImage?: (url: string) => void;
+    onRemoveImage?: (index: number) => void;
 }
 
 export function PGNEditor({
@@ -37,6 +39,8 @@ export function PGNEditor({
     autoAnnotate = false,
     engineEval,
     isWorkMode = false,
+    onAddImage,
+    onRemoveImage,
 }: PGNEditorProps) {
     const [viewMode, setViewMode] = useState<'tree' | 'linear'>('linear');
     const [showAnnotationPanel] = useState(true);
