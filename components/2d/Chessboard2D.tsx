@@ -8,10 +8,10 @@ import * as THREE from 'three';
 import dynamic from 'next/dynamic';
 
 // --- ASSETS ---
-const PIECE_THEME_URL = "https://images.chesscomfiles.com/chess-themes/pieces/neo/150";
+const PIECE_THEME_URL = "/pieces";
 
 const getPieceUrl = (type: string, color: string) => {
-    return `${PIECE_THEME_URL}/${color}${type}.png`;
+    return `${PIECE_THEME_URL}/${color}${type}.svg`;
 };
 
 // --- TYPES ---
@@ -221,48 +221,85 @@ const Board2D = ({ onSquareClick, customSquareStyles, orientation }: Board2DProp
 };
 
 const Pieces2D = ({ fen, orientation, onCapture }: { fen: string, orientation: string, onCapture: (x: number, z: number, color: string) => void }) => {
-    const game = useMemo(() => new Chess(fen), [fen]);
-    const board = game.board();
-    const prevPiecesRef = useRef<any[]>([]);
+    const pieces = useMemo(() => {
+        const p: any[] = [];
+        let board: ({ type: string; color: string; square: string } | null)[][] = [];
 
-    const pieces: any[] = [];
-    board.forEach((row, rowIndex) => {
-        row.forEach((square, colIndex) => {
-            if (square) {
-                let x = colIndex - 3.5;
-                let z = rowIndex - 3.5;
+        try {
+            const game = new Chess(fen);
+            board = game.board() as any;
+        } catch (e) {
+            // Manual parsing for invalid FENs (e.g. missing kings)
+            // FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+            const fenBoard = fen.split(' ')[0];
+            const rows = fenBoard.split('/');
 
-                // Flip for Black orientation
-                if (orientation === 'black') {
-                    x = -x;
-                    z = -z;
+            // Replicate structure: board[row][col] where row 0 is rank 8
+            for (let i = 0; i < 8; i++) {
+                const row: any[] = [];
+                let colIdx = 0;
+                const fenRow = rows[i] || '8'; // fallback empty
+                for (let char of fenRow) {
+                    if (char >= '1' && char <= '8') {
+                        const emptyCount = parseInt(char);
+                        for (let k = 0; k < emptyCount; k++) {
+                            row.push(null);
+                            colIdx++;
+                        }
+                    } else {
+                        // Piece
+                        const isWhite = char === char.toUpperCase();
+                        const type = char.toLowerCase();
+                        const color = isWhite ? 'w' : 'b';
+                        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                        // Rank = 8 - i
+                        // File = colIdx
+                        const square = `${files[colIdx]}${8 - i}`;
+                        row.push({ type, color, square });
+                        colIdx++;
+                    }
                 }
-
-                pieces.push({
-                    type: square.type,
-                    color: square.color,
-                    x,
-                    z,
-                    key: `${rowIndex}-${colIndex}`,
-                    square: square.square
-                });
+                while (row.length < 8) row.push(null); // safety fill
+                board.push(row);
             }
+        }
+
+        board.forEach((row, rowIndex) => {
+            row.forEach((square, colIndex) => {
+                if (square) {
+                    let x = colIndex - 3.5;
+                    let z = rowIndex - 3.5;
+
+                    // Flip for Black orientation
+                    if (orientation === 'black') {
+                        x = -x;
+                        z = -z;
+                    }
+
+                    p.push({
+                        type: square.type,
+                        color: square.color,
+                        x,
+                        z,
+                        key: `${rowIndex}-${colIndex}-${square.type}-${square.color}`, // Robust key
+                        square: square.square
+                    });
+                }
+            });
         });
-    });
+        return p;
+    }, [fen, orientation]);
+
+    const prevPiecesRef = useRef<any[]>([]);
 
     // Detect Captures
     useEffect(() => {
         const prevPieces = prevPiecesRef.current;
         if (prevPieces.length > 0) {
-            // Find pieces that were present but are now gone (captured)
-            // Note: This is a simple heuristic. In a real move, a piece moves to a square occupied by another.
-            // So we look for a square that had a piece, and now has a DIFFERENT piece (capture) or NO piece (en passant/movement).
-            // Actually, simpler: if a piece of color X was at square S, and now piece of color Y is at square S, it's a capture.
-
             prevPieces.forEach(prevP => {
                 const currentP = pieces.find(p => p.x === prevP.x && p.z === prevP.z);
                 if (currentP && currentP.color !== prevP.color) {
-                    // CAPTURE DETECTED at (x, z)
+                    // CAPTURE DETECTED
                     onCapture(prevP.x, prevP.z, prevP.color === 'w' ? '#ffffff' : '#000000');
                 }
             });
@@ -302,8 +339,6 @@ const ResponsiveCamera = () => {
         />
     );
 };
-
-// ... (rest of imports)
 
 // --- ARROWS ---
 interface ArrowProps {
@@ -390,4 +425,3 @@ const Chessboard2DContent = ({
 };
 
 export default dynamic(() => Promise.resolve(Chessboard2DContent), { ssr: false });
-

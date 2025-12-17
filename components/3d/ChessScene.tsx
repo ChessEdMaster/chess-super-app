@@ -279,25 +279,60 @@ const Board = ({ onSquareClick, customSquareStyles }: any) => {
 };
 
 const Pieces = ({ fen }: { fen: string }) => {
-    const game = useMemo(() => new Chess(fen), [fen]);
-    const board = game.board();
+    const pieces = useMemo(() => {
+        let board: ({ type: string; color: string; square: string } | null)[][] = [];
+        try {
+            const game = new Chess(fen);
+            board = game.board() as any;
+        } catch (e) {
+            // Manual parsing backing (same logic as 2D)
+            const fenBoard = fen.split(' ')[0];
+            const rows = fenBoard.split('/');
 
-    const pieces: any[] = [];
-    board.forEach((row, rowIndex) => {
-        row.forEach((square, colIndex) => {
-            if (square) {
-                const x = colIndex - 3.5;
-                const z = rowIndex - 3.5;
-                pieces.push({
-                    type: square.type,
-                    color: square.color,
-                    x,
-                    z,
-                    key: `${rowIndex}-${colIndex}`
-                });
+            for (let i = 0; i < 8; i++) {
+                const row: any[] = [];
+                let colIdx = 0;
+                const fenRow = rows[i] || '8';
+                for (let char of fenRow) {
+                    if (char >= '1' && char <= '8') {
+                        const emptyCount = parseInt(char);
+                        for (let k = 0; k < emptyCount; k++) {
+                            row.push(null);
+                            colIdx++;
+                        }
+                    } else {
+                        const isWhite = char === char.toUpperCase();
+                        const type = char.toLowerCase();
+                        const color = isWhite ? 'w' : 'b';
+                        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                        const square = `${files[colIdx]}${8 - i}`;
+                        row.push({ type, color, square });
+                        colIdx++;
+                    }
+                }
+                while (row.length < 8) row.push(null);
+                board.push(row);
             }
+        }
+
+        const p: any[] = [];
+        board.forEach((row, rowIndex) => {
+            row.forEach((square, colIndex) => {
+                if (square) {
+                    const x = colIndex - 3.5;
+                    const z = rowIndex - 3.5;
+                    p.push({
+                        type: square.type,
+                        color: square.color,
+                        x,
+                        z,
+                        key: `${rowIndex}-${colIndex}`
+                    });
+                }
+            });
         });
-    });
+        return p;
+    }, [fen]);
 
     return (
         <group>

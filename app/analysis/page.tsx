@@ -420,10 +420,69 @@ function AnalysisContent() {
     }
   }, [fen, isClient, isAnalyzing, engineDepth, multipv, analysisMode]);
 
+  // Helper to manually update FEN for setup (bypassing chess.js validation)
+  const manualFenUpdate = (currentFen: string, square: string, piece: { type: string, color: string } | null) => {
+    const parts = currentFen.split(' ');
+    const boardStr = parts[0];
+    const rows = boardStr.split('/');
+
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const fileIdx = files.indexOf(square[0]);
+    const rankIdx = 8 - parseInt(square[1]);
+
+    // Construct simplified board array
+    let board: (string | null)[][] = [];
+    for (let r = 0; r < 8; r++) {
+      const rowArr: (string | null)[] = [];
+      const rowStr = rows[r] || '8';
+      for (let char of rowStr) {
+        if (char >= '1' && char <= '8') {
+          for (let k = 0; k < parseInt(char); k++) rowArr.push(null);
+        } else {
+          rowArr.push(char);
+        }
+      }
+      while (rowArr.length < 8) rowArr.push(null); // safety
+      board.push(rowArr);
+    }
+
+    // Update square
+    if (piece) {
+      const char = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
+      board[rankIdx][fileIdx] = char;
+    } else {
+      board[rankIdx][fileIdx] = null;
+    }
+
+    // Reconstruct FEN
+    const newRows = board.map(row => {
+      let emptyCount = 0;
+      let rowStr = '';
+      for (let cell of row) {
+        if (cell === null) {
+          emptyCount++;
+        } else {
+          if (emptyCount > 0) {
+            rowStr += emptyCount;
+            emptyCount = 0;
+          }
+          rowStr += cell;
+        }
+      }
+      if (emptyCount > 0) rowStr += emptyCount;
+      return rowStr;
+    });
+
+    return `${newRows.join('/')} ${parts.slice(1).join(' ')}`;
+  };
+
   const handleSetupClick = (square: string) => {
     if (!setupSelectedPiece) return;
-    const gameSpec = new Chess(fen);
+
     try {
+      // Try using chess.js first
+      const gameSpec = new Chess(fen);
+
       if (setupSelectedPiece === 'trash') {
         gameSpec.remove(square as Square);
       } else {
@@ -431,9 +490,23 @@ function AnalysisContent() {
         const type = setupSelectedPiece[1].toLowerCase() as any;
         gameSpec.put({ type, color }, square as Square);
       }
-      setFen(gameSpec.fen());
+      const newFen = gameSpec.fen();
+      setFen(newFen);
       setGame(gameSpec);
-    } catch (e) { console.error("Setup error", e); }
+    } catch (e) {
+      // Fallback: Manual FEN manipulation if chess.js fails (e.g. empty board)
+      let newFen = fen;
+      if (setupSelectedPiece === 'trash') {
+        newFen = manualFenUpdate(fen, square, null);
+      } else {
+        const color = setupSelectedPiece[0] as 'w' | 'b';
+        const type = setupSelectedPiece[1].toLowerCase();
+        newFen = manualFenUpdate(fen, square, { type, color });
+      }
+      setFen(newFen);
+      // Try to sync game if possible, otherwise leave it stale (it won't be used for move logic in setup)
+      try { setGame(new Chess(newFen)); } catch (e) { }
+    }
   };
 
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
@@ -518,7 +591,11 @@ function AnalysisContent() {
   // --- NAVIGATION ---
   const handlePositionChange = (newFen: string) => {
     setFen(newFen);
-    setGame(new Chess(newFen));
+    try {
+      setGame(new Chess(newFen));
+    } catch (e) {
+      console.warn("Invalid FEN for game state:", newFen);
+    }
   };
   const goBack = () => {
     const newTree = new PGNTree();
