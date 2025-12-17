@@ -4,10 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
-import { Shield, Users, Trophy, Calendar, ArrowRight, Loader2, Lock, Globe } from 'lucide-react';
+import { Shield, Users, Trophy, Calendar, ArrowRight, Loader2, Lock, Globe, Swords, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
 
 interface ClubDetails {
     id: string;
@@ -57,8 +60,6 @@ export default function ClubPublicPage() {
         try {
             setLoading(true);
 
-            console.log('Fetching club with ID:', clubId);
-
             // Fetch Club Details
             const { data: clubData, error: clubError } = await supabase
                 .from('clubs')
@@ -66,14 +67,10 @@ export default function ClubPublicPage() {
                 .eq('id', clubId)
                 .single();
 
-            if (clubError) {
-                console.error('Supabase error fetching club:', clubError);
-                throw clubError;
-            }
-            console.log('Club data fetched:', clubData);
+            if (clubError) throw clubError;
             setClub(clubData);
 
-            // Fetch Members (limit to 10 for preview)
+            // Fetch Members (limit to 12 for preview)
             const { data: membersData, error: membersError } = await supabase
                 .from('club_members')
                 .select(`
@@ -139,165 +136,203 @@ export default function ClubPublicPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="animate-spin text-amber-500" size={48} />
             </div>
         );
     }
 
     if (!club) {
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
-                <Shield size={64} className="text-slate-700 mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Club Not Found</h1>
-                <Link href="/clubs" className="text-indigo-400 hover:underline">Return to Clubs</Link>
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <GameCard variant="default" className="text-center p-12">
+                    <Shield size={64} className="mx-auto text-zinc-600 mb-4" />
+                    <h1 className="text-2xl font-black text-white mb-2 uppercase tracking-wide">Club Not Found</h1>
+                    <Link href="/clubs">
+                        <ShinyButton variant="neutral">Return to Clubs</ShinyButton>
+                    </Link>
+                </GameCard>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-20">
-            {/* Banner */}
-            <div className="h-48 md:h-64 bg-gradient-to-r from-slate-900 to-slate-800 relative overflow-hidden">
-                {club.banner_url && (
-                    <Image src={club.banner_url} alt="Banner" fill className="object-cover opacity-50" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
-            </div>
+        <div className="h-full w-full p-4 md:p-6 pb-24 max-w-[1600px] mx-auto flex flex-col gap-6">
 
-            <div className="max-w-5xl mx-auto px-6 -mt-20 relative z-10">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
-                    <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-900 rounded-2xl border-4 border-slate-950 shadow-xl flex items-center justify-center overflow-hidden shrink-0">
+            {/* Navigation */}
+            <Link href="/clubs" className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition font-bold uppercase tracking-wider text-xs w-fit">
+                <ArrowLeft size={16} /> Tornar a Clans
+            </Link>
+
+            {/* HERO SECTION */}
+            <div className="relative rounded-3xl overflow-hidden border border-zinc-700 bg-zinc-900 shadow-2xl">
+                {/* Banner */}
+                <div className="h-48 md:h-64 relative bg-zinc-950">
+                    {club.banner_url ? (
+                        <Image src={club.banner_url} alt="Banner" fill className="object-cover opacity-60" />
+                    ) : (
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent"></div>
+                </div>
+
+                {/* Content Overlay */}
+                <div className="relative px-6 pb-6 -mt-16 md:-mt-20 flex flex-col md:flex-row items-end md:items-end gap-6 z-10">
+                    {/* Avatar */}
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl border-4 border-zinc-800 bg-zinc-900 shadow-2xl flex items-center justify-center shrink-0 overflow-hidden relative group">
                         {club.image_url ? (
                             <Image src={club.image_url} alt={club.name} fill className="object-cover" />
                         ) : (
-                            <Shield size={64} className="text-slate-700" />
+                            <Shield size={64} className="text-zinc-700" />
                         )}
+                        {/* Level Badge Placeholder */}
+                        <div className="absolute bottom-0 right-0 bg-amber-500 text-white text-xs font-black px-2 py-1 rounded-tl-xl border-t border-l border-amber-300 shadow-lg">
+                            LVL 1
+                        </div>
                     </div>
 
-                    <div className="flex-1 pt-2 md:pt-12">
+                    <div className="flex-1 w-full">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-black text-white mb-2">{club.name}</h1>
-                                <div className="flex items-center gap-4 text-sm text-slate-400">
-                                    <span className="flex items-center gap-1">
-                                        {club.is_public ? <Globe size={14} /> : <Lock size={14} />}
-                                        {club.is_public ? 'Public Club' : 'Private Club'}
+                                <h1 className="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-wide font-display text-stroke drop-shadow-lg">
+                                    {club.name}
+                                </h1>
+                                <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                                    <span className={`flex items-center gap-1.5 px-2 py-1 rounded border ${club.is_public ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-400' : 'bg-red-950/30 border-red-500/30 text-red-400'}`}>
+                                        {club.is_public ? <Globe size={12} /> : <Lock size={12} />}
+                                        {club.is_public ? 'Public' : 'Privat'}
                                     </span>
-                                    <span className="flex items-center gap-1">
-                                        <Users size={14} /> {club.member_count} Members
+                                    <span className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800 border border-zinc-700">
+                                        <Users size={12} className="text-indigo-400" /> {club.member_count} Membres
                                     </span>
                                     {club.owner && (
-                                        <span className="flex items-center gap-1">
-                                            <span className="text-slate-500">Owner:</span>
-                                            <span className="text-white font-medium">{club.owner.username}</span>
+                                        <span className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800 border border-zinc-700">
+                                            <span className="text-zinc-500">Líder:</span>
+                                            <span className="text-white">{club.owner.username}</span>
                                         </span>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex gap-3">
+                            <div className="flex gap-3 mt-2 md:mt-0">
                                 {['owner', 'admin'].includes(userRole || '') ? (
                                     <Link href={`/clubs/manage/${club.id}`}>
-                                        <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg shadow-indigo-900/20 flex items-center gap-2">
-                                            <Shield size={18} />
+                                        <ShinyButton variant="secondary" className="px-6 py-3">
+                                            <Swords size={20} className="mr-2" />
                                             {club.type === 'online' ? 'Manage Clan' : 'Club ERP'}
-                                        </button>
+                                        </ShinyButton>
                                     </Link>
                                 ) : userRole ? (
-                                    <button className="bg-slate-800 text-slate-400 px-6 py-2.5 rounded-xl font-bold cursor-default border border-slate-700">
-                                        Member
-                                    </button>
+                                    <ShinyButton variant="neutral" className="cursor-default opacity-100">
+                                        Membre
+                                    </ShinyButton>
                                 ) : (
-                                    <button
+                                    <ShinyButton
+                                        variant="primary"
                                         onClick={handleJoinClub}
                                         disabled={joining}
-                                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2.5 rounded-xl font-bold transition shadow-lg shadow-indigo-900/20 disabled:opacity-50"
+                                        className="px-8 py-3"
                                     >
                                         {joining ? 'Joining...' : 'Join Club'}
-                                    </button>
+                                    </ShinyButton>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* About */}
-                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                            <h2 className="text-xl font-bold text-white mb-4">About</h2>
-                            <p className="text-slate-400 leading-relaxed whitespace-pre-wrap">
-                                {club.description || "No description provided."}
-                            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Content */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* About */}
+                    <GameCard variant="default" className="p-6 bg-zinc-900/80">
+                        <h2 className="text-lg font-black text-white mb-4 uppercase tracking-wide font-display border-b border-zinc-800 pb-2">
+                            Sobre el Clan
+                        </h2>
+                        <p className="text-zinc-400 leading-relaxed whitespace-pre-wrap font-medium text-sm">
+                            {club.description || "No description provided."}
+                        </p>
+                    </GameCard>
+
+                    {/* Events Preview */}
+                    <GameCard variant="default" className="p-6 bg-zinc-900/80">
+                        <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
+                            <h2 className="text-lg font-black text-white uppercase tracking-wide font-display flex items-center gap-2">
+                                <Calendar className="text-purple-500" /> Esdeveniments
+                            </h2>
+                            <Link href="/events" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">
+                                Veure Tots
+                            </Link>
                         </div>
+                        <div className="text-center py-10 text-zinc-600 bg-zinc-950/30 rounded-xl border border-zinc-800/50 border-dashed">
+                            <Calendar size={32} className="mx-auto mb-3 opacity-30" />
+                            <p className="font-bold text-sm">Cap esdeveniment proper.</p>
+                        </div>
+                    </GameCard>
+                </div>
 
-                        {/* Events Preview */}
-                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <Calendar className="text-purple-500" /> Upcoming Events
-                                </h2>
-                                <Link href="/events" className="text-sm text-indigo-400 hover:text-indigo-300">View All</Link>
+                {/* Sidebar */}
+                <div className="space-y-6">
+                    {/* Stats */}
+                    <Panel className="p-6 bg-zinc-900 border-zinc-700">
+                        <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                            <Trophy size={14} /> Estadístiques
+                        </h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
+                                <span className="text-zinc-400 text-xs font-bold uppercase">Nivell</span>
+                                <span className="text-white font-black font-display text-lg">1</span>
                             </div>
-                            <div className="text-center py-8 text-slate-500 bg-slate-950/50 rounded-xl border border-slate-800/50">
-                                <Calendar size={32} className="mx-auto mb-2 opacity-50" />
-                                <p>No upcoming events scheduled.</p>
+                            <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
+                                <span className="text-zinc-400 text-xs font-bold uppercase">Victòries</span>
+                                <span className="text-amber-500 font-black font-display text-lg flex items-center gap-1">
+                                    <Trophy size={16} /> 0
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
+                                <span className="text-zinc-400 text-xs font-bold uppercase">Fundat</span>
+                                <span className="text-white font-mono text-sm">{new Date(club.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
-                    </div>
+                    </Panel>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        {/* Stats */}
-                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Club Stats</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Level</span>
-                                    <span className="text-white font-bold">1</span>
+                    {/* Members Preview */}
+                    <Panel className="p-6 bg-zinc-900 border-zinc-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                                <Users size={14} /> Membres
+                            </h3>
+                            <span className="text-[10px] font-bold text-zinc-600 bg-zinc-950 px-2 py-1 rounded border border-zinc-800">
+                                {club.member_count} TOTAL
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            {members.map((member) => (
+                                <div key={member.user_id} className="aspect-square bg-zinc-800 rounded-xl overflow-hidden relative group border border-zinc-700 hover:border-amber-500 transition-colors" title={member.profile.username}>
+                                    {member.profile.avatar_url ? (
+                                        <Image src={member.profile.avatar_url} alt={member.profile.username} fill className="object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-zinc-500 font-bold text-xs bg-zinc-900">
+                                            {member.profile.username[0].toUpperCase()}
+                                        </div>
+                                    )}
+                                    {member.role === 'owner' && (
+                                        <div className="absolute top-0 right-0 bg-amber-500 text-white p-0.5 rounded-bl-md shadow-sm">
+                                            <Shield size={8} fill="currentColor" />
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Tournaments Won</span>
-                                    <span className="text-white font-bold flex items-center gap-1">
-                                        <Trophy size={14} className="text-yellow-500" /> 0
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Created</span>
-                                    <span className="text-white">{new Date(club.created_at).toLocaleDateString()}</span>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-
-                        {/* Members Preview */}
-                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Members</h3>
-                                <span className="text-xs text-slate-500">{club.member_count} total</span>
+                        {club.member_count > 12 && (
+                            <div className="mt-4 text-center">
+                                <button className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">
+                                    Veure tots els membres
+                                </button>
                             </div>
-                            <div className="grid grid-cols-4 gap-2">
-                                {members.map((member) => (
-                                    <div key={member.user_id} className="aspect-square bg-slate-800 rounded-lg overflow-hidden relative group" title={member.profile.username}>
-                                        {member.profile.avatar_url ? (
-                                            <Image src={member.profile.avatar_url} alt={member.profile.username} fill className="object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-xs">
-                                                {member.profile.username[0].toUpperCase()}
-                                            </div>
-                                        )}
-                                        {member.role === 'owner' && (
-                                            <div className="absolute bottom-0 right-0 bg-yellow-500 text-black p-0.5 rounded-tl-md">
-                                                <Shield size={10} fill="currentColor" />
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                        )}
+                    </Panel>
                 </div>
             </div>
         </div>

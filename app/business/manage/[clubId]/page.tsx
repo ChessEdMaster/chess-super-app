@@ -1,11 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, School, Users, Settings } from "lucide-react";
+import { ArrowLeft, School, Users, Settings, Briefcase, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { CreateSubClubModal } from "@/components/business/create-sub-club-modal";
 import { StudentManager } from "@/components/business/student-manager";
+import { Panel } from "@/components/ui/design-system/Panel";
+import { GameCard } from "@/components/ui/design-system/GameCard";
+import { ShinyButton } from "@/components/ui/design-system/ShinyButton";
 
 async function getClub(clubId: string) {
     const supabase = await createClient();
@@ -49,39 +50,48 @@ export default async function BusinessManagePage({ params }: { params: Promise<{
     const children = isOrganization ? await getChildClubs(club.id) : [];
 
     return (
-        <div className="container mx-auto py-8">
-            <Button variant="ghost" asChild className="mb-6 pl-0 text-slate-400 hover:text-white">
-                <Link href={club.parent_id ? `/business/manage/${club.parent_id}` : "/business/dashboard"}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to {club.parent_id ? "Parent Organization" : "Dashboard"}
+        <div className="container mx-auto py-8 px-4 font-sans">
+            {/* Header Section */}
+            <div className="mb-8">
+                <Link href={club.parent_id ? `/business/manage/${club.parent_id}` : "/business/dashboard"} className="inline-block mb-4">
+                    <span className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider">
+                        <ArrowLeft size={16} />
+                        Back to {club.parent_id ? "Parent Organization" : "Dashboard"}
+                    </span>
                 </Link>
-            </Button>
 
-            <div className="flex justify-between items-start mb-8">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-xs border border-amber-500/20 capitalize">
-                            {club.type}
+                <Panel className="p-8 relative overflow-hidden border-indigo-500/20">
+                    <div className="absolute top-0 right-0 p-32 bg-indigo-600/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border ${isOrganization ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                    }`}>
+                                    {club.type}
+                                </span>
+                                {club.parent_id && <span className="text-zinc-500 text-[10px] font-bold uppercase">Sub-Club</span>}
+                            </div>
+                            <h1 className="text-4xl font-black text-white uppercase tracking-wide font-display text-stroke mb-2">
+                                {club.name}
+                            </h1>
+                            <p className="text-zinc-400 font-medium max-w-2xl">{club.description || "Manage your club details here."}</p>
                         </div>
-                        {club.parent_id && <span className="text-xs text-slate-500">Sub-club</span>}
-                    </div>
-                    <h1 className="text-4xl font-bold text-white mb-2">{club.name}</h1>
-                    <p className="text-slate-400">{club.description || "Manage your club details here."}</p>
-                </div>
 
-                <div className="flex gap-2">
-                    <Button variant="outline" className="border-slate-700 text-slate-300">
-                        <Settings className="mr-2 h-4 w-4" /> Settings
-                    </Button>
-                </div>
+                        <div className="flex gap-3">
+                            <ShinyButton variant="neutral" className="px-4 py-2">
+                                <Settings size={18} className="mr-2" /> Settings
+                            </ShinyButton>
+                        </div>
+                    </div>
+                </Panel>
             </div>
 
             {isOrganization ? (
                 <div className="space-y-6">
-                    <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                        <h2 className="text-2xl font-bold text-white flex items-center">
-                            <School className="mr-2 h-6 w-6 text-amber-500" />
-                            Schools & Clubs
+                    <div className="flex items-center justify-between mb-2 px-2">
+                        <h2 className="text-xl font-black text-zinc-300 uppercase tracking-wide flex items-center gap-2">
+                            <School className="text-amber-500" size={24} /> Schools & Clubs
                         </h2>
                         <CreateSubClubModal ownerId={user.id} parentId={club.id} />
                     </div>
@@ -89,35 +99,49 @@ export default async function BusinessManagePage({ params }: { params: Promise<{
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {children.map((child) => (
                             <Link href={`/business/manage/${child.id}`} key={child.id}>
-                                <Card className="hover:bg-slate-800/50 transition-colors cursor-pointer border-slate-700 bg-slate-900/50">
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                        <CardTitle className="text-lg font-bold text-white">{child.name}</CardTitle>
-                                        <Users className="h-4 w-4 text-emerald-400" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-sm text-slate-400 line-clamp-2 mb-2">
-                                            {child.description || "No description"}
+                                <GameCard variant="default" className="h-full hover:bg-zinc-800 transition-all duration-300 cursor-pointer border-zinc-700 hover:border-indigo-500/50 group">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-800 group-hover:border-indigo-500/30 transition-colors">
+                                            <GraduationCap size={24} className="text-indigo-400" />
                                         </div>
-                                        <div className="flex items-center text-xs text-slate-500">
-                                            <span className="capitalize bg-slate-800 px-2 py-0.5 rounded">{child.type}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                        <Users size={16} className="text-emerald-500" />
+                                    </div>
+
+                                    <h3 className="text-lg font-black text-white uppercase tracking-wide mb-2 group-hover:text-indigo-400 transition-colors">
+                                        {child.name}
+                                    </h3>
+
+                                    <p className="text-zinc-500 text-xs font-bold leading-relaxed mb-4 line-clamp-2">
+                                        {child.description || "No description"}
+                                    </p>
+
+                                    <div className="mt-auto flex items-center gap-2">
+                                        <span className="text-[9px] font-black uppercase tracking-widest bg-zinc-900 text-zinc-400 px-2 py-1 rounded border border-zinc-800">
+                                            {child.type}
+                                        </span>
+                                    </div>
+                                </GameCard>
                             </Link>
                         ))}
 
                         {children.length === 0 && (
-                            <div className="col-span-full py-12 text-center border border-dashed border-slate-800 rounded-lg">
-                                <p className="text-slate-500 mb-4">No schools or clubs in this organization yet.</p>
+                            <Panel className="col-span-full py-12 flex flex-col items-center justify-center text-center opacity-70 border-dashed">
+                                <p className="text-zinc-500 font-bold mb-4">No schools or clubs in this organization yet.</p>
                                 <CreateSubClubModal ownerId={user.id} parentId={club.id} />
-                            </div>
+                            </Panel>
                         )}
                     </div>
                 </div>
             ) : (
                 /* LEAF NODE: SCHOOL/CLUB -> MANAGE STUDENTS */
                 <div className="space-y-6">
-                    <StudentManager clubId={club.id} />
+                    <Panel className="p-6">
+                        <div className="flex items-center gap-3 mb-6 border-b border-zinc-800 pb-4">
+                            <Users className="text-blue-400" size={24} />
+                            <h2 className="text-xl font-black text-white uppercase tracking-wide font-display">Student Management</h2>
+                        </div>
+                        <StudentManager clubId={club.id} />
+                    </Panel>
                 </div>
             )}
         </div>

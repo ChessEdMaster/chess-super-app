@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import { useKingdom } from '@/hooks/useKingdom';
 import { IsometricMap } from './isometric-map';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BUILDING_TYPES } from '@/types/kingdom';
-import { Coins, Zap, Hammer, ArrowUp } from 'lucide-react';
+import { Coins, Zap, Hammer, ArrowUp, X } from 'lucide-react';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { Panel } from '@/components/ui/design-system/Panel';
 
 export default function KingdomPage() {
     const { resources, buildings, loading, constructBuilding, collectResources } = useKingdom();
@@ -31,41 +33,52 @@ export default function KingdomPage() {
     };
 
     if (loading) {
-        return <div className="flex items-center justify-center h-screen bg-slate-950 text-white">Loading Kingdom...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-white gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-amber-500"></div>
+                <p className="text-amber-500 font-bold uppercase tracking-widest text-xs animate-pulse">Entering Kingdom...</p>
+            </div>
+        );
     }
 
     return (
-        <div className="min-h-screen text-white flex flex-col">
+        <div className="min-h-screen text-white flex flex-col bg-zinc-950 overflow-hidden">
             {/* Header / Resources */}
-            <header className="p-4 border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto flex items-center justify-between">
-                    <h1 className="text-xl font-black tracking-wider uppercase bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
-                        CHESS CLANS : KINGDOM
+            <div className="p-4 bg-zinc-900/50 backdrop-blur-md sticky top-0 z-20 border-b border-zinc-800 shadow-lg">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                    <h1 className="text-2xl font-black tracking-widest uppercase font-display text-stroke drop-shadow-lg text-white">
+                        My Kingdom
                     </h1>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-amber-500/30">
-                            <Coins className="w-4 h-4 text-amber-400" />
-                            <span className="font-mono font-bold text-amber-100">{resources?.gold || 0}</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-blue-500/30">
-                            <Zap className="w-4 h-4 text-blue-400" />
-                            <span className="font-mono font-bold text-blue-100">{resources?.mana || 0}</span>
-                        </div>
+                        <GameCard variant="default" className="flex items-center gap-2 p-2 px-4 shadow-lg border-amber-500/20 bg-zinc-900">
+                            <Coins className="w-5 h-5 text-amber-500 drop-shadow-sm" />
+                            <span className="font-mono font-black text-amber-100 text-lg">{resources?.gold || 0}</span>
+                        </GameCard>
 
-                        <Button size="sm" variant="outline" onClick={collectResources} className="ml-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-950">
+                        <GameCard variant="default" className="flex items-center gap-2 p-2 px-4 shadow-lg border-blue-500/20 bg-zinc-900">
+                            <Zap className="w-5 h-5 text-blue-400 drop-shadow-sm" />
+                            <span className="font-mono font-black text-blue-100 text-lg">{resources?.mana || 0}</span>
+                        </GameCard>
+
+                        <ShinyButton
+                            variant="success"
+                            onClick={collectResources}
+                            className="ml-2"
+                        >
                             <ArrowUp className="w-4 h-4 mr-1" />
                             Collect
-                        </Button>
+                        </ShinyButton>
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black -z-10" />
+            <main className="flex-1 flex flex-col items-center justify-center p-4 relative">
+                {/* Background Gradient */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-950/20 via-zinc-950 to-black -z-10" />
 
-                <div className="w-full max-w-4xl aspect-square max-h-[80vh] flex items-center justify-center">
+                <div className="w-full max-w-5xl aspect-square max-h-[75vh] flex items-center justify-center transform scale-100 hover:scale-[1.01] transition-transform duration-500">
                     <IsometricMap
                         buildings={buildings}
                         onTileClick={handleTileClick}
@@ -73,52 +86,61 @@ export default function KingdomPage() {
                 </div>
 
                 {/* Instructions or Context */}
-                <div className="absolute bottom-8 text-center text-slate-500 text-sm pointer-events-none">
-                    Click on a tile to build or inspect
+                <div className="absolute bottom-8 text-center bg-zinc-900/80 backdrop-blur px-6 py-2 rounded-full border border-zinc-700 shadow-xl pointer-events-none animate-in slide-in-from-bottom-5">
+                    <p className="text-zinc-300 text-xs font-bold uppercase tracking-widest">
+                        Click on a tile to build or inspect
+                    </p>
                 </div>
             </main>
 
             {/* Build Dialog */}
             <Dialog open={isBuildOpen} onOpenChange={setIsBuildOpen}>
-                <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Construct Building</DialogTitle>
-                    </DialogHeader>
+                <DialogContent className="sm:max-w-md p-0 bg-transparent border-none shadow-none">
+                    <GameCard variant="default" className="p-0 overflow-hidden w-full bg-zinc-900">
+                        <div className="p-6 bg-zinc-950 border-b border-zinc-800 flex justify-between items-center">
+                            <h2 className="text-xl font-black text-white uppercase tracking-wide flex items-center gap-2">
+                                <Hammer className="text-amber-500" /> Construct
+                            </h2>
+                            <button onClick={() => setIsBuildOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
 
-                    <div className="grid gap-4 py-4">
-                        {Object.values(BUILDING_TYPES).map((building) => (
-                            <Card
-                                key={building.type}
-                                className="p-4 bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors cursor-pointer group"
-                                onClick={() => handleConstruct(building.type)}
-                            >
-                                <div className="flex items-start gap-4">
-                                    <div
-                                        className="w-12 h-12 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform"
-                                        style={{ backgroundColor: building.color }}
-                                    >
-                                        <Hammer className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <h3 className="font-bold text-slate-100">{building.name}</h3>
-                                            <div className="flex gap-2 text-xs">
-                                                <span className="text-amber-400 flex items-center gap-1">
-                                                    <Coins className="w-3 h-3" /> {building.cost.gold}
-                                                </span>
-                                                {building.cost.mana > 0 && (
-                                                    <span className="text-blue-400 flex items-center gap-1">
-                                                        <Zap className="w-3 h-3" /> {building.cost.mana}
-                                                    </span>
-                                                )}
-                                            </div>
+                        <div className="p-4 grid gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar bg-zinc-900/50">
+                            {Object.values(BUILDING_TYPES).map((building) => (
+                                <div
+                                    key={building.type}
+                                    className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-amber-500/50 hover:bg-zinc-800 transition-all cursor-pointer group shadow-sm hover:shadow-md active:scale-[0.98]"
+                                    onClick={() => handleConstruct(building.type)}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div
+                                            className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-b-4 border-black/20"
+                                            style={{ backgroundColor: building.color }}
+                                        >
+                                            <Hammer className="w-6 h-6 text-white drop-shadow-md" />
                                         </div>
-                                        <p className="text-xs text-slate-400">{building.description}</p>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h3 className="font-black text-white uppercase text-sm tracking-wide group-hover:text-amber-500 transition-colors">{building.name}</h3>
+                                                <div className="flex gap-3 text-xs font-bold">
+                                                    <span className="text-amber-400 flex items-center gap-1 drop-shadow-sm">
+                                                        <Coins className="w-3 h-3" /> {building.cost.gold}
+                                                    </span>
+                                                    {building.cost.mana > 0 && (
+                                                        <span className="text-blue-400 flex items-center gap-1 drop-shadow-sm">
+                                                            <Zap className="w-3 h-3" /> {building.cost.mana}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-zinc-400 font-medium leading-relaxed">{building.description}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </Card>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    </GameCard>
                 </DialogContent>
             </Dialog>
         </div>

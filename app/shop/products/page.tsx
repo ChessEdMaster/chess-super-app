@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { ProductCard } from '@/components/shop/product-card';
 import { Product } from '@/types/ecommerce';
 import Link from 'next/link';
+import { ArrowLeft, ShoppingBag, Filter, Sparkles } from 'lucide-react';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
 
 interface SearchParams {
     category?: string;
@@ -43,71 +46,65 @@ export default async function ProductsPage({
         .order('order');
 
     return (
-        <div className="min-h-screen bg-slate-950 py-8">
-            <div className="container mx-auto px-4">
-                <div className="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-100 mb-2">Productes</h1>
-                        <p className="text-slate-400">
-                            {products?.length || 0} productes trobats
-                        </p>
+        <div className="min-h-screen bg-zinc-950 pb-24 font-sans">
+            {/* Header */}
+            <div className="bg-zinc-900 border-b border-zinc-800 p-4 sticky top-0 z-20 shadow-lg">
+                <div className="container mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/shop" className="text-zinc-400 hover:text-white transition-colors">
+                            <ArrowLeft size={24} />
+                        </Link>
+                        <h1 className="text-xl font-black text-white uppercase tracking-wide font-display text-stroke flex items-center gap-2">
+                            <ShoppingBag className="text-emerald-400" size={20} />
+                            Royal Market
+                        </h1>
                     </div>
-                    <Link
-                        href="/shop"
-                        className="text-emerald-400 hover:text-emerald-300 font-medium"
-                    >
-                        ← Tornar a la botiga
-                    </Link>
+                    <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                        {products?.length || 0} Items Found
+                    </span>
                 </div>
+            </div>
 
+            <div className="container mx-auto px-4 py-8">
                 <div className="grid lg:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}
                     <div className="lg:col-span-1">
-                        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 sticky top-20">
-                            <h2 className="text-lg font-bold text-slate-100 mb-4">Filtres</h2>
+                        <Panel className="p-4 sticky top-24">
+                            <h2 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Filter size={14} /> Filters
+                            </h2>
 
                             {/* Categories */}
-                            <div className="mb-6">
-                                <h3 className="text-sm font-semibold text-slate-300 mb-3">Categories</h3>
-                                <div className="space-y-2">
+                            <div className="mb-6 space-y-1">
+                                <Link href="/shop/products">
+                                    <div className={`p-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all cursor-pointer flex items-center justify-between ${!searchParams.category ? 'bg-emerald-600 text-white shadow-lg' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}>
+                                        All Items
+                                    </div>
+                                </Link>
+                                {categories?.map((category) => (
                                     <Link
-                                        href="/shop/products"
-                                        className={`block text-sm py-1 transition-colors ${!searchParams.category
-                                                ? 'text-emerald-400 font-medium'
-                                                : 'text-slate-400 hover:text-slate-200'
-                                            }`}
+                                        key={category.id}
+                                        href={`/shop/products?category=${category.id}`}
                                     >
-                                        Totes
-                                    </Link>
-                                    {categories?.map((category) => (
-                                        <Link
-                                            key={category.id}
-                                            href={`/shop/products?category=${category.id}`}
-                                            className={`block text-sm py-1 transition-colors ${searchParams.category === category.id
-                                                    ? 'text-emerald-400 font-medium'
-                                                    : 'text-slate-400 hover:text-slate-200'
-                                                }`}
-                                        >
+                                        <div className={`p-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all cursor-pointer flex items-center justify-between ${searchParams.category === category.id ? 'bg-emerald-600 text-white shadow-lg' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}>
                                             {category.name}
-                                        </Link>
-                                    ))}
-                                </div>
+                                        </div>
+                                    </Link>
+                                ))}
                             </div>
 
                             {/* Featured Filter */}
                             <div>
-                                <h3 className="text-sm font-semibold text-slate-300 mb-3">Altres</h3>
+                                <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2 border-t border-zinc-700 pt-4">Special</h3>
                                 <Link
                                     href="/shop/products?featured=true"
-                                    className={`block text-sm py-1 transition-colors ${searchParams.featured === 'true'
-                                            ? 'text-emerald-400 font-medium'
-                                            : 'text-slate-400 hover:text-slate-200'
-                                        }`}
                                 >
-                                    Només destacats
+                                    <div className={`p-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all cursor-pointer flex items-center gap-2 ${searchParams.featured === 'true' ? 'bg-amber-600 text-white shadow-lg' : 'text-amber-500 hover:bg-zinc-800'}`}>
+                                        <Sparkles size={16} /> Featured Only
+                                    </div>
                                 </Link>
                             </div>
-                        </div>
+                        </Panel>
                     </div>
 
                     {/* Products Grid */}
@@ -119,13 +116,11 @@ export default async function ProductsPage({
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <p className="text-slate-400 text-lg">No s'han trobat productes</p>
-                                <Link
-                                    href="/shop/products"
-                                    className="text-emerald-400 hover:text-emerald-300 font-medium mt-4 inline-block"
-                                >
-                                    Veure tots els productes
+                            <div className="flex flex-col items-center justify-center py-24 text-center opacity-50">
+                                <ShoppingBag size={64} className="text-zinc-600 mb-4" />
+                                <p className="text-zinc-400 text-xl font-black uppercase tracking-wide">No items found</p>
+                                <Link href="/shop/products" className="mt-4">
+                                    <ShinyButton variant="neutral">Reset Filters</ShinyButton>
                                 </Link>
                             </div>
                         )}
@@ -135,4 +130,3 @@ export default async function ProductsPage({
         </div>
     );
 }
-

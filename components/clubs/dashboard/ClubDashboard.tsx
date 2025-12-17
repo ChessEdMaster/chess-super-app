@@ -1,46 +1,47 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Users, CreditCard, CalendarDays, UserPlus } from "lucide-react";
+import { GameCard } from "@/components/ui/design-system/GameCard";
+import { ShinyButton } from "@/components/ui/design-system/ShinyButton";
+import { Panel } from "@/components/ui/design-system/Panel";
 
 export function ClubDashboard({ clubId }: { clubId: string }) {
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-bold tracking-tight">Administració del Club</h2>
+            <Panel className="flex items-center justify-between p-6 bg-zinc-900 border-zinc-700">
+                <h2 className="text-2xl font-black text-white uppercase tracking-wide font-display text-stroke">Administració del Club</h2>
                 <div className="flex gap-2">
-                    <Button variant="outline">
+                    <ShinyButton variant="secondary">
                         <CalendarDays className="mr-2 h-4 w-4" /> Nou Event
-                    </Button>
-                    <Button>
+                    </ShinyButton>
+                    <ShinyButton variant="primary">
                         <UserPlus className="mr-2 h-4 w-4" /> Alta Soci
-                    </Button>
+                    </ShinyButton>
                 </div>
-            </div>
+            </Panel>
 
             <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Socis Actius</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">142</div>
-                        <p className="text-xs text-muted-foreground">12 quotes pendents</p>
-                    </CardContent>
-                </Card>
+                <GameCard variant="default" className="p-0 overflow-hidden">
+                    <div className="p-4 flex flex-row items-center justify-between bg-zinc-900/50 border-b border-zinc-800">
+                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Socis Actius</span>
+                        <Users className="h-4 w-4 text-indigo-400" />
+                    </div>
+                    <div className="p-6">
+                        <div className="text-3xl font-black text-white font-display">142</div>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1">12 quotes pendents</p>
+                    </div>
+                </GameCard>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Ingressos Mensuals</CardTitle>
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">1.250€</div>
-                        <p className="text-xs text-muted-foreground">+20% vs mes passat</p>
-                    </CardContent>
-                </Card>
+                <GameCard variant="default" className="p-0 overflow-hidden">
+                    <div className="p-4 flex flex-row items-center justify-between bg-zinc-900/50 border-b border-zinc-800">
+                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Ingressos Mensuals</span>
+                        <CreditCard className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div className="p-6">
+                        <div className="text-3xl font-black text-white font-display">1.250€</div>
+                        <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1">+20% vs mes passat</p>
+                    </div>
+                </GameCard>
             </div>
         </div>
     );

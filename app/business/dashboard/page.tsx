@@ -1,13 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { redirect } from "next/navigation";
-import { Plus, Users, School, Building2 } from "lucide-react";
+import { Users, School, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { CreateSubClubModal } from "@/components/business/create-sub-club-modal";
+import { Panel } from "@/components/ui/design-system/Panel";
+import { GameCard } from "@/components/ui/design-system/GameCard";
 
 export default async function BusinessDashboardPage() {
-    const supabase = await createClient(); // Should await in Next 15 with server utils typically
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -15,7 +15,6 @@ export default async function BusinessDashboardPage() {
     }
 
     // Fetch only "organization" or top-level clubs owned by user
-    // For now, we fetch ALL owned clubs to let them choose which one is the "HQ"
     const { data: clubs } = await supabase
         .from("clubs")
         .select("*, club_members(count)")
@@ -24,46 +23,59 @@ export default async function BusinessDashboardPage() {
         .order("created_at", { ascending: false });
 
     return (
-        <div className="container mx-auto py-8">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
-                        My Education Business
-                    </h1>
-                    <p className="text-slate-400 mt-2">Manage your chess schools, clubs, and students.</p>
+        <div className="container mx-auto py-8 px-4 h-full overflow-y-auto">
+            <Panel className="mb-8 p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-amber-500/20 bg-gradient-to-r from-zinc-900 to-zinc-950">
+                <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/30">
+                        <Briefcase size={32} className="text-amber-500" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-black text-white uppercase tracking-wide font-display text-stroke shadow-black drop-shadow-md">
+                            Business Center
+                        </h1>
+                        <p className="text-zinc-400 font-bold text-sm">Manage your chess schools & organizations</p>
+                    </div>
                 </div>
                 <CreateSubClubModal ownerId={user.id} />
-            </div>
+            </Panel>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {clubs?.map((club) => (
                     <Link href={`/business/manage/${club.id}`} key={club.id}>
-                        <Card className="hover:bg-slate-800/50 transition-colors cursor-pointer border-slate-700 bg-slate-900/50 backdrop-blur">
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                <CardTitle className="text-xl font-bold text-white">{club.name}</CardTitle>
-                                <School className="h-5 w-5 text-amber-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-xs text-slate-400 mb-4">{club.description || "No description"}</div>
-
-                                <div className="flex justify-between items-center mt-4">
-                                    <div className="flex items-center text-sm text-slate-300">
-                                        <Users className="mr-2 h-4 w-4 text-emerald-400" />
-                                        {club.member_count || 0} Members
-                                    </div>
-                                    <div className="text-xs px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 capitalize">
-                                        {club.type || "Club"}
-                                    </div>
+                        <GameCard variant="default" className="h-full flex flex-col p-0 overflow-hidden group hover:scale-[1.02] transition-transform duration-300 border-zinc-700 hover:border-amber-500/50">
+                            <div className="p-6 bg-gradient-to-br from-zinc-900 to-zinc-950 flex-1">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors line-clamp-1">
+                                        {club.name}
+                                    </h3>
+                                    <School className="text-zinc-500 group-hover:text-amber-500 transition-colors" size={24} />
                                 </div>
-                            </CardContent>
-                        </Card>
+
+                                <p className="text-zinc-400 text-sm font-medium leading-relaxed mb-6 line-clamp-2 min-h-[40px]">
+                                    {club.description || "No description provided."}
+                                </p>
+
+                                <div className="flex justify-between items-center mt-auto border-t border-zinc-800 pt-4">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="text-emerald-500" size={16} />
+                                        <span className="text-sm font-bold text-zinc-300">
+                                            {club.club_members?.[0]?.count || 0} Members
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-800 text-zinc-400 px-2 py-1 rounded">
+                                        {club.type || "Club"}
+                                    </span>
+                                </div>
+                            </div>
+                        </GameCard>
                     </Link>
                 ))}
 
                 {(!clubs || clubs.length === 0) && (
-                    <div className="col-span-full text-center py-12 border-2 border-dashed border-slate-700 rounded-lg">
-                        <h3 className="text-lg font-medium text-slate-300">No organizations found</h3>
-                        <p className="text-slate-500 mb-4">Start by creating your first Chess School or Club.</p>
+                    <div className="col-span-full py-16 flex flex-col items-center justify-center text-center opacity-70">
+                        <School size={48} className="text-zinc-600 mb-4" />
+                        <h3 className="text-xl font-black text-zinc-400 uppercase tracking-wide mb-2">No organizations found</h3>
+                        <p className="text-zinc-500 max-w-md mb-6 font-medium">Start by creating your first Chess School or Organization to manage your students and content.</p>
                         <CreateSubClubModal ownerId={user.id} />
                     </div>
                 )}

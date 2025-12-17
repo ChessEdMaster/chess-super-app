@@ -20,6 +20,7 @@ import { OpeningExplorer } from '@/components/analysis/opening-explorer';
 import { AnalysisControls } from '@/components/analysis/analysis-controls';
 import { DatabaseManager } from '@/components/analysis/DatabaseManager';
 import { BoardSetup } from '@/components/analysis/BoardSetup';
+import { EndgamePanel } from '@/components/analysis/endgame-panel';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { PGNTree } from '@/lib/pgn/tree';
@@ -606,6 +607,9 @@ function AnalysisContent() {
                     multipv={multipv}
                     setMultipv={setMultipv}
                   />
+                </div>
+                <div className="shrink-0">
+                  <EndgamePanel fen={fen} />
                 </div>
 
                 {/* PGN Editor Filler */}

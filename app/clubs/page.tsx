@@ -11,11 +11,15 @@ import {
     Loader2,
     Shield,
     Globe,
-    Lock
+    Lock,
+    Trophy
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { CreateClubModal } from '@/components/clubs/create-club-modal';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { GameCard } from '@/components/ui/design-system/GameCard';
 
 interface Club {
     id: string;
@@ -131,113 +135,163 @@ export default function ClubsPage() {
         return () => clearTimeout(timer);
     }, [searchQuery, user, fetchClubs]);
 
+    if (authLoading || (!user && loading)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="animate-spin text-amber-500" size={48} />
+            </div>
+        )
+    }
+
     return (
-        <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
-            <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+        <div className="h-full w-full p-4 md:p-6 pb-24 max-w-[1600px] mx-auto flex flex-col gap-6">
+
+            {/* HEADER */}
+            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-zinc-900/90 border-zinc-700">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg border border-white/20">
+                        <Shield className="text-white" size={32} />
+                    </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-                            <Shield className="text-yellow-500" size={32} />
+                        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-orange-500 uppercase tracking-tight font-display drop-shadow-sm text-stroke">
                             Chess Clans
                         </h1>
-                        <p className="text-slate-400">Uneix-te a un clan, competeix i puja al rànquing!</p>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">
+                            Uneix-te a un clan, competeix i guanya glòria!
+                        </p>
                     </div>
-                    <button
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-4 mt-6 md:mt-0 w-full md:w-auto">
+                    {/* Search */}
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <Search className="text-zinc-500 group-focus-within:text-amber-500 transition-colors" size={18} />
+                        </div>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Buscar clans..."
+                            className="w-full md:w-64 bg-zinc-950/50 border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition font-medium text-sm shadow-inner"
+                        />
+                    </div>
+
+                    <ShinyButton
+                        variant="primary"
                         onClick={() => setShowCreateModal(true)}
-                        className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black px-6 py-2.5 rounded-xl font-bold transition shadow-lg shadow-yellow-900/20 flex items-center gap-2 transform active:scale-95"
+                        className="px-6 py-3 whitespace-nowrap"
                     >
-                        <Plus size={20} /> Crear Clan
-                    </button>
+                        <Plus size={20} className="mr-2" /> Crear Clan
+                    </ShinyButton>
                 </div>
+            </Panel>
 
-                {/* Search */}
-                <div className="relative mb-8">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500" size={20} />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar clans..."
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 transition"
-                    />
+            {/* CLUBS GRID */}
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <Loader2 className="animate-spin text-amber-500" size={48} />
                 </div>
+            ) : clubs.length === 0 ? (
+                <GameCard variant="default" className="text-center py-20 bg-zinc-900/50 border-dashed border-zinc-700/50">
+                    <Shield className="mx-auto text-zinc-700 mb-6 opacity-50" size={64} />
+                    <h2 className="text-2xl font-black text-zinc-400 mb-2 font-display uppercase tracking-wide">Cap clan trobat</h2>
+                    <p className="text-zinc-500 font-bold max-w-md mx-auto mb-8 text-sm">
+                        Prova d&apos;ajustar la cerca o crea el teu propi clan per començar una nova dinastia!
+                    </p>
+                    <ShinyButton variant="secondary" onClick={() => setShowCreateModal(true)}>
+                        Crear el Primer Clan
+                    </ShinyButton>
+                </GameCard>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {clubs.map((club) => (
+                        <Link key={club.id} href={`/clubs/${club.id}`} className="block h-full group cursor-pointer">
+                            <GameCard
+                                variant={club.is_member ? "gold" : "default"}
+                                className="h-full flex flex-col p-0 overflow-hidden hover:scale-[1.02] transition-transform duration-300"
+                            >
+                                {/* Banner / Header Area */}
+                                <div className="h-28 bg-zinc-950 relative border-b border-zinc-800 group-hover:border-inherit transition-colors">
+                                    {club.banner_url ? (
+                                        <Image src={club.banner_url} alt={club.name} fill className="object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                    ) : (
+                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                                    )}
 
-                {/* Clubs Grid */}
-                {loading ? (
-                    <div className="flex justify-center py-12">
-                        <Loader2 className="animate-spin text-yellow-500" size={48} />
-                    </div>
-                ) : clubs.length === 0 ? (
-                    <div className="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800">
-                        <Shield size={48} className="mx-auto text-slate-700 mb-4" />
-                        <h3 className="text-xl font-bold text-slate-400 mb-2">Cap clan trobat</h3>
-                        <p className="text-slate-500">Prova d&apos;ajustar la cerca o crea&apos;n un de nou!</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {clubs.map((club) => (
-                            <Link key={club.id} href={`/clubs/${club.id}`} className="block h-full relative z-10 group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500" />
-                                <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 hover:border-yellow-500/50 transition group h-full flex flex-col relative overflow-hidden">
-
-                                    {/* Type Badge */}
-                                    <div className="absolute top-4 right-4">
+                                    {/* Privacy Badge */}
+                                    <div className="absolute top-3 right-3">
                                         {club.is_public ? (
-                                            <div className="bg-green-500/10 text-green-400 text-xs font-bold px-2 py-1 rounded-full border border-green-500/20 flex items-center gap-1">
+                                            <div className="bg-emerald-500/20 backdrop-blur-md text-emerald-400 text-[10px] font-black px-2 py-1 rounded border border-emerald-500/30 flex items-center gap-1 uppercase tracking-wider">
                                                 <Globe size={10} /> Públic
                                             </div>
                                         ) : (
-                                            <div className="bg-red-500/10 text-red-400 text-xs font-bold px-2 py-1 rounded-full border border-red-500/20 flex items-center gap-1">
+                                            <div className="bg-red-500/20 backdrop-blur-md text-red-400 text-[10px] font-black px-2 py-1 rounded border border-red-500/30 flex items-center gap-1 uppercase tracking-wider">
                                                 <Lock size={10} /> Privat
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 overflow-hidden border border-slate-700">
-                                            {club.image_url ? (
-                                                <Image src={club.image_url} alt={club.name} fill className="object-cover" />
-                                            ) : (
-                                                <Shield size={32} />
-                                            )}
+                                    {/* Member Badge (if applicable) */}
+                                    {club.is_member && (
+                                        <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-black px-2 py-1 rounded border border-amber-400 shadow-lg uppercase tracking-wider animate-pulse-subtle">
+                                            {club.role === 'admin' || club.role === 'owner' ? 'Líder' : 'Membre'}
                                         </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-white group-hover:text-yellow-500 transition-colors line-clamp-1">{club.name}</h3>
-                                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                                                <span className="flex items-center gap-1">
-                                                    <Users size={12} /> {club.member_count} membres
-                                                </span>
-                                            </div>
-                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Body */}
+                                <div className="p-5 flex flex-col flex-1 relative mt-[-32px]">
+                                    {/* Club Avatar */}
+                                    <div className={`
+                                        w-16 h-16 rounded-2xl bg-zinc-900 border-4 flex items-center justify-center shrink-0 overflow-hidden shadow-xl mb-3 relative z-10
+                                        ${club.is_member ? 'border-amber-500' : 'border-zinc-700 group-hover:border-zinc-500'}
+                                    `}>
+                                        {club.image_url ? (
+                                            <Image src={club.image_url} alt={club.name} fill className="object-cover" />
+                                        ) : (
+                                            <Shield className={club.is_member ? "text-amber-500" : "text-zinc-600"} size={32} />
+                                        )}
                                     </div>
 
-                                    <p className="text-sm text-slate-400 mb-4 line-clamp-2 flex-grow">
+                                    <h3 className="text-xl font-black text-white mb-1 font-display uppercase tracking-wide leading-none group-hover:text-amber-400 transition-colors truncate">
+                                        {club.name}
+                                    </h3>
+
+                                    <div className="flex items-center gap-3 text-xs text-zinc-500 font-bold mb-3 uppercase tracking-wider">
+                                        <span className="flex items-center gap-1">
+                                            <Users size={12} className="text-indigo-400" /> {club.member_count}
+                                        </span>
+                                        <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                                        <span className="truncate max-w-[120px]">
+                                            {club.owner?.username || 'Unknown'}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed font-medium mb-4 flex-1">
                                         {club.short_description || club.description || 'Sense descripció.'}
                                     </p>
 
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-800 mt-auto">
-                                        <span className="text-xs text-slate-500">
-                                            Owner: <span className="text-slate-300">{club.owner?.username || 'Unknown'}</span>
-                                        </span>
-                                        {club.is_member && (
-                                            <span className="text-xs font-bold text-green-400 bg-green-900/20 px-2 py-1 rounded-full">
-                                                Membre
-                                            </span>
-                                        )}
+                                    <div className="mt-auto">
+                                        <ShinyButton
+                                            variant={club.is_member ? "neutral" : "secondary"}
+                                            className="w-full h-9 text-xs uppercase tracking-widest"
+                                        >
+                                            {club.is_member ? 'Entrar al Clan' : 'Veure detalls'}
+                                        </ShinyButton>
                                     </div>
                                 </div>
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                            </GameCard>
+                        </Link>
+                    ))}
+                </div>
+            )}
 
-                <CreateClubModal
-                    isOpen={showCreateModal}
-                    onClose={() => setShowCreateModal(false)}
-                    userId={user?.id || ''}
-                />
-            </div>
+            <CreateClubModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                userId={user?.id || ''}
+            />
         </div>
     );
 }

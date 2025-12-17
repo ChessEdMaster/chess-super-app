@@ -8,6 +8,9 @@ import { Calendar, MapPin, Users, Clock, ArrowLeft, Loader2, Trophy, Shield } fr
 import { EventRegistration } from '@/components/events/event-registration';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { Panel } from '@/components/ui/design-system/Panel';
 
 interface Event {
     id: string;
@@ -59,33 +62,33 @@ function Countdown({ targetDate }: { targetDate: string }) {
 
     // @ts-ignore
     if (!timeLeft.hours && !timeLeft.minutes && !timeLeft.seconds) {
-        return <span className="text-2xl font-bold text-white">Started!</span>;
+        return <span className="text-2xl font-black text-emerald-400 uppercase tracking-widest animate-pulse">Started!</span>;
     }
 
     return (
         <div className="flex gap-4 text-center">
             {/* @ts-ignore */}
             {timeLeft.days > 0 && (
-                <div className="flex flex-col">
+                <div className="flex flex-col bg-zinc-900/80 p-3 rounded-xl border border-zinc-800 min-w-[70px]">
                     {/* @ts-ignore */}
-                    <span className="text-4xl font-black text-white">{formatTime(timeLeft.days)}</span>
-                    <span className="text-xs text-slate-500 uppercase">Days</span>
+                    <span className="text-3xl font-black text-white font-mono">{formatTime(timeLeft.days)}</span>
+                    <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Days</span>
                 </div>
             )}
-            <div className="flex flex-col">
+            <div className="flex flex-col bg-zinc-900/80 p-3 rounded-xl border border-zinc-800 min-w-[70px]">
                 {/* @ts-ignore */}
-                <span className="text-4xl font-black text-white">{formatTime(timeLeft.hours || 0)}</span>
-                <span className="text-xs text-slate-500 uppercase">Hours</span>
+                <span className="text-3xl font-black text-white font-mono">{formatTime(timeLeft.hours || 0)}</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Hours</span>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col bg-zinc-900/80 p-3 rounded-xl border border-zinc-800 min-w-[70px]">
                 {/* @ts-ignore */}
-                <span className="text-4xl font-black text-white">{formatTime(timeLeft.minutes || 0)}</span>
-                <span className="text-xs text-slate-500 uppercase">Mins</span>
+                <span className="text-3xl font-black text-white font-mono">{formatTime(timeLeft.minutes || 0)}</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Mins</span>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col bg-zinc-900/80 p-3 rounded-xl border border-zinc-800 min-w-[70px]">
                 {/* @ts-ignore */}
-                <span className="text-4xl font-black text-white">{formatTime(timeLeft.seconds || 0)}</span>
-                <span className="text-xs text-slate-500 uppercase">Secs</span>
+                <span className="text-3xl font-black text-amber-500 font-mono">{formatTime(timeLeft.seconds || 0)}</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Secs</span>
             </div>
         </div>
     );
@@ -145,33 +148,33 @@ export default function EventDetailPage() {
     const getEventTypeColor = (type: string) => {
         switch (type) {
             case 'tournament':
-                return 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30';
+                return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
             case 'lesson':
-                return 'bg-blue-900/30 text-blue-400 border-blue-500/30';
+                return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
             case 'meetup':
-                return 'bg-purple-900/30 text-purple-400 border-purple-500/30';
+                return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
             default:
-                return 'bg-zinc-900/30 text-zinc-400 border-zinc-500/30';
+                return 'bg-zinc-800 text-zinc-400 border-zinc-700';
         }
     };
 
     const getEventTypeIcon = (type: string) => {
         switch (type) {
             case 'tournament':
-                return <Trophy size={24} />;
+                return <Trophy size={16} />;
             case 'lesson':
-                return <Users size={24} />;
+                return <Users size={16} />;
             case 'meetup':
-                return <Calendar size={24} />;
+                return <Calendar size={16} />;
             default:
-                return <Calendar size={24} />;
+                return <Calendar size={16} />;
         }
     };
 
     if (authLoading || loading || !user) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+                <Loader2 className="animate-spin text-amber-500" size={48} />
             </div>
         );
     }
@@ -181,110 +184,124 @@ export default function EventDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 font-sans text-slate-200">
-            <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="min-h-screen bg-zinc-950 font-sans text-white pb-20">
+            <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
                 {/* Back Button */}
                 <Link
                     href="/events"
-                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
+                    className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-xs font-black uppercase tracking-wider group"
                 >
-                    <ArrowLeft size={20} />
+                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                     Back to Events
                 </Link>
 
                 {/* Event Header */}
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 mb-6">
-                    <div className="flex items-start justify-between mb-6">
-                        <div className={`flex items-center gap-3 px-4 py-2 rounded-full border text-sm font-bold uppercase tracking-wider ${getEventTypeColor(event.event_type)}`}>
-                            {getEventTypeIcon(event.event_type)}
-                            {event.event_type}
-                        </div>
-                        {!event.is_public && (
-                            <div className="flex items-center gap-2 px-3 py-1 bg-red-900/30 text-red-400 border border-red-500/30 rounded-full text-xs font-bold">
-                                <Shield size={14} />
-                                Private
+                <Panel className="p-8 relative overflow-hidden">
+                    <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-6">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest ${getEventTypeColor(event.event_type)}`}>
+                                {getEventTypeIcon(event.event_type)}
+                                {event.event_type}
                             </div>
-                        )}
-                    </div>
-
-                    <h1 className="text-4xl font-bold text-white mb-4">{event.title}</h1>
-
-                    {event.description && (
-                        <p className="text-slate-300 text-lg mb-6 whitespace-pre-wrap">
-                            {event.description}
-                        </p>
-                    )}
-
-                    {/* Countdown */}
-                    {new Date(event.start_date) > new Date() && (
-                        <div className="mb-8 p-6 bg-slate-950/50 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
-                            <p className="text-slate-400 text-sm uppercase tracking-widest font-bold mb-2">Tournament Starts In</p>
-                            <Countdown targetDate={event.start_date} />
-                        </div>
-                    )}
-
-                    {/* Event Details Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div className="flex items-center gap-3 bg-slate-800/50 p-4 rounded-lg">
-                            <Clock size={24} className="text-purple-400" />
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase font-bold">Start Date</p>
-                                <p className="text-white font-medium">
-                                    {new Date(event.start_date).toLocaleDateString('en-GB', {
-                                        weekday: 'long',
-                                        day: 'numeric',
-                                        month: 'long',
-                                        year: 'numeric'
-                                    })}
-                                </p>
-                                <p className="text-slate-400 text-sm">
-                                    {new Date(event.start_date).toLocaleTimeString('en-GB', {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
-                            </div>
-                        </div>
-
-                        {event.location && (
-                            <div className="flex items-center gap-3 bg-slate-800/50 p-4 rounded-lg">
-                                <MapPin size={24} className="text-purple-400" />
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase font-bold">Location</p>
-                                    <p className="text-white font-medium">{event.location}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Club Info */}
-                    {event.club && (
-                        <Link
-                            href={`/clubs/${event.club.slug}`}
-                            className="inline-flex items-center gap-3 bg-slate-800 hover:bg-slate-700 p-4 rounded-lg transition border border-slate-700 hover:border-purple-500/50"
-                        >
-                            {event.club.image_url ? (
-                                <img
-                                    src={event.club.image_url}
-                                    alt={event.club.name}
-                                    className="w-12 h-12 rounded-full border-2 border-purple-500/50"
-                                />
-                            ) : (
-                                <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center border-2 border-purple-500/50">
-                                    <Users className="text-purple-400" size={24} />
+                            {!event.is_public && (
+                                <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                    <Shield size={12} />
+                                    Private
                                 </div>
                             )}
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase font-bold">Organized by</p>
-                                <p className="text-white font-bold">{event.club.name}</p>
+                        </div>
+
+                        <h1 className="text-4xl md:text-5xl font-black text-white mb-6 uppercase tracking-wide font-display text-stroke shadow-black drop-shadow-lg leading-tight">
+                            {event.title}
+                        </h1>
+
+                        {event.description && (
+                            <p className="text-zinc-300 text-lg mb-8 font-medium leading-relaxed max-w-2xl bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+                                {event.description}
+                            </p>
+                        )}
+
+                        {/* Countdown */}
+                        {new Date(event.start_date) > new Date() && (
+                            <div className="mb-8 flex flex-col items-center justify-center text-center p-6 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-sm">
+                                <p className="text-amber-500 text-xs uppercase tracking-[0.2em] font-black mb-4 flex items-center gap-2">
+                                    <Clock size={14} /> Only Time Remaining
+                                </p>
+                                <Countdown targetDate={event.start_date} />
                             </div>
-                        </Link>
-                    )}
-                </div>
+                        )}
+
+                        {/* Event Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <GameCard variant="default" className="flex items-center gap-4 p-4 border-zinc-800 bg-zinc-900/80">
+                                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                    <Clock size={24} className="text-blue-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Start Date</p>
+                                    <p className="text-white font-bold text-lg">
+                                        {new Date(event.start_date).toLocaleDateString('ca-ES', {
+                                            weekday: 'short',
+                                            day: 'numeric',
+                                            month: 'long',
+                                        })}
+                                    </p>
+                                    <p className="text-blue-400 text-sm font-black">
+                                        {new Date(event.start_date).toLocaleTimeString('ca-ES', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
+                                </div>
+                            </GameCard>
+
+                            {event.location && (
+                                <GameCard variant="default" className="flex items-center gap-4 p-4 border-zinc-800 bg-zinc-900/80">
+                                    <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                                        <MapPin size={24} className="text-purple-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Location</p>
+                                        <p className="text-white font-bold text-lg">{event.location}</p>
+                                    </div>
+                                </GameCard>
+                            )}
+                        </div>
+
+                        {/* Club Info */}
+                        {event.club && (
+                            <div className="mt-6">
+                                <Link
+                                    href={`/clubs/${event.club.slug}`}
+                                    className="inline-flex items-center gap-4 bg-zinc-900/80 hover:bg-zinc-800 p-4 rounded-xl transition-all border border-zinc-800 hover:border-amber-500/50 group"
+                                >
+                                    {event.club.image_url ? (
+                                        <img
+                                            src={event.club.image_url}
+                                            alt={event.club.name}
+                                            className="w-12 h-12 rounded-xl border-2 border-zinc-800 group-hover:border-amber-500 transition-colors"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center border-2 border-zinc-700 group-hover:border-amber-500 transition-colors">
+                                            <Users className="text-zinc-400 group-hover:text-amber-500" size={24} />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest group-hover:text-amber-500/70 transition-colors">Organized by</p>
+                                        <p className="text-white font-bold text-lg">{event.club.name}</p>
+                                    </div>
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                </Panel>
 
                 {/* Registration Section */}
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
-                    <h2 className="text-2xl font-bold text-white mb-6">Registration</h2>
+                <GameCard variant="gold" className="p-8">
+                    <h2 className="text-2xl font-black text-white mb-6 uppercase tracking-wide flex items-center gap-3">
+                        <Users className="text-amber-500" />
+                        Registration
+                    </h2>
                     <EventRegistration
                         eventId={event.id}
                         maxParticipants={event.max_participants}
@@ -293,7 +310,7 @@ export default function EventDetailPage() {
                             setEvent({ ...event, participants_count: count });
                         }}
                     />
-                </div>
+                </GameCard>
             </div>
         </div>
     );

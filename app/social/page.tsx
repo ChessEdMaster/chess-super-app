@@ -9,6 +9,10 @@ import { Feed } from '@/components/social/feed';
 import { FriendsView } from '@/components/social/friends-view';
 import { ClansView } from '@/components/social/clans-view';
 import { EventsView } from '@/components/social/events-view';
+import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { Panel } from '@/components/ui/design-system/Panel';
+import { GameCard } from '@/components/ui/design-system/GameCard';
+import { Users, Newspaper, Shield, Calendar, User } from 'lucide-react';
 
 function SocialPageContent() {
     const router = useRouter();
@@ -33,67 +37,75 @@ function SocialPageContent() {
         window.history.pushState({}, '', url.toString());
     };
 
+    const tabs = [
+        { id: 'feed', label: 'Notícies', icon: Newspaper, color: 'neutral' as const },
+        { id: 'friends', label: 'Amics', icon: Users, color: 'primary' as const, badge: pendingRequests.length },
+        { id: 'clans', label: 'Clans', icon: Shield, color: 'secondary' as const },
+        { id: 'events', label: 'Events', icon: Calendar, color: 'success' as const },
+        { id: 'profile', label: 'Perfil', icon: User, color: 'neutral' as const },
+    ] as const;
+
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col bg-zinc-950">
             {/* Header Tabs */}
-            <div className="flex border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm overflow-x-auto shrink-0 no-scrollbar">
-                <button
-                    onClick={() => handleTabChange('feed')}
-                    className={cn(
-                        "flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors min-w-[80px] whitespace-nowrap",
-                        activeTab === 'feed' ? "text-white border-b-2 border-pink-500" : "text-zinc-500 hover:text-zinc-300"
-                    )}
-                >
-                    Feed
-                </button>
-                <button
-                    onClick={() => handleTabChange('friends')}
-                    className={cn(
-                        "flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors min-w-[80px] whitespace-nowrap flex items-center justify-center gap-2",
-                        activeTab === 'friends' ? "text-white border-b-2 border-blue-500" : "text-zinc-500 hover:text-zinc-300"
-                    )}
-                >
-                    Friends
-                    {pendingRequests.length > 0 && (
-                        <span className="bg-red-500 text-white text-[10px] px-1.5 rounded-full h-4 flex items-center justify-center">{pendingRequests.length}</span>
-                    )}
-                </button>
-                <button
-                    onClick={() => handleTabChange('clans')}
-                    className={cn(
-                        "flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors min-w-[80px] whitespace-nowrap",
-                        activeTab === 'clans' ? "text-white border-b-2 border-yellow-500" : "text-zinc-500 hover:text-zinc-300"
-                    )}
-                >
-                    Clans
-                </button>
-                <button
-                    onClick={() => handleTabChange('events')}
-                    className={cn(
-                        "flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors min-w-[80px] whitespace-nowrap",
-                        activeTab === 'events' ? "text-white border-b-2 border-purple-500" : "text-zinc-500 hover:text-zinc-300"
-                    )}
-                >
-                    Events
-                </button>
-                <button
-                    onClick={() => handleTabChange('profile')}
-                    className={cn(
-                        "flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors min-w-[80px] whitespace-nowrap",
-                        activeTab === 'profile' ? "text-white border-b-2 border-indigo-500" : "text-zinc-500 hover:text-zinc-300"
-                    )}
-                >
-                    Profile
-                </button>
+            <div className="p-4 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-20 border-b border-zinc-800 shadow-lg">
+                <Panel className="flex p-2 gap-2 overflow-x-auto no-scrollbar justify-start md:justify-center">
+                    {tabs.map((tab) => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <ShinyButton
+                                key={tab.id}
+                                variant={isActive ? tab.color : 'neutral'}
+                                className={cn(
+                                    "flex-1 min-w-[100px] h-[40px] text-xs font-black uppercase tracking-wider transition-all",
+                                    !isActive && "opacity-70 hover:opacity-100"
+                                )}
+                                onClick={() => handleTabChange(tab.id)}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    <tab.icon className="w-4 h-4" />
+                                    <span>{tab.label}</span>
+                                    {tab.badge ? (
+                                        <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm animate-pulse">
+                                            {tab.badge}
+                                        </span>
+                                    ) : null}
+                                </div>
+                            </ShinyButton>
+                        );
+                    })}
+                </Panel>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto relative p-4">
-                {activeTab === 'feed' && <Feed />}
-                {activeTab === 'friends' && <FriendsView />}
-                {activeTab === 'clans' && <ClansView />}
-                {activeTab === 'events' && <EventsView />}
-                {activeTab === 'profile' && <UserProfile />}
+            <div className="flex-1 overflow-y-auto relative p-4 custom-scrollbar">
+                <div className="max-w-7xl mx-auto h-full">
+                    {activeTab === 'feed' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <Feed />
+                        </div>
+                    )}
+                    {activeTab === 'friends' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <FriendsView />
+                        </div>
+                    )}
+                    {activeTab === 'clans' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <ClansView />
+                        </div>
+                    )}
+                    {activeTab === 'events' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <EventsView />
+                        </div>
+                    )}
+                    {activeTab === 'profile' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <UserProfile />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -101,7 +113,14 @@ function SocialPageContent() {
 
 export default function SocialPage() {
     return (
-        <Suspense fallback={<div className="h-full w-full flex items-center justify-center bg-zinc-950 text-white">Loading...</div>}>
+        <Suspense fallback={
+            <div className="h-full w-full flex items-center justify-center bg-zinc-950 text-white">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-amber-500"></div>
+                    <p className="text-amber-500 font-bold uppercase tracking-widest text-xs animate-pulse">Carregant...</p>
+                </div>
+            </div>
+        }>
             <SocialPageContent />
         </Suspense>
     );

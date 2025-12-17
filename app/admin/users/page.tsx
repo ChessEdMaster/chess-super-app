@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { UserManagementTable } from './user-management-table'
+import { Users, AlertTriangle } from 'lucide-react'
+import { Panel } from '@/components/ui/design-system/Panel'
 
 // Define types locally since we don't have the generated types handy or they are problematic
 type AppRole = {
@@ -68,29 +70,48 @@ export default async function AdminUsersPage() {
     if (profilesError || rolesError) {
         console.error("Error fetching admin data", profilesError, rolesError)
         return (
-            <div className="p-4 border border-red-800 bg-red-900/20 rounded-lg text-red-400">
-                <h3 className="font-bold mb-2">Error carregant dades</h3>
-                <p>No s'han pogut carregar els usuaris o els rols. Si us plau, torna-ho a provar més tard.</p>
-                <pre className="mt-4 text-xs bg-black/50 p-2 rounded overflow-auto">
-                    {JSON.stringify({ profilesError, rolesError }, null, 2)}
-                </pre>
-            </div>
+            <Panel className="border-red-500/30 bg-red-950/20">
+                <div className="flex items-center gap-4 text-red-500 mb-4">
+                    <AlertTriangle size={32} />
+                    <h3 className="font-black uppercase tracking-wide text-xl">Error Loading Data</h3>
+                </div>
+                <p className="text-zinc-400 font-bold mb-4">Could not fetch users or roles. Please try again later.</p>
+                <div className="p-4 bg-black/50 rounded-xl overflow-auto border border-red-900/50">
+                    <pre className="text-xs text-red-300 font-mono">
+                        {JSON.stringify({ profilesError, rolesError }, null, 2)}
+                    </pre>
+                </div>
+            </Panel>
         )
     }
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-100">Gestió d'Usuaris</h2>
-                <div className="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-                    Total: <span className="text-indigo-400 font-bold">{profiles?.length || 0}</span>
-                </div>
-            </div>
+            <Panel className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/30">
+                            <Users size={24} className="text-indigo-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-wide font-display text-stroke">Gestió d'Usuaris</h2>
+                            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Admin Control Center</p>
+                        </div>
+                    </div>
 
-            <UserManagementTable
-                initialProfiles={profiles as unknown as ProfileWithRole[]}
-                roles={roles as unknown as AppRole[]}
-            />
+                    <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 rounded-lg border border-zinc-800 shadow-inner">
+                        <span className="text-xs font-black text-zinc-500 uppercase tracking-wider">Total</span>
+                        <span className="text-xl font-black text-white font-mono">{profiles?.length || 0}</span>
+                    </div>
+                </div>
+
+                <div className="bg-zinc-950/50 rounded-xl border border-zinc-800 overflow-hidden">
+                    <UserManagementTable
+                        initialProfiles={profiles as unknown as ProfileWithRole[]}
+                        roles={roles as unknown as AppRole[]}
+                    />
+                </div>
+            </Panel>
         </div>
     )
 }
