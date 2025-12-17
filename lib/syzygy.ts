@@ -38,8 +38,8 @@ export const fetchSyzygyData = async (fen: string): Promise<SyzygyResponse | nul
     try {
         // Normalitzem el FEN per l'URL
         const encodedFen = encodeURIComponent(fen);
-        // Utilitzem l'endpoint públic v2
-        const response = await fetch(`https://syzygy-tables.info/api/v2?fen=${encodedFen}`);
+        // Utilitzem el nostre proxy per evitar CORS
+        const response = await fetch(`/api/syzygy?fen=${encodedFen}`);
 
         if (!response.ok) throw new Error('Error fetching tablebase');
 

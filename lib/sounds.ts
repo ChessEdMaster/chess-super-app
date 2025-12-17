@@ -3,12 +3,13 @@ import { Howl } from 'howler';
 const sounds: Record<string, Howl> = {};
 
 if (typeof window !== 'undefined') {
-    sounds.move = new Howl({ src: ['https://images.chesscomfiles.com/chess-themes/sounds/_Common/note/move.mp3'] });
-    sounds.capture = new Howl({ src: ['https://images.chesscomfiles.com/chess-themes/sounds/_Common/note/capture.mp3'] });
-    sounds.check = new Howl({ src: ['https://images.chesscomfiles.com/chess-themes/sounds/_Common/note/move-check.mp3'] });
-    sounds.castle = new Howl({ src: ['https://images.chesscomfiles.com/chess-themes/sounds/_Common/note/castle.mp3'] });
-    sounds.game_start = new Howl({ src: ['https://images.chesscomfiles.com/chess-themes/sounds/_Common/note/game-start.mp3'] });
-    sounds.game_end = new Howl({ src: ['https://images.chesscomfiles.com/chess-themes/sounds/_Common/note/game-end.mp3'] });
+    const baseUrl = 'https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard';
+    sounds.move = new Howl({ src: [`${baseUrl}/Move.mp3`] });
+    sounds.capture = new Howl({ src: [`${baseUrl}/Capture.mp3`] });
+    sounds.check = new Howl({ src: [`${baseUrl}/Check.mp3`] });
+    sounds.castle = new Howl({ src: [`${baseUrl}/Move.mp3`] }); // Fallback to Move to ensure it works
+    sounds.game_start = new Howl({ src: [`${baseUrl}/Dong.mp3`] }); // Usually the start sound
+    sounds.game_end = new Howl({ src: [`${baseUrl}/Victory.mp3`] });
 }
 
 export function playSound(type: string) {
