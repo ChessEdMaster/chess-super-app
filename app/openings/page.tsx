@@ -20,10 +20,15 @@ interface Opening {
     category: string;
 }
 
+import OpeningConceptMap from './OpeningConceptMap';
+import { LayoutGrid, Network } from 'lucide-react';
+
+
 const TABS = ['A', 'B', 'C', 'D', 'E'];
 
 export default function OpeningsPage() {
     const [activeTab, setActiveTab] = useState('A');
+    const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [openings, setOpenings] = useState<Opening[]>([]);
     const [loading, setLoading] = useState(false);
@@ -101,16 +106,35 @@ export default function OpeningsPage() {
                     </p>
                 </div>
 
-                {/* Search */}
-                <div className="relative w-full md:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4" />
-                    <input
-                        type="text"
-                        placeholder="Search openings..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-black/40 border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500/50 transition-colors placeholder:text-zinc-600 font-bold shadow-inner"
-                    />
+                {/* Controls */}
+                <div className="flex flex-col md:flex-row items-end gap-4 w-full md:w-auto">
+                    {/* View Toggle */}
+                    <div className="flex bg-zinc-950/50 p-1 rounded-xl border border-zinc-800">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            <LayoutGrid size={18} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('map')}
+                            className={`p-2 rounded-lg transition-all ${viewMode === 'map' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            <Network size={18} />
+                        </button>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative w-full md:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4" />
+                        <input
+                            type="text"
+                            placeholder="Search openings..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-black/40 border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500/50 transition-colors placeholder:text-zinc-600 font-bold shadow-inner"
+                        />
+                    </div>
                 </div>
             </Panel>
 
@@ -137,40 +161,55 @@ export default function OpeningsPage() {
                 </div>
             )}
 
-            {/* Openings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {openings.map((opening) => (
-                    <motion.div
-                        key={opening.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        onClick={() => setSelectedOpening(opening)}
-                    >
-                        <GameCard variant="default" className="cursor-pointer h-full hover:border-amber-500/50 transition-all group relative overflow-hidden bg-zinc-900/60 p-4 border-zinc-800">
-                            <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:opacity-10 transition-opacity transform group-hover:rotate-12">
-                                <BookOpen size={64} />
-                            </div>
+            {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {openings.map((opening) => (
+                        <motion.div
+                            key={opening.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={() => setSelectedOpening(opening)}
+                        >
+                            <GameCard variant="default" className="cursor-pointer h-full hover:border-amber-500/50 transition-all group relative overflow-hidden bg-zinc-900/60 p-4 border-zinc-800">
+                                <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:opacity-10 transition-opacity transform group-hover:rotate-12">
+                                    <BookOpen size={64} />
+                                </div>
 
-                            <div className="flex items-start justify-between mb-3 relative z-10">
-                                <span className="px-2 py-1 rounded bg-black/60 text-[10px] font-bold text-amber-500 uppercase tracking-widest border border-zinc-700/50 shadow-sm">
-                                    {opening.display_name.split(':')[0]}
-                                </span>
-                            </div>
+                                <div className="flex items-start justify-between mb-3 relative z-10">
+                                    <span className="px-2 py-1 rounded bg-black/60 text-[10px] font-bold text-amber-500 uppercase tracking-widest border border-zinc-700/50 shadow-sm">
+                                        {opening.display_name.split(':')[0]}
+                                    </span>
+                                </div>
 
-                            <h3 className="text-sm font-black text-zinc-200 leading-tight mb-2 pr-8 truncate font-display tracking-wide group-hover:text-amber-400 transition-colors relative z-10">
-                                {opening.display_name.split(':')[1]?.trim() || opening.display_name}
-                            </h3>
-                            <div className="text-[10px] text-zinc-500 font-mono truncate bg-black/20 p-1.5 rounded relative z-10 border border-white/5">
-                                {extractMoves(opening.description).substring(0, 30) || 'Moves not available'}...
-                            </div>
+                                <h3 className="text-sm font-black text-zinc-200 leading-tight mb-2 pr-8 truncate font-display tracking-wide group-hover:text-amber-400 transition-colors relative z-10">
+                                    {opening.display_name.split(':')[1]?.trim() || opening.display_name}
+                                </h3>
+                                <div className="text-[10px] text-zinc-500 font-mono truncate bg-black/20 p-1.5 rounded relative z-10 border border-white/5">
+                                    {extractMoves(opening.description).substring(0, 30) || 'Moves not available'}...
+                                </div>
 
-                            <div className="mt-4 flex items-center justify-end text-[10px] font-bold text-zinc-600 gap-1 uppercase tracking-wide group-hover:text-emerald-400 transition-colors">
-                                Analyze <ChevronRight size={12} />
-                            </div>
-                        </GameCard>
-                    </motion.div>
-                ))}
-            </div>
+                                <div className="mt-4 flex items-center justify-end text-[10px] font-bold text-zinc-600 gap-1 uppercase tracking-wide group-hover:text-emerald-400 transition-colors">
+                                    Analyze <ChevronRight size={12} />
+                                </div>
+                            </GameCard>
+                        </motion.div>
+                    ))}
+                </div>
+            ) : (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full"
+                >
+                    <OpeningConceptMap
+                        openings={openings}
+                        onSelectOpening={setSelectedOpening}
+                    />
+                    <div className="mt-4 text-center text-xs text-zinc-500">
+                        Showing {openings.length} openings. Load more to expand the map.
+                    </div>
+                </motion.div>
+            )}
 
             {/* Load More */}
             {openings.length < totalCount && (
