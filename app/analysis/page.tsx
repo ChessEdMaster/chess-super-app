@@ -20,7 +20,8 @@ import { OpeningExplorer } from '@/components/analysis/opening-explorer';
 import { AnalysisControls } from '@/components/analysis/analysis-controls';
 import { DatabaseManager } from '@/components/analysis/DatabaseManager';
 import { BoardSetup } from '@/components/analysis/BoardSetup';
-import { EndgamePanel } from '@/components/analysis/endgame-panel';
+import { SyzygyContainer } from '@/components/analysis/SyzygyContainer';
+import { EngineLinesPanel } from '@/components/analysis/EngineLinesPanel';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
 import { PGNTree } from '@/lib/pgn/tree';
@@ -53,6 +54,7 @@ function AnalysisContent() {
   const [isClient, setIsClient] = useState(false);
   const [createVariation, setCreateVariation] = useState(false);
   const [activeTab, setActiveTab] = useState<'analysis' | 'database' | 'setup'>('analysis');
+  const [analysisMode, setAnalysisMode] = useState<'manual' | 'stockfish' | 'syzygy'>('manual');
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
   // Persistence State
@@ -330,7 +332,7 @@ function AnalysisContent() {
     setEvaluation(null);
     setBestLine("");
 
-    if (isAnalyzing) {
+    if (isAnalyzing && analysisMode === 'stockfish') {
       const timeoutId = setTimeout(() => {
         if (!engine.current) return;
         engine.current.postMessage('stop');
@@ -340,9 +342,9 @@ function AnalysisContent() {
       }, 150);
       return () => clearTimeout(timeoutId);
     } else {
-      engine.current.postMessage('stop');
+      if (engine.current) engine.current.postMessage('stop');
     }
-  }, [fen, isClient, isAnalyzing, engineDepth, multipv]);
+  }, [fen, isClient, isAnalyzing, engineDepth, multipv, analysisMode]);
 
   const handleSetupClick = (square: string) => {
     if (!setupSelectedPiece) return;
@@ -597,32 +599,91 @@ function AnalysisContent() {
           <div className="flex-1 min-h-0 relative p-0 bg-transparent flex flex-col">
             {activeTab === 'analysis' && (
               <div className="flex flex-col h-full p-2 gap-2">
-                {/* Compact Controls at Top */}
-                <div className="shrink-0">
-                  <AnalysisControls
-                    isAnalyzing={isAnalyzing}
-                    setIsAnalyzing={setIsAnalyzing}
-                    depth={engineDepth}
-                    setDepth={setEngineDepth}
-                    multipv={multipv}
-                    setMultipv={setMultipv}
-                  />
-                </div>
-                <div className="shrink-0">
-                  <EndgamePanel fen={fen} />
+                {/* MODE SELECTOR */}
+                <div className="flex bg-zinc-950/50 rounded-lg p-1 border border-white/5 shrink-0">
+                  <button
+                    onClick={() => setAnalysisMode('manual')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'manual' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Manual
+                  </button>
+                  <button
+                    onClick={() => setAnalysisMode('stockfish')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'stockfish' ? 'bg-blue-600/20 text-blue-400 shadow-sm border border-blue-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Stockfish
+                  </button>
+                  <button
+                    onClick={() => setAnalysisMode('syzygy')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'syzygy' ? 'bg-amber-600/20 text-amber-400 shadow-sm border border-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Syzygy
+                  </button>
                 </div>
 
-                {/* PGN Editor Filler */}
-                <div className="flex-1 min-h-0">
-                  <PGNEditor
-                    tree={pgnTree}
-                    onTreeChange={setPgnTree}
-                    onPositionChange={handlePositionChange}
-                    currentMove={currentNode?.move || undefined}
-                    autoAnnotate={true}
-                    engineEval={evaluation}
-                  />
-                </div>
+                {/* CONTENT BASED ON MODE */}
+
+                {/* MANUAL MODE */}
+                {analysisMode === 'manual' && (
+                  <div className="flex-1 min-h-0 border border-white/5 rounded-lg overflow-hidden bg-zinc-900/30">
+                    <PGNEditor
+                      tree={pgnTree}
+                      onTreeChange={setPgnTree}
+                      onPositionChange={handlePositionChange}
+                      currentMove={currentNode?.move || undefined}
+                      autoAnnotate={true}
+                      engineEval={evaluation}
+                    />
+                  </div>
+                )}
+
+                {/* STOCKFISH MODE */}
+                {analysisMode === 'stockfish' && (
+                  <div className="flex flex-col h-full gap-2 min-h-0">
+                    <div className="shrink-0">
+                      <AnalysisControls
+                        isAnalyzing={isAnalyzing}
+                        setIsAnalyzing={setIsAnalyzing}
+                        depth={engineDepth}
+                        setDepth={setEngineDepth}
+                        multipv={multipv}
+                        setMultipv={setMultipv}
+                      />
+                    </div>
+                    <div className="h-[200px] shrink-0">
+                      <EngineLinesPanel
+                        lines={lines}
+                        depth={evaluation?.depth || 0}
+                        isAnalyzing={isAnalyzing}
+                      />
+                    </div>
+                    <div className="flex-1 min-h-0 border border-white/5 rounded-lg overflow-hidden bg-zinc-900/30">
+                      <PGNEditor
+                        tree={pgnTree}
+                        onTreeChange={setPgnTree}
+                        onPositionChange={handlePositionChange}
+                        currentMove={currentNode?.move || undefined}
+                        autoAnnotate={true}
+                        engineEval={evaluation}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* SYZYGY MODE */}
+                {analysisMode === 'syzygy' && (
+                  <div className="flex-1 min-h-0">
+                    <SyzygyContainer
+                      fen={fen}
+                      onPlayMove={(uci) => {
+                        // Convert/Play UCI move
+                        const from = uci.substring(0, 2);
+                        const to = uci.substring(2, 4);
+                        onDrop(from, to);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
 

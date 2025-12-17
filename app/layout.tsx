@@ -9,6 +9,7 @@ import { GlobalBackground } from "@/components/global-background";
 import Image from "next/image";
 import { Toaster } from '@/components/ui/sonner';
 import { AssistantWidget } from "@/components/ai/assistant-widget";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "CHESS CLANS",
@@ -33,11 +34,13 @@ export default function RootLayout({
           <AuthProvider>
             <PlayerStoreSync>
               <PresenceSync />
-              <MobileLayout>
-                {children}
-              </MobileLayout>
-              <AssistantWidget />
-              <Toaster position="top-center" richColors />
+              <ThemeProvider>
+                <MobileLayout>
+                  {children}
+                </MobileLayout>
+                <AssistantWidget />
+                <Toaster position="top-center" richColors />
+              </ThemeProvider>
             </PlayerStoreSync>
           </AuthProvider>
         </div>

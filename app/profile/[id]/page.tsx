@@ -7,6 +7,32 @@ import { useAuth } from '@/components/auth-provider';
 import { Loader2, User, Trophy, Shield, Swords, Calendar, Lock } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { useTheme } from '@/components/theme-provider';
+import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
+
+function ThemeOption({ title, description, value, currentTheme }: { title: string, description: string, value: 'light' | 'clash', currentTheme: string }) {
+    const { setTheme } = useTheme();
+    const isActive = currentTheme === value;
+
+    return (
+        <button
+            onClick={() => setTheme(value)}
+            className={cn(
+                "p-4 rounded-xl border text-left transition-all relative overflow-hidden group",
+                isActive
+                    ? "bg-amber-500/10 border-amber-500 ring-1 ring-amber-500"
+                    : "bg-zinc-950/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
+            )}
+        >
+            <div className="flex justify-between items-start mb-2">
+                <span className={cn("font-bold text-lg", isActive ? "text-amber-500" : "text-zinc-300")}>{title}</span>
+                {isActive && <div className="bg-amber-500 text-black p-1 rounded-full"><Check size={14} strokeWidth={3} /></div>}
+            </div>
+            <p className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors">{description}</p>
+        </button>
+    );
+}
 
 interface PublicProfileData {
     id: string;
@@ -16,6 +42,9 @@ interface PublicProfileData {
     xp: number;
     attributes: any;
     created_at: string;
+    settings?: {
+        theme?: 'light' | 'clash';
+    };
 }
 
 interface SocialSettings {
@@ -171,6 +200,29 @@ export default function PublicProfilePage() {
                         </div>
                     ))}
                 </div>
+
+                {/* Theme Selector (Only for Owner) */}
+                {user?.id === userId && (
+                    <div className="mt-8 bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            🎨 App Theme
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <ThemeOption
+                                title="Professional Light"
+                                description="Clean, modern, and professional (Default)"
+                                value="light"
+                                currentTheme={profile.settings?.theme || 'light'}
+                            />
+                            <ThemeOption
+                                title="Clash Royale Mode"
+                                description="Immersive dark gaming aesthetic"
+                                value="clash"
+                                currentTheme={profile.settings?.theme || 'light'}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -126,7 +126,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
                     xp: profileData.xp || 0,
                     currencies: currencies,
                     attributes: profileData.attributes || { AGGRESSION: 0, SOLIDITY: 0, KNOWLEDGE: 0, SPEED: 0 },
-                    settings: profileData.settings || { language: 'ca', notifications: true },
+                    settings: profileData.settings || { language: 'ca', notifications: true, theme: 'light' },
                     role: roleName as any,
                 },
                 cards: finalCards,

@@ -11,10 +11,19 @@ export interface SyzygyResponse {
     }>;
 }
 
+export interface SyzygyMove {
+    uci: string;
+    san: string | null;
+    wdl: number;
+    dtz: number;
+    dtm?: number;
+}
+
 export interface SyzygyResult {
     evaluation: string; // "Win in 54", "Draw", "Loss"
-    bestMove: string | null; // UCI format e.g. "e4e5"
+    bestMove: string | null; // UCI format
     wdl: number;
+    moves: SyzygyMove[];
 }
 
 // L'API només funciona amb 7 peces o menys (incloent reis)

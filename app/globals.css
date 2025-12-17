@@ -2,37 +2,65 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  /* Clash Royale / Mobile Game Theme */
+  /* --- PROFESSIONAL LIGHT (DEFAULT) --- */
+
+  /* Backgrounds */
+  --background: #f8fafc;
+  /* Slate-50 */
+  --foreground: #0f172a;
+  /* Slate-900 */
+
+  /* Panel / Surface */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  /* Slate-400 alpha */
+
+  /* Brand Colors (Light Mode Muted) */
+  --color-primary: #0f172a;
+  /* Slate-900 (Main text/actions) */
+  --color-secondary: #475569;
+  /* Slate-600 */
+
+  /* Accents (Use sparingly) */
+  --color-accent: #2563eb;
+  /* Blue-600 */
+  --color-gold: #d97706;
+  /* Amber-600 (Darker for light mode contrast) */
+
+  /* Status */
+  --color-success: #16a34a;
+  /* Green-600 */
+  --color-danger: #dc2626;
+  /* Red-600 */
+
+  /* Shadows (Softer for Professional Look) */
+  --shadow-comic: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --shadow-comic-hover: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --text-stroke-width: 0px;
+  /* No text stroke in pro mode */
+}
+
+/* --- CLASH ROYALE THEME (OVERRIDE) --- */
+.theme-clash {
   --background: #1e1b2e;
-  /* Deep purple/slate background */
+  /* Deep purple */
   --foreground: #ffffff;
 
-  /* Primary Brand Colors (Gold/Amber) */
-  --color-gold-300: #ffd700;
-  --color-gold-400: #ffb700;
-  --color-gold-500: #ff8c00;
-  --color-gold-600: #e67e22;
+  --glass-bg: rgba(30, 27, 46, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
 
-  /* Secondary Brand Colors (Royal Blue) */
-  --color-blue-300: #448aff;
-  --color-blue-500: #2962ff;
-  --color-blue-700: #1a237e;
+  --color-primary: #ffffff;
+  --color-secondary: #94a3b8;
 
-  /* Accent Colors */
-  --color-accent-cyan: #00e5ff;
-  --color-accent-pink: #f50057;
+  --color-accent: #00e5ff;
+  --color-gold: #ffd700;
 
-  /* Semantic */
   --color-success: #00c853;
   --color-danger: #d50000;
 
-  /* Surfaces */
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-bg: rgba(30, 27, 46, 0.7);
-
-  /* Effects */
   --shadow-comic: 0px 4px 0px 0px rgba(0, 0, 0, 0.4);
   --shadow-comic-hover: 0px 2px 0px 0px rgba(0, 0, 0, 0.4);
+  --text-stroke-width: 1px;
 }
 
 @theme inline {
@@ -79,8 +107,8 @@ body {
 }
 
 .text-stroke {
-  -webkit-text-stroke: 1px black;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+  -webkit-text-stroke: var(--text-stroke-width) black;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .text-gold-gradient {

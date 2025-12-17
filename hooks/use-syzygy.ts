@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { fetchSyzygyData, canUseSyzygy, SyzygyResult, getHumanEval } from '@/lib/syzygy';
+import { Chess } from 'chess.js';
+import { fetchSyzygyData, canUseSyzygy, SyzygyResult, getHumanEval, SyzygyMove } from '@/lib/syzygy';
 
 export function useSyzygy(fen: string) {
     const [data, setData] = useState<SyzygyResult | null>(null);
@@ -33,23 +34,59 @@ export function useSyzygy(fen: string) {
                     let bestMoveUci = null;
                     let bestWdl = -2; // Valor impossible
 
+                    const movesList: SyzygyMove[] = [];
+                    const chess = new Chess(fen); // For SAN generation
+
                     if (result.moves) {
-                        Object.entries(result.moves).forEach(([move, stats]) => {
-                            // Lògica bàsica: maximitzar WDL
-                            // Note: This logic assumes it's white's turn or WDL is relative to side to move.
-                            // Syzygy API WDL is relative to the side to move. 1 = Win, 0 = Draw, -1 = Loss.
-                            // So we always want to MAXIMIZE WDL for the current player.
+                        Object.entries(result.moves).forEach(([uci, stats]) => {
+                            // Generate SAN
+                            let san = null;
+                            try {
+                                // We need a fresh chess instance or clone for each move check ideally, 
+                                // or just use move() and undo()
+                                const moveObj = chess.move({ from: uci.substring(0, 2), to: uci.substring(2, 4), promotion: uci.length > 4 ? uci[4] : 'q' });
+                                if (moveObj) {
+                                    san = moveObj.san;
+                                    chess.undo();
+                                }
+                            } catch (e) {
+                                // invalid move?
+                            }
+
+                            movesList.push({
+                                uci,
+                                san,
+                                wdl: stats.wdl,
+                                dtz: stats.dtz,
+                                dtm: stats.dtm
+                            });
+
                             if (stats.wdl > bestWdl) {
                                 bestWdl = stats.wdl;
-                                bestMoveUci = move;
+                                bestMoveUci = uci;
                             }
                         });
                     }
 
+                    // Sort moves: Best WDL first, then Best DTZ (shortest for win, longest for loss?)
+                    // Syzygy convention: 
+                    // Win (wdl=2): smaller DTZ is better (faster win)
+                    // Loss (wdl=-2): larger DTZ is better (delay loss)
+                    // Draw (wdl=0): equal
+                    movesList.sort((a, b) => {
+                        if (a.wdl !== b.wdl) return b.wdl - a.wdl; // Higher WDL is better
+                        // If both winning, smaller DTZ is better
+                        if (a.wdl > 0) return Math.abs(a.dtz) - Math.abs(b.dtz);
+                        // If both losing, larger DTZ is better
+                        if (a.wdl < 0) return Math.abs(b.dtz) - Math.abs(a.dtz);
+                        return 0;
+                    });
+
                     setData({
                         evaluation: getHumanEval(result.wdl, result.dtz),
                         wdl: result.wdl,
-                        bestMove: bestMoveUci
+                        bestMove: bestMoveUci,
+                        moves: movesList
                     });
                 } else {
                     // If result is null but applicable, implies error

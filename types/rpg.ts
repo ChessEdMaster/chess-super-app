@@ -16,6 +16,7 @@ export interface PlayerProfile {
     settings?: {
         language: 'ca' | 'es' | 'en';
         notifications: boolean;
+        theme?: 'light' | 'clash'; // 'light' is the new default (Professional Light)
     };
     elo_bullet?: number;
     elo_blitz?: number;
