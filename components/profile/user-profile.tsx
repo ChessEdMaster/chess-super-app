@@ -16,6 +16,8 @@ import { ImageIcon } from 'lucide-react';
 import { Panel } from '@/components/ui/design-system/Panel';
 import { GameCard } from '@/components/ui/design-system/GameCard';
 import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+import { useTheme } from '@/components/theme-provider';
+import { Palette } from 'lucide-react';
 
 function BackgroundSelector() {
     const { backgroundImage, setBackgroundImage } = useSettings();
@@ -76,6 +78,7 @@ export function UserProfile() {
     const { checkPermission } = useRBAC();
     const { profile, saveProfile } = usePlayerStore();
     const router = useRouter();
+    const { setTheme } = useTheme();
 
     // Social Hook
     const { socialSettings, updateSettings } = useSocial();
@@ -326,6 +329,26 @@ export function UserProfile() {
                                 <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${profile.settings?.notifications ? 'bg-indigo-600 border-indigo-400' : 'bg-zinc-700 border-zinc-600'}`}>
                                     <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${profile.settings?.notifications ? 'left-5' : 'left-0.5'}`}></div>
                                 </div>
+                            </div>
+
+                            {/* Theme Selector */}
+                            <div className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <Palette size={18} className="text-pink-400" />
+                                    <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Tema Visual</span>
+                                </div>
+                                <select
+                                    value={profile.settings?.theme || 'light'}
+                                    onChange={(e) => {
+                                        const newTheme = e.target.value as 'light' | 'clash';
+                                        setTheme(newTheme);
+                                        toast.success(`Tema canviat a ${newTheme === 'light' ? 'Professional' : 'Gamer'}`);
+                                    }}
+                                    className="bg-zinc-950 border border-zinc-700 rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                >
+                                    <option value="light">Professional</option>
+                                    <option value="clash">Gamer (Clash)</option>
+                                </select>
                             </div>
 
                             {/* Background Selector */}
