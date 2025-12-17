@@ -52,7 +52,7 @@ export const useSABuilder = create<SABuilderState>((set) => ({
             evaluation_criteria: {
                 ...state.moduleData.evaluation_criteria,
                 rubrica: {
-                    ...state.moduleData.evaluation_criteria?.rubrica,
+                    ...(state.moduleData.evaluation_criteria as any)?.rubrica,
                     [level]: text
                 }
             }

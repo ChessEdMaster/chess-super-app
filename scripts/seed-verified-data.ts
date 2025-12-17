@@ -1,23 +1,23 @@
 
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
-const { createClient } = require('@supabase/supabase-js');
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 const DATA_DIR = path.join(process.cwd(), 'lichess-data');
 
-function parseXML(content) {
+function parseXML(content: string) {
     const items = [];
     const nameRegex = /<string name="([^"]+)">([^<]+)<\/string>/g;
     let match;
-    const descriptions = {};
+    const descriptions: Record<string, string> = {};
 
     // First pass to get values and check for descriptions (which are separate keys like name="XDescription")
-    const rawMap = {};
+    const rawMap: Record<string, string> = {};
     while ((match = nameRegex.exec(content)) !== null) {
         rawMap[match[1]] = match[2];
     }
@@ -36,9 +36,9 @@ function parseXML(content) {
     return items;
 }
 
-function parseTSV(content, limit = null) {
+function parseTSV(content: string, limit: number | null = null) {
     const lines = content.split('\n');
-    const items = [];
+    const items: any[] = [];
     // Skip header
     for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
@@ -95,9 +95,18 @@ async function seed() {
     }
 }
 
-async function upsertBatch(items) {
+interface ConceptItem {
+    name: string;
+    display_name: string;
+    description: string;
+    category: string;
+    eco?: string;
+    pgn?: string;
+}
+
+async function upsertBatch(items: ConceptItem[]) {
     // Deduplicate items by name to avoid "ON CONFLICT DO UPDATE command cannot affect row a second time"
-    const uniqueItems = new Map();
+    const uniqueItems = new Map<string, ConceptItem>();
     items.forEach(item => {
         if (!uniqueItems.has(item.name)) {
             uniqueItems.set(item.name, item);
@@ -119,7 +128,7 @@ async function upsertBatch(items) {
         const batch = dedupedItems.slice(i, i + BATCH_SIZE);
 
         const payload = batch.map(item => {
-            const base = {
+            const base: any = {
                 name: item.name,
                 display_name: item.display_name,
                 description: item.description,

@@ -31,7 +31,7 @@ export interface Club {
     settings: {
         allow_chat: boolean;
         require_approval: boolean;
-        [key: string]: any;
+        [key: string]: unknown;
     };
     created_at: string;
 }

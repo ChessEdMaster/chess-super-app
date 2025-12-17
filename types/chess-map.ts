@@ -24,7 +24,7 @@ export interface ChessLocation {
     start_date?: string;
     end_date?: string;
     url?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 
     // Extended fields for Tournaments
     time_control?: string;

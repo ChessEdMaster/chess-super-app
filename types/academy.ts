@@ -40,11 +40,11 @@ export interface AcademyModule {
     challenge_description?: string;
     final_product?: string;
     transversal_vectors?: string[];
-    competencies?: any; // JSONB
+    competencies?: Record<string, unknown>; // JSONB
     knowledge_topics?: string[];
     learning_objective?: string;
-    dua_guidelines?: any; // JSONB
-    evaluation_criteria?: any; // JSONB
+    dua_guidelines?: Record<string, unknown>; // JSONB
+    evaluation_criteria?: Record<string, unknown>; // JSONB
 }
 
 export interface AcademyEnrollment {

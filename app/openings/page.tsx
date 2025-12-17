@@ -4,7 +4,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, BookOpen, ChevronRight, X, Play, Copy, RefreshCw, Filter } from 'lucide-react';
+import { Search, BookOpen, ChevronRight, X, Play, Copy, RefreshCw } from 'lucide-react';
 import { Chess } from 'chess.js';
 import Chessboard2D from '@/components/2d/Chessboard2D';
 import { toast } from 'sonner';
@@ -207,19 +207,17 @@ function extractMoves(description: string): string {
 }
 
 function OpeningDetailModal({ opening, onClose }: { opening: Opening, onClose: () => void }) {
-    const [pgn, setPgn] = useState('');
-    const [fen, setFen] = useState('start');
-
-    useEffect(() => {
+    const { pgn, fen } = useMemo(() => {
         const moves = extractMoves(opening.description);
-        setPgn(moves);
+        let calculatedFen = 'start';
         try {
             const game = new Chess();
             game.loadPgn(moves);
-            setFen(game.fen());
+            calculatedFen = game.fen();
         } catch (e) {
             console.error('Invalid PGN', e);
         }
+        return { pgn: moves, fen: calculatedFen };
     }, [opening]);
 
     const handleCopy = () => {

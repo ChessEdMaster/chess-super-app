@@ -20,7 +20,7 @@ const LEVELS = [
 ];
 
 export function SARubric({ module, userProgressId, existingEvaluation, onEvaluationSaved, userId }: SARubricProps) {
-    const criteria = module.evaluation_criteria?.rubrica;
+    const criteria = (module.evaluation_criteria as any)?.rubrica;
     const [selectedLevel, setSelectedLevel] = useState<string | null>(existingEvaluation?.selected_level || null);
     const [isSaving, setIsSaving] = useState(false);
 
