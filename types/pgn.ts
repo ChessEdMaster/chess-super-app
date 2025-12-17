@@ -104,6 +104,19 @@ export interface Comment {
     position: 'before' | 'after'; // before or after the move
 }
 
+// Video link
+export interface VideoLink {
+    url: string;
+    title?: string;
+    startTime?: number; // in seconds
+}
+
+// External link
+export interface WebLink {
+    url: string;
+    title: string;
+}
+
 // Complete annotation for a move
 export interface Annotation {
     comments: Comment[];
@@ -111,8 +124,28 @@ export interface Annotation {
     evaluation?: Evaluation;
     visualAnnotations: VisualAnnotation[];
     images?: string[]; // URLs to attached images
+    videos?: VideoLink[]; // URLs to videos
+    links?: WebLink[]; // External links
+    presentationSteps?: string[]; // Steps for a presentation/slideshow
     custom?: Record<string, any>; // Custom properties (emojis etc)
     clock?: number; // time in seconds
+}
+
+// Logical move in the infinite tree
+export interface LogicalMove {
+    uci: string;
+    san: string;
+    weight: number; // 0-1 probability for humans/computers
+    evaluation?: Evaluation;
+    nextFen: string;
+}
+
+// Position in the infinite database
+export interface ChessPositionNode {
+    fen: string;
+    moves: LogicalMove[];
+    annotations: Annotation;
+    metadata: Record<string, any>;
 }
 
 // Complete WorkPGN Data Structure (for JSON storage)

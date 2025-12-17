@@ -15,12 +15,28 @@ const getPieceUrl = (type: string, color: string) => {
 };
 
 // --- TYPES ---
+export interface ArrowProps {
+    from: string;
+    to: string;
+    color: string;
+    opacity?: number;
+}
+
+export interface MarkProps {
+    square: string;
+    type: 'circle' | 'cross' | 'square' | 'target';
+    color: string;
+    opacity?: number;
+}
+
 interface Chessboard2DProps {
     fen: string;
     onSquareClick?: (square: string) => void;
     orientation?: 'white' | 'black';
     customSquareStyles?: Record<string, React.CSSProperties>;
     lastMove?: [string, string];
+    arrows?: ArrowProps[];
+    marks?: MarkProps[];
 }
 
 interface Square2DProps {
@@ -341,13 +357,7 @@ const ResponsiveCamera = () => {
 };
 
 // --- ARROWS ---
-interface ArrowProps {
-    from: string;
-    to: string;
-    color: string;
-}
-
-const Arrow = ({ from, to, color }: ArrowProps) => {
+const Arrow = ({ from, to, color, opacity = 0.8 }: ArrowProps) => {
     // Convert square notation to board coordinates
     const getCoords = (square: string) => {
         const col = square.charCodeAt(0) - 97;
@@ -375,13 +385,64 @@ const Arrow = ({ from, to, color }: ArrowProps) => {
             {/* Shaft */}
             <mesh position={[-length / 2 + (length - 0.4) / 2, 0, 0]} rotation={[0, 0, 0]}>
                 <boxGeometry args={[length - 0.5, 0.15, 0.05]} />
-                <meshBasicMaterial color={color} transparent opacity={0.8} />
+                <meshBasicMaterial color={color} transparent opacity={opacity} />
             </mesh>
             {/* Head */}
             <mesh position={[length / 2 - 0.25, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
                 <coneGeometry args={[0.2, 0.4, 8]} />
-                <meshBasicMaterial color={color} transparent opacity={0.9} />
+                <meshBasicMaterial color={color} transparent opacity={opacity + 0.1} />
             </mesh>
+        </group>
+    );
+};
+
+const Mark = ({ square, type, color, opacity = 0.5 }: MarkProps) => {
+    const getCoords = (square: string) => {
+        const col = square.charCodeAt(0) - 97;
+        const row = parseInt(square[1]) - 1;
+        return { x: col - 3.5, z: 3.5 - row };
+    };
+
+    const pos = getCoords(square);
+
+    return (
+        <group position={[pos.x, 0.05, pos.z]} rotation={[-Math.PI / 2, 0, 0]}>
+            {type === 'circle' && (
+                <mesh>
+                    <ringGeometry args={[0.35, 0.45, 32]} />
+                    <meshBasicMaterial color={color} transparent opacity={opacity} />
+                </mesh>
+            )}
+            {type === 'square' && (
+                <mesh rotation={[0, 0, Math.PI / 4]}>
+                    <ringGeometry args={[0.4, 0.5, 4, 1, 0, Math.PI * 2]} />
+                    <meshBasicMaterial color={color} transparent opacity={opacity} />
+                </mesh>
+            )}
+            {type === 'target' && (
+                <group>
+                    <mesh>
+                        <circleGeometry args={[0.1, 32]} />
+                        <meshBasicMaterial color={color} transparent opacity={opacity} />
+                    </mesh>
+                    <mesh>
+                        <ringGeometry args={[0.3, 0.4, 32]} />
+                        <meshBasicMaterial color={color} transparent opacity={opacity} />
+                    </mesh>
+                </group>
+            )}
+            {type === 'cross' && (
+                <group rotation={[0, 0, Math.PI / 4]}>
+                    <mesh>
+                        <boxGeometry args={[0.8, 0.1, 0.01]} />
+                        <meshBasicMaterial color={color} transparent opacity={opacity} />
+                    </mesh>
+                    <mesh rotation={[0, 0, Math.PI / 2]}>
+                        <boxGeometry args={[0.8, 0.1, 0.01]} />
+                        <meshBasicMaterial color={color} transparent opacity={opacity} />
+                    </mesh>
+                </group>
+            )}
         </group>
     );
 };
@@ -392,8 +453,9 @@ const Chessboard2DContent = ({
     orientation = 'white',
     onSquareClick = () => { },
     customSquareStyles,
-    arrows = []
-}: Chessboard2DProps & { arrows?: ArrowProps[] }) => {
+    arrows = [],
+    marks = []
+}: Chessboard2DProps) => {
     const [particleTriggers, setParticleTriggers] = useState<{ x: number, z: number, color: string, id: number }[]>([]);
 
     const handleCapture = (x: number, z: number, color: string) => {
@@ -412,7 +474,10 @@ const Chessboard2DContent = ({
                         orientation={orientation}
                     />
                     {arrows.map((arrow, i) => (
-                        <Arrow key={i} {...arrow} />
+                        <Arrow key={`arrow-${i}`} {...arrow} />
+                    ))}
+                    {marks.map((mark, i) => (
+                        <Mark key={`mark-${i}`} {...mark} />
                     ))}
                     <React.Suspense fallback={null}>
                         <Pieces2D fen={fen} orientation={orientation} onCapture={handleCapture} />
