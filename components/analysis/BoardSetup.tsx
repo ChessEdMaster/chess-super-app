@@ -32,7 +32,7 @@ export const BoardSetup = ({
     onStartAnalysis
 }: BoardSetupProps) => {
     const [fenInput, setFenInput] = useState(fen);
-    const [game] = useState(new Chess(fen));
+
 
     const handleFenSubmit = () => {
         try {
@@ -94,8 +94,8 @@ export const BoardSetup = ({
                                 key={p}
                                 onClick={() => onSelectPiece(selectedPiece === p ? null : p)}
                                 className={`aspect-square rounded-lg flex items-center justify-center transition-all ${selectedPiece === p
-                                        ? 'bg-indigo-600 ring-2 ring-indigo-400'
-                                        : 'bg-zinc-800 hover:bg-zinc-700'
+                                    ? 'bg-indigo-600 ring-2 ring-indigo-400'
+                                    : 'bg-zinc-800 hover:bg-zinc-700'
                                     }`}
                             >
                                 <img
@@ -108,8 +108,8 @@ export const BoardSetup = ({
                         <button
                             onClick={() => onSelectPiece(selectedPiece === 'trash' ? null : 'trash')}
                             className={`aspect-square rounded-lg flex items-center justify-center transition-all ${selectedPiece === 'trash'
-                                    ? 'bg-rose-600 ring-2 ring-rose-400'
-                                    : 'bg-zinc-800 hover:bg-rose-900/50 hover:text-rose-500'
+                                ? 'bg-rose-600 ring-2 ring-rose-400'
+                                : 'bg-zinc-800 hover:bg-rose-900/50 hover:text-rose-500'
                                 }`}
                         >
                             <Trash2 size={24} />

@@ -8,10 +8,10 @@ import * as THREE from 'three';
 import dynamic from 'next/dynamic';
 
 // --- ASSETS ---
-const PIECE_THEME_URL = "/pieces";
+const PIECE_THEME_URL = "https://images.chesscomfiles.com/chess-themes/pieces/neo/150";
 
 const getPieceUrl = (type: string, color: string) => {
-    return `${PIECE_THEME_URL}/${color}${type}.svg`;
+    return `${PIECE_THEME_URL}/${color}${type}.png`;
 };
 
 // --- TYPES ---
