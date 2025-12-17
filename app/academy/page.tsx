@@ -15,7 +15,8 @@ import {
     Calculator,
     Palette,
     History,
-    Lock
+    Lock,
+    School
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
