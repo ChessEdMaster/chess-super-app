@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingCart, Star, Crown, Truck, ShieldCheck, Gamepad2, Heart, Share2, Sparkles } from 'lucide-react';
 import { formatPrice, calculateDiscount, getStockStatus } from '@/types/ecommerce';
-import { AddToCartButton } from '@/components/shop/add-to-cart-button'; // Assuming this might exist or I should create/inline it. I'll inline the logic or use a client component wrapper.
+
 import { Panel } from '@/components/ui/design-system/Panel';
 import { GameCard } from '@/components/ui/design-system/GameCard';
 import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
@@ -135,7 +135,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                     )}
                                 </div>
 
-                                <AddToCart product={product} stockStatus={stockStatus} />
+                                <AddToCart product={product} stockStatus={stockStatus} maxQuantity={product.stock_quantity} />
 
                                 <div className="mt-4 flex items-center justify-center gap-4 text-zinc-500">
                                     <button className="flex items-center gap-2 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider">

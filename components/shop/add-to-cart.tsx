@@ -10,9 +10,10 @@ import { toast } from 'sonner';
 interface AddToCartProps {
     product: Product;
     stockStatus: StockStatus;
+    maxQuantity: number;
 }
 
-export function AddToCart({ product, stockStatus }: AddToCartProps) {
+export function AddToCart({ product, stockStatus, maxQuantity }: AddToCartProps) {
     const [quantity, setQuantity] = useState(1);
     const addItem = useCartStore(state => state.addItem);
     const isLoading = useCartStore(state => state.isLoading);
@@ -43,9 +44,9 @@ export function AddToCart({ product, stockStatus }: AddToCartProps) {
                     </button>
                     <span className="font-black text-white w-8 text-center text-lg font-mono">{quantity}</span>
                     <button
-                        onClick={() => setQuantity(Math.min(stockStatus.maxQuantity || 99, quantity + 1))}
+                        onClick={() => setQuantity(Math.min(maxQuantity || 99, quantity + 1))}
                         className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
-                        disabled={quantity >= (stockStatus.maxQuantity || 99)}
+                        disabled={quantity >= (maxQuantity || 99)}
                     >
                         <Plus size={16} />
                     </button>

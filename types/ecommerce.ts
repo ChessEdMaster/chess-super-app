@@ -272,11 +272,13 @@ export function calculateDiscount(price: number, salePrice: number | null): numb
     return Math.round(((price - salePrice) / price) * 100);
 }
 
-export function getStockStatus(quantity: number, threshold: number): {
+export interface StockStatus {
     status: 'in_stock' | 'low_stock' | 'out_of_stock';
     label: string;
     color: string;
-} {
+}
+
+export function getStockStatus(quantity: number, threshold: number): StockStatus {
     if (quantity === 0) {
         return { status: 'out_of_stock', label: 'Esgotat', color: 'text-red-500' };
     }

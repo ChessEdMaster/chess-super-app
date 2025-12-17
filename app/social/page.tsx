@@ -37,13 +37,21 @@ function SocialPageContent() {
         window.history.pushState({}, '', url.toString());
     };
 
-    const tabs = [
-        { id: 'feed', label: 'Notícies', icon: Newspaper, color: 'neutral' as const },
-        { id: 'friends', label: 'Amics', icon: Users, color: 'primary' as const, badge: pendingRequests.length },
-        { id: 'clans', label: 'Clans', icon: Shield, color: 'secondary' as const },
-        { id: 'events', label: 'Events', icon: Calendar, color: 'success' as const },
-        { id: 'profile', label: 'Perfil', icon: User, color: 'neutral' as const },
-    ] as const;
+    interface TabItem {
+        id: 'feed' | 'friends' | 'clans' | 'events' | 'profile';
+        label: string;
+        icon: any;
+        color: 'neutral' | 'primary' | 'secondary' | 'success';
+        badge?: number;
+    }
+
+    const tabs: TabItem[] = [
+        { id: 'feed', label: 'Notícies', icon: Newspaper, color: 'neutral' },
+        { id: 'friends', label: 'Amics', icon: Users, color: 'primary', badge: pendingRequests.length },
+        { id: 'clans', label: 'Clans', icon: Shield, color: 'secondary' },
+        { id: 'events', label: 'Events', icon: Calendar, color: 'success' },
+        { id: 'profile', label: 'Perfil', icon: User, color: 'neutral' },
+    ];
 
     return (
         <div className="h-full w-full flex flex-col bg-zinc-950">
