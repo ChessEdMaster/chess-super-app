@@ -110,7 +110,17 @@ export interface Annotation {
     nags: NAGSymbol[];
     evaluation?: Evaluation;
     visualAnnotations: VisualAnnotation[];
+    images?: string[]; // URLs to attached images
+    custom?: Record<string, any>; // Custom properties (emojis etc)
     clock?: number; // time in seconds
+}
+
+// Complete WorkPGN Data Structure (for JSON storage)
+export interface WorkPGNData {
+    metadata: PGNMetadata;
+    rootPosition: string;
+    moves: MoveNode[]; // Serialized moves (mainLine)
+    version: number;
 }
 
 // Single move node in the tree

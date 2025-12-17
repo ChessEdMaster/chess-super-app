@@ -21,8 +21,16 @@ const NAG_OPTIONS = [
     { code: NAGSymbol.BLUNDER, label: '??', description: 'Blunder', color: 'text-red-500', border: 'border-red-500/30' },
     { code: NAGSymbol.INTERESTING_MOVE, label: '!?', description: 'Interesting', color: 'text-indigo-400', border: 'border-indigo-500/30' },
     { code: NAGSymbol.DUBIOUS_MOVE, label: '?!', description: 'Dubious', color: 'text-yellow-400', border: 'border-yellow-500/30' },
+    { code: NAGSymbol.FORCED_MOVE, label: '□', description: 'Forced', color: 'text-zinc-300', border: 'border-zinc-500/30' },
     { code: NAGSymbol.EQUAL, label: '=', description: 'Equal', color: 'text-zinc-400', border: 'border-zinc-500/30' },
-    { code: NAGSymbol.WINNING_WHITE, label: '+-', description: 'Winning', color: 'text-zinc-200', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.UNCLEAR, label: '∞', description: 'Unclear', color: 'text-purple-400', border: 'border-purple-500/30' },
+    { code: NAGSymbol.SLIGHT_ADVANTAGE_WHITE, label: '⩲', description: 'White slight adv', color: 'text-zinc-200', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.SLIGHT_ADVANTAGE_BLACK, label: '⩱', description: 'Black slight adv', color: 'text-zinc-200', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.ADVANTAGE_WHITE, label: '±', description: 'White adv', color: 'text-zinc-100', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.ADVANTAGE_BLACK, label: '∓', description: 'Black adv', color: 'text-zinc-100', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.WINNING_WHITE, label: '+-', description: 'Winning White', color: 'text-zinc-50', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.WINNING_BLACK, label: '-+', description: 'Winning Black', color: 'text-zinc-50', border: 'border-zinc-500/30' },
+    { code: NAGSymbol.TIME_PRESSURE, label: '⨀', description: 'Time trouble', color: 'text-orange-400', border: 'border-orange-500/30' },
 ];
 
 export function NAGSelector({ selectedNAGs, onToggleNAG }: NAGSelectorProps) {

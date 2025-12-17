@@ -14,6 +14,7 @@ import type {
     NAGSymbol,
     Evaluation,
     VisualAnnotation,
+    WorkPGNData,
 } from '@/types/pgn';
 
 export class PGNTree {
@@ -242,6 +243,21 @@ export class PGNTree {
         this.game.currentNode.annotation.visualAnnotations.splice(index, 1);
     }
 
+    // Add image URL
+    addImage(url: string): void {
+        if (!this.game.currentNode) return;
+        if (!this.game.currentNode.annotation.images) {
+            this.game.currentNode.annotation.images = [];
+        }
+        this.game.currentNode.annotation.images.push(url);
+    }
+
+    // Remove image URL
+    removeImage(index: number): void {
+        if (!this.game.currentNode || !this.game.currentNode.annotation.images) return;
+        this.game.currentNode.annotation.images.splice(index, 1);
+    }
+
     // Delete a variation
     deleteVariation(variationId: string): void {
         if (!this.game.currentNode) return;
@@ -400,5 +416,76 @@ export class PGNTree {
             }
         }
         return result.trim();
+    }
+
+    // --- JSON Serialization for WorkPGN ---
+
+    toJSON(): WorkPGNData {
+        // Deep clone to strip internal state but we need to handle circular 'parent' refs
+        // We can just serialize the mainLine and variations, but JSON.stringify will choke on parent refs.
+        // We'll use a replacer or manual traversal if needed, but actually we can just
+        // rely on the structure modification helper.
+
+        const serializeNode = (node: MoveNode): any => {
+            const { parent, ...rest } = node;
+            return {
+                ...rest,
+                variations: node.variations.map(v => ({
+                    ...v,
+                    moves: v.moves.map(m => serializeNode(m))
+                }))
+            };
+        };
+
+        const serializedMoves = this.game.mainLine.map(node => serializeNode(node));
+
+        return {
+            metadata: this.game.metadata,
+            rootPosition: this.game.rootPosition,
+            moves: serializedMoves,
+            version: 1
+        };
+    }
+
+    static fromJSON(data: WorkPGNData): PGNTree {
+        const tree = new PGNTree(data.rootPosition);
+        tree.game.metadata = data.metadata;
+
+        // Reconstruct nodes
+        // We need to recursively rebuild the tree and link parents
+
+        const restoreNodes = (nodes: any[], parent: MoveNode | null): MoveNode[] => {
+            return nodes.map(raw => {
+                const node: MoveNode = {
+                    ...raw,
+                    parent: parent,
+                    variations: [] // placeholder
+                };
+
+                // Restore variations
+                if (raw.variations) {
+                    node.variations = raw.variations.map((v: any) => ({
+                        ...v,
+                        moves: restoreNodes(v.moves, node)
+                    }));
+                }
+                return node;
+            });
+        };
+
+        tree.game.mainLine = restoreNodes(data.moves as any[], null);
+
+        // Set current node to end of main line
+        if (tree.game.mainLine.length > 0) {
+            let current = tree.game.mainLine[tree.game.mainLine.length - 1];
+            // Optional: Go deeper if standard behavior
+            tree.game.currentNode = current;
+            // Update internal chess instance to match
+            tree.goToNode(current);
+        } else {
+            tree.game.currentNode = null;
+        }
+
+        return tree;
     }
 }

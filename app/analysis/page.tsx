@@ -24,6 +24,7 @@ import { SyzygyContainer } from '@/components/analysis/SyzygyContainer';
 import { EngineLinesPanel } from '@/components/analysis/EngineLinesPanel';
 import { useSettings } from '@/lib/settings';
 import { BOARD_THEMES } from '@/lib/themes';
+import { Switch } from '@/components/ui/switch';
 import { PGNTree } from '@/lib/pgn/tree';
 import { PGNParser } from '@/lib/pgn/parser';
 import type { Evaluation } from '@/types/pgn';
@@ -35,6 +36,7 @@ import { toast } from 'sonner';
 import { Panel } from '@/components/ui/design-system/Panel';
 import { GameCard } from '@/components/ui/design-system/GameCard';
 import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
+
 
 interface EvaluationLine {
   id: number;
@@ -62,6 +64,8 @@ function AnalysisContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const lastSavedPgn = useRef<string>('');
+  const [isWorkMode, setIsWorkMode] = useState(false);
+  const [hasWorkPgn, setHasWorkPgn] = useState(false);
 
   // Setup State
   const [isSetupMode, setIsSetupMode] = useState(false);
@@ -118,6 +122,7 @@ function AnalysisContent() {
 
       let targetGameId = gameId;
 
+      // 1. Ensure Game Exists
       if (!targetGameId) {
         let collectionId: string | null = null;
         const { data: cols } = await supabase.from('pgn_collections').select('id').eq('title', 'My Analyses').eq('user_id', user.id).single();
@@ -152,14 +157,47 @@ function AnalysisContent() {
             window.history.pushState({}, '', newUrl.toString());
           }
         }
-      } else {
-        await supabase.from('pgn_games').update({
-          pgn: currentPgn,
-          white: pgnTree.getHeader('White') || '?',
-          black: pgnTree.getHeader('Black') || '?',
-          result: pgnTree.getHeader('Result') || '*',
-          updated_at: new Date().toISOString()
-        }).eq('id', targetGameId);
+      }
+
+      // 2. Save Game Data (Standard or WorkPGN)
+      if (targetGameId) {
+        // 2. Save Game Data (Standard or WorkPGN)
+        if (targetGameId) {
+          // ALWAYS update the standard PGN to keep it interoperable
+          const pgnUpdate = supabase.from('pgn_games').update({
+            pgn: currentPgn,
+            white: pgnTree.getHeader('White') || '?',
+            black: pgnTree.getHeader('Black') || '?',
+            result: pgnTree.getHeader('Result') || '*',
+            updated_at: new Date().toISOString()
+          }).eq('id', targetGameId);
+
+          if (isWorkMode) {
+            const workData = pgnTree.toJSON();
+
+            let workPromise;
+            if (hasWorkPgn) {
+              workPromise = supabase.from('work_pgns').update({
+                data: workData as any,
+                updated_at: new Date().toISOString()
+              }).eq('game_id', targetGameId);
+            } else {
+              workPromise = supabase.from('work_pgns').insert({
+                game_id: targetGameId,
+                data: workData as any
+              }).then(({ error }) => {
+                if (!error) setHasWorkPgn(true);
+                return { error };
+              });
+            }
+
+            // Execute both
+            await Promise.all([pgnUpdate, workPromise]);
+          } else {
+            // Only standard PGN
+            await pgnUpdate;
+          }
+        }
       }
 
       lastSavedPgn.current = currentPgn;
@@ -171,7 +209,7 @@ function AnalysisContent() {
     } finally {
       setIsSaving(false);
     }
-  }, [gameId, isClient, pgnTree]);
+  }, [gameId, isClient, pgnTree, isWorkMode, hasWorkPgn]);
 
   // Debounced Auto-save effect
   useEffect(() => {
@@ -187,14 +225,50 @@ function AnalysisContent() {
     try {
       const { data, error } = await supabase
         .from('pgn_games')
-        .select('pgn')
+        .select(`
+            pgn,
+            work_pgns (id, data)
+        `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      if (data && data.pgn) {
-        loadPGN(data.pgn);
-        lastSavedPgn.current = data.pgn;
+
+      if (data) {
+        const workPgn = data.work_pgns && Array.isArray(data.work_pgns) ? data.work_pgns[0] : data.work_pgns;
+
+        if (workPgn) {
+          setHasWorkPgn(true);
+          setIsWorkMode(true);
+          // Load WorkPGN
+          try {
+            const newTree = PGNTree.fromJSON(workPgn.data);
+            setPgnTree(newTree);
+            // Set initial state
+            const mainLine = newTree.getMainLine();
+            if (mainLine.length > 0) {
+              newTree.goToNode(mainLine[mainLine.length - 1]);
+            } else {
+              newTree.reset();
+            }
+            setFen(newTree.getCurrentFen());
+            setGame(new Chess(newTree.getCurrentFen()));
+          } catch (e) {
+            console.error("Failed to parse WorkPGN", e);
+            // Fallback to standard PGN
+            if (data.pgn) {
+              loadPGN(data.pgn);
+              lastSavedPgn.current = data.pgn;
+            }
+          }
+        } else {
+          setHasWorkPgn(false);
+          setIsWorkMode(false);
+          if (data.pgn) {
+            loadPGN(data.pgn);
+            lastSavedPgn.current = data.pgn;
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading game:', error);
@@ -497,6 +571,12 @@ function AnalysisContent() {
     return { from, to, color };
   }).filter(Boolean) as { from: string, to: string, color: string }[];
 
+  const pgnArrows = pgnTree.getCurrentNode()?.annotation.visualAnnotations
+    ?.filter((a) => a.type === 'arrow' && a.from && a.to)
+    .map((a) => ({ from: a.from!, to: a.to!, color: a.color })) || [];
+
+  const allArrows = [...analysisArrows, ...pgnArrows];
+
   // --- ICONS for TABs ---
   const ActivityIcon = LayoutGrid;
   const DatabaseIcon = React.memo(() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>);
@@ -533,7 +613,7 @@ function AnalysisContent() {
                   orientation={'white'}
                   onSquareClick={onSquareClick}
                   customSquareStyles={optionSquares}
-                  arrows={analysisArrows}
+                  arrows={allArrows}
                 />
               ) : (
                 <div className="w-full h-full bg-zinc-900">
@@ -542,7 +622,7 @@ function AnalysisContent() {
                     onSquareClick={onSquareClick}
                     orientation={game.turn() === 'b' ? 'black' : 'white'}
                     customSquareStyles={optionSquares}
-                    arrows={analysisArrows}
+                    arrows={allArrows}
                   />
                 </div>
               )}
@@ -599,6 +679,20 @@ function AnalysisContent() {
           <div className="flex-1 min-h-0 relative p-0 bg-transparent flex flex-col">
             {activeTab === 'analysis' && (
               <div className="flex flex-col h-full p-2 gap-2">
+                {/* WORK MODE TOGGLE - Only show if game is saved */}
+                {gameId && (
+                  <div className="flex items-center justify-between bg-zinc-950/30 p-2 rounded-lg border border-white/5 mb-2">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Work Mode</span>
+                      <span className="text-[10px] text-zinc-600">Rich editing & drawings</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!hasWorkPgn && isWorkMode && <span className="text-[10px] text-zinc-500 italic">Unsaved</span>}
+                      <Switch checked={isWorkMode} onCheckedChange={(checked) => setIsWorkMode(checked)} />
+                    </div>
+                  </div>
+                )}
+
                 {/* MODE SELECTOR */}
                 <div className="flex bg-zinc-950/50 rounded-lg p-1 border border-white/5 shrink-0">
                   <button
@@ -633,6 +727,19 @@ function AnalysisContent() {
                       currentMove={currentNode?.move || undefined}
                       autoAnnotate={true}
                       engineEval={evaluation}
+                      isWorkMode={isWorkMode}
+                      onAddImage={(url) => {
+                        const newTree = new PGNTree();
+                        Object.assign(newTree, pgnTree);
+                        newTree.addImage(url);
+                        setPgnTree(newTree);
+                      }}
+                      onRemoveImage={(index) => {
+                        const newTree = new PGNTree();
+                        Object.assign(newTree, pgnTree);
+                        newTree.removeImage(index);
+                        setPgnTree(newTree);
+                      }}
                     />
                   </div>
                 )}
@@ -665,6 +772,19 @@ function AnalysisContent() {
                         currentMove={currentNode?.move || undefined}
                         autoAnnotate={true}
                         engineEval={evaluation}
+                        isWorkMode={isWorkMode}
+                        onAddImage={(url) => {
+                          const newTree = new PGNTree();
+                          Object.assign(newTree, pgnTree);
+                          newTree.addImage(url);
+                          setPgnTree(newTree);
+                        }}
+                        onRemoveImage={(index) => {
+                          const newTree = new PGNTree();
+                          Object.assign(newTree, pgnTree);
+                          newTree.removeImage(index);
+                          setPgnTree(newTree);
+                        }}
                       />
                     </div>
                   </div>

@@ -27,6 +27,7 @@ interface PGNEditorProps {
     currentMove?: string; // Last move made
     autoAnnotate?: boolean; // Auto-add engine evaluations
     engineEval?: Evaluation | null;
+    isWorkMode?: boolean;
 }
 
 export function PGNEditor({
@@ -35,6 +36,7 @@ export function PGNEditor({
     onPositionChange,
     autoAnnotate = false,
     engineEval,
+    isWorkMode = false,
 }: PGNEditorProps) {
     const [viewMode, setViewMode] = useState<'tree' | 'linear'>('linear');
     const [showAnnotationPanel] = useState(true);
@@ -116,6 +118,16 @@ export function PGNEditor({
         onTreeChange(tree);
     };
 
+    const handleAddImage = (url: string) => {
+        tree.addImage(url);
+        onTreeChange(tree);
+    };
+
+    const handleRemoveImage = (index: number) => {
+        tree.removeImage(index);
+        onTreeChange(tree);
+    };
+
     return (
         <div className="flex flex-col h-full gap-2">
 
@@ -166,6 +178,9 @@ export function PGNEditor({
                         onRemoveComment={handleRemoveComment}
                         onToggleNAG={handleToggleNAG}
                         onSetEvaluation={handleSetEvaluation}
+                        isWorkMode={isWorkMode}
+                        onAddImage={handleAddImage}
+                        onRemoveImage={handleRemoveImage}
                     />
                 </div>
             )}

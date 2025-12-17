@@ -20,7 +20,7 @@ import { minePuzzles, getLichessTV } from '@/app/actions/lichess-actions';
 import { toast } from 'sonner';
 
 interface DatabaseManagerProps {
-    onLoadGame: (pgn: string) => void;
+    onLoadGame: (pgn: string, id?: string) => void;
     currentPgn?: string;
 }
 
@@ -381,7 +381,7 @@ export const DatabaseManager = ({ onLoadGame, currentPgn }: DatabaseManagerProps
                                 ) : (
                                     games.map(game => (
                                         <div key={game.id} className="p-3 hover:bg-zinc-800/50 transition group flex items-center justify-between">
-                                            <div className="space-y-1 overflow-hidden cursor-pointer flex-1" onClick={() => onLoadGame(game.pgn)}>
+                                            <div className="space-y-1 overflow-hidden cursor-pointer flex-1" onClick={() => onLoadGame(game.pgn, game.id)}>
                                                 <div className="flex items-center gap-2 font-bold text-sm truncate">
                                                     <span className={game.result === '1-0' ? 'text-emerald-400' : 'text-zinc-300'}>{game.white}</span>
                                                     <span className="text-zinc-600 font-light">vs</span>
@@ -395,7 +395,7 @@ export const DatabaseManager = ({ onLoadGame, currentPgn }: DatabaseManagerProps
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button size="sm" variant="ghost" onClick={() => onLoadGame(game.pgn)} className="h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-zinc-800">
+                                                <Button size="sm" variant="ghost" onClick={() => onLoadGame(game.pgn, game.id)} className="h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-zinc-800">
                                                     <PlayCircle size={18} />
                                                 </Button>
                                             </div>

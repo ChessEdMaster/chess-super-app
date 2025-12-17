@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageSquare, TrendingUp, Palette, Plus, Trash2 } from 'lucide-react';
+import { MessageSquare, TrendingUp, Palette, Plus, Trash2, Image as ImageIcon, Smile } from 'lucide-react';
 import type { MoveNode, Evaluation } from '@/types/pgn';
 import { NAGSelector, NAGDisplay } from './nag-selector';
 
@@ -17,6 +17,9 @@ interface AnnotationPanelProps {
     onRemoveComment: (index: number) => void;
     onToggleNAG: (nag: number) => void;
     onSetEvaluation: (evaluation: Evaluation | undefined) => void;
+    isWorkMode?: boolean;
+    onAddImage?: (url: string) => void;
+    onRemoveImage?: (index: number) => void;
 }
 
 export function AnnotationPanel({
@@ -26,11 +29,18 @@ export function AnnotationPanel({
     onRemoveComment,
     onToggleNAG,
     onSetEvaluation,
+    isWorkMode = false,
+    onAddImage,
+    onRemoveImage,
 }: AnnotationPanelProps) {
-    const [activeTab, setActiveTab] = useState<'comments' | 'symbols' | 'evaluation'>('comments');
+    const [activeTab, setActiveTab] = useState<'comments' | 'symbols' | 'evaluation' | 'media'>('comments');
     const [newComment, setNewComment] = useState('');
     const [evalType, setEvalType] = useState<'cp' | 'mate'>('cp');
     const [evalValue, setEvalValue] = useState('');
+    const [newImageUrl, setNewImageUrl] = useState('');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+    const EMOJIS = ['👍', '👎', '🤔', '😮', '❤️', '🔥', '🎯', '🛡️', '⚔️', '🏳️', '🏁', '🕰️', '🧠', '⚡', '💀', '👻', '📉', '📈', '🤝', '👀'];
 
     if (!node) {
         return (
@@ -46,7 +56,12 @@ export function AnnotationPanel({
         if (newComment.trim()) {
             onAddComment(newComment.trim(), 'after');
             setNewComment('');
+            setShowEmojiPicker(false);
         }
+    };
+
+    const handleEmojiClick = (emoji: string) => {
+        setNewComment(prev => prev + emoji);
     };
 
     const handleSetEvaluation = () => {
@@ -58,6 +73,13 @@ export function AnnotationPanel({
                     value: evalType === 'cp' ? Math.round(value * 100) : value,
                 });
             }
+        }
+    };
+
+    const handleAddImage = () => {
+        if (newImageUrl.trim() && onAddImage) {
+            onAddImage(newImageUrl.trim());
+            setNewImageUrl('');
         }
     };
 
@@ -86,6 +108,15 @@ export function AnnotationPanel({
                 >
                     <TrendingUp size={14} />
                 </button>
+                {isWorkMode && (
+                    <button
+                        onClick={() => setActiveTab('media')}
+                        className={`flex-1 py-2 flex items-center justify-center transition-colors ${activeTab === 'media' ? 'bg-zinc-800 text-pink-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        title="Media"
+                    >
+                        <ImageIcon size={14} />
+                    </button>
+                )}
             </div>
 
             {/* Content Area */}
@@ -108,7 +139,7 @@ export function AnnotationPanel({
                                 </button>
                             </div>
                         ))}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 relative">
                             <input
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
@@ -117,19 +148,40 @@ export function AnnotationPanel({
                                 className="flex-1 bg-zinc-950 text-zinc-300 text-xs p-2 rounded border border-white/5 focus:outline-none focus:border-zinc-700"
                             />
                             <button
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className={`p-2 ${showEmojiPicker ? 'bg-zinc-700 text-yellow-400' : 'bg-zinc-800 text-zinc-400'} hover:bg-zinc-700 rounded transition-colors`}
+                                title="Add Emoji"
+                            >
+                                <Smile size={14} />
+                            </button>
+                            <button
                                 onClick={handleAddComment}
                                 disabled={!newComment.trim()}
                                 className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors disabled:opacity-50"
                             >
                                 <Plus size={14} />
                             </button>
+
+                            {/* Emoji Picker Popover */}
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-full right-0 mb-2 p-2 bg-zinc-900 border border-white/10 rounded-lg shadow-xl grid grid-cols-5 gap-1 w-[160px] z-50">
+                                    {EMOJIS.map(emoji => (
+                                        <button
+                                            key={emoji}
+                                            onClick={() => handleEmojiClick(emoji)}
+                                            className="hover:bg-zinc-700 p-1 rounded text-sm transition-colors"
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'symbols' && (
                     <div>
-                        {/* We can re-use the NAGSelector but stripped of extra UI if needed, for now standard is fine */}
                         <NAGSelector
                             selectedNAGs={node.annotation.nags}
                             onToggleNAG={onToggleNAG}
@@ -167,6 +219,44 @@ export function AnnotationPanel({
                                 <button onClick={() => onSetEvaluation(undefined)} className="text-red-400 hover:text-red-300"><Trash2 size={12} /></button>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeTab === 'media' && isWorkMode && (
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
+                            <input
+                                value={newImageUrl}
+                                onChange={(e) => setNewImageUrl(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddImage()}
+                                placeholder="Image URL..."
+                                className="flex-1 bg-zinc-950 text-zinc-300 text-xs p-2 rounded border border-white/5 focus:outline-none focus:border-zinc-700"
+                            />
+                            <button
+                                onClick={handleAddImage}
+                                disabled={!newImageUrl.trim()}
+                                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors disabled:opacity-50"
+                            >
+                                <Plus size={14} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                            {node.annotation.images?.map((url, index) => (
+                                <div key={index} className="relative group aspect-video bg-zinc-950 rounded border border-white/5 overflow-hidden">
+                                    <img src={url} alt="Attached" className="w-full h-full object-cover" />
+                                    <button
+                                        onClick={() => onRemoveImage && onRemoveImage(index)}
+                                        className="absolute top-1 right-1 p-1 bg-black/50 text-white opacity-0 group-hover:opacity-100 rounded hover:bg-red-500 transition-all"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                </div>
+                            ))}
+                            {(!node.annotation.images || node.annotation.images.length === 0) && (
+                                <p className="col-span-2 text-center text-zinc-500 text-xs py-4">No images attached</p>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
