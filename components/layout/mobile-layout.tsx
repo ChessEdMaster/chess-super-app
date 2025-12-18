@@ -98,6 +98,14 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                                     Enciclopèdia
                                 </Link>
                                 <Link
+                                    href="/books/los-100-finales"
+                                    className="w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-amber-950/20 hover:text-amber-300 flex items-center gap-3 font-medium"
+                                    onClick={() => setProfileOpen(false)}
+                                >
+                                    <BookOpen size={16} />
+                                    📖 100 Finals
+                                </Link>
+                                <Link
                                     href="/profile"
                                     className="w-full text-left px-4 py-3 text-sm text-muted-foreground hover:bg-muted hover:text-white flex items-center gap-3 font-medium"
                                     onClick={() => setProfileOpen(false)}

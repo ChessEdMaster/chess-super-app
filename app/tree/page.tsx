@@ -20,10 +20,13 @@ export default function TreeExplorerPage() {
     const [history, setHistory] = useState<string[]>([INITIAL_FEN]);
     const [activeTab, setActiveTab] = useState<'moves' | 'annotate' | 'media'>('moves');
 
-    // Fetch position data from Supabase
+    // Fetch and Touch position data
     const fetchPosition = useCallback(async (currentFen: string) => {
         setLoading(true);
         try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user;
+
             const { data, error } = await supabase
                 .from('chess_positions')
                 .select('*')
@@ -35,10 +38,27 @@ export default function TreeExplorerPage() {
             }
 
             if (data) {
-                setPositionData(data as unknown as ChessPositionNode);
+                // Update view count
+                const metadata = { ...(data.metadata || {}) };
+                metadata.view_count = (metadata.view_count || 0) + 1;
+                metadata.last_viewed_at = new Date().toISOString();
+
+                await supabase
+                    .from('chess_positions')
+                    .update({ metadata })
+                    .eq('fen', currentFen);
+
+                setPositionData({ ...data, metadata } as unknown as ChessPositionNode);
             } else {
-                // Initialize empty data
-                setPositionData({
+                // Initialize NEW position (Discovery)
+                const newMetadata = {
+                    discovered_by: user?.email || 'Anonymous Discovery',
+                    discovered_at: new Date().toISOString(),
+                    view_count: 1,
+                    analysis_status: 'queued'
+                };
+
+                const newNode = {
                     fen: currentFen,
                     moves: [],
                     annotations: {
@@ -49,11 +69,26 @@ export default function TreeExplorerPage() {
                         videos: [],
                         links: []
                     },
-                    metadata: {}
-                });
+                    metadata: newMetadata
+                };
+
+                await supabase.from('chess_positions').insert(newNode);
+                setPositionData(newNode as ChessPositionNode);
+
+                // Trigger background analysis (1-minute Stockfish)
+                if (session) {
+                    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/explore-moves`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({ fen: currentFen })
+                    }).catch(err => console.error('Failed to trigger analysis:', err));
+                }
             }
         } catch (err) {
-            console.error('Failed to load position:', err);
+            console.error('Failed to load/touch position:', err);
         } finally {
             setLoading(false);
         }
@@ -220,24 +255,55 @@ export default function TreeExplorerPage() {
             {/* Right: Sidebar Section */}
             <div className="w-full lg:w-1/3 h-[50vh] lg:h-full flex flex-col bg-zinc-900/40 backdrop-blur-2xl border-l border-white/5">
                 {/* Sidebar Header */}
-                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-zinc-950/20">
-                    <div className="space-y-1">
-                        <h1 className="text-xl font-black tracking-tighter bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent italic leading-tight">
-                            INFINITE TREE
-                        </h1>
-                        <p className="text-[9px] text-zinc-600 font-mono bg-zinc-950/50 px-2 py-0.5 rounded border border-white/5 max-w-[180px] truncate">
-                            {fen}
-                        </p>
+                <div className="p-6 border-b border-white/5 bg-zinc-950/20">
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="space-y-1">
+                            <h1 className="text-xl font-black tracking-tighter bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent italic leading-tight">
+                                INFINITE TREE
+                            </h1>
+                            <div className="flex items-center gap-2">
+                                <p className="text-[9px] text-zinc-600 font-mono bg-zinc-950/50 px-2 py-0.5 rounded border border-white/5 max-w-[120px] truncate">
+                                    {fen}
+                                </p>
+                                {positionData?.metadata?.view_count && (
+                                    <span className="text-[9px] text-zinc-500 font-bold bg-zinc-800/50 px-2 py-0.5 rounded border border-white/5 flex items-center gap-1">
+                                        <div className="w-1 h-1 rounded-full bg-indigo-500" />
+                                        {positionData.metadata.view_count} VISTES
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 text-white px-4 py-2 rounded-xl text-xs font-black tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
+                            >
+                                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                SAVE
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 text-white px-4 py-2 rounded-xl text-xs font-black tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
-                        >
-                            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                            SAVE
-                        </button>
+
+                    <div className="flex flex-wrap gap-2">
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-lg px-3 py-2 flex-1 min-w-[140px]">
+                            <p className="text-[8px] text-zinc-600 uppercase font-black tracking-tighter mb-1">Descobert per</p>
+                            <p className="text-[10px] font-bold text-zinc-300 truncate">
+                                {positionData?.metadata?.discovered_by || 'Explorador Anònim'}
+                            </p>
+                        </div>
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-lg px-3 py-2 flex-1 min-w-[140px]">
+                            <p className="text-[8px] text-zinc-600 uppercase font-black tracking-tighter mb-1">Estat d'Anàlisi</p>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full ${
+                                    positionData?.metadata?.analysis_status === 'completed' ? 'bg-emerald-500' : 
+                                    positionData?.metadata?.analysis_status === 'analyzing' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-700'
+                                }`} />
+                                <p className="text-[10px] font-bold text-zinc-300 uppercase">
+                                    {positionData?.metadata?.analysis_status || 'Cua d\'espera'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
