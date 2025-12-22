@@ -66,8 +66,8 @@ export class PGNParser {
             // Normalize standard keys to match PGNMetadata interface or preserve case for custom ones
             const lowerKey = originalKey.toLowerCase();
 
-            // Standard PGN tags usually follow this capitalization
-            const standardTags: Record<string, string> = {
+            // Standard PGN tags usually follow TitleCase in files, but we map to camelCase as per PGNMetadata interface
+            const standardTags: Record<string, keyof PGNMetadata> = {
                 'event': 'event',
                 'site': 'site',
                 'date': 'date',
@@ -86,7 +86,7 @@ export class PGNParser {
             };
 
             const targetKey = standardTags[lowerKey] || originalKey;
-            metadata[targetKey] = value;
+            metadata[targetKey as string] = value;
         }
 
         return metadata;

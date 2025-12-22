@@ -95,17 +95,15 @@ function AnalysisContent() {
     setIsClient(true);
     const idFromUrl = searchParams.get('gameId');
 
-    if (idFromUrl) {
+    // Only load if the ID is different from what we have in state
+    if (idFromUrl && idFromUrl !== gameId) {
       setGameId(idFromUrl);
       loadGameFromDB(idFromUrl);
-    } else {
-      const savedPGN = localStorage.getItem('analysis_pgn');
-      if (savedPGN) {
-        loadPGN(savedPGN);
-        localStorage.removeItem('analysis_pgn');
-      }
+    } else if (!idFromUrl && gameId) {
+      setGameId(null);
+      setPgnTree(new PGNTree());
     }
-  }, [searchParams]);
+  }, [searchParams, gameId]);
 
   // --- AUTO SAVE ---
   const handleAutoSave = useCallback(async () => {
@@ -273,9 +271,9 @@ function AnalysisContent() {
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading game:', error);
-      toast.error("Could not load game");
+      toast.error(`Could not load game: ${error.message || 'Unknown error'}`);
     }
   }
 

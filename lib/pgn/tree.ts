@@ -375,11 +375,16 @@ export class PGNTree {
         if (!this.game.currentNode) return this.game.mainLine.length === 0;
         return this.findNextMove(this.game.currentNode) === null;
     }
-    // Get header value
+    // Get header value (case-insensitive)
     getHeader(key: string): string | undefined {
-        // Standardize key case if needed, or just access directly
-        // Usually PGN headers are Case Sensitive but commonly Title Case
-        return this.game.metadata[key];
+        if (this.game.metadata[key]) return this.game.metadata[key];
+
+        // Try exact match, then try normalized common variations
+        const lower = key.toLowerCase();
+        for (const [mk, mv] of Object.entries(this.game.metadata)) {
+            if (mk.toLowerCase() === lower) return mv;
+        }
+        return undefined;
     }
 
     // Convert tree to PGN string
@@ -392,15 +397,27 @@ export class PGNTree {
 
         // Ensure standard headers exist even if empty
         standardOrder.forEach(key => {
-            const value = metadata[key] || '?';
+            const lowerKey = key.toLowerCase();
+            // Find best match in metadata
+            let value = '?';
+            const actualKey = Object.keys(metadata).find(k => k.toLowerCase() === lowerKey);
+
+            if (actualKey) {
+                value = metadata[actualKey] || '?';
+                delete metadata[actualKey];
+            } else if (key === 'Result') {
+                value = '*';
+            }
+
             pgn += `[${key} "${value}"]\n`;
-            delete metadata[key];
         });
 
         // Add remaining headers
         Object.entries(metadata).forEach(([key, value]) => {
             if (value !== undefined) {
-                pgn += `[${key} "${value}"]\n`;
+                // Capitalize key for display if it's lowercase (canonical look)
+                const displayKey = key.length <= 3 ? key.toUpperCase() : key.charAt(0).toUpperCase() + key.slice(1);
+                pgn += `[${displayKey} "${value}"]\n`;
             }
         });
         pgn += '\n';
@@ -409,7 +426,7 @@ export class PGNTree {
         pgn += this.renderVariations(this.game.mainLine);
 
         // 3. Result
-        const result = this.game.metadata['Result'] || '*';
+        const result = this.getHeader('Result') || '*';
         pgn += ` ${result}`;
 
         return pgn;
