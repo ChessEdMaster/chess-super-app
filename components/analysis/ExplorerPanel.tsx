@@ -8,7 +8,7 @@ import { Trophy, Users, Globe, BookOpen } from 'lucide-react';
 export function ExplorerPanel() {
     const { fen, makeMove } = useChess();
     const [source, setSource] = useState<ExplorerSource>('masters');
-    const { moves, loading, stats } = useExplorer({ fen, source });
+    const { moves, loading, stats, discovery } = useExplorer({ fen, source });
 
     const getBarWidth = (val: number, total: number) => {
         if (total === 0) return 0;
@@ -33,7 +33,28 @@ export function ExplorerPanel() {
                     <Globe size={14} />
                     Lichess
                 </button>
+                <button
+                    onClick={() => setSource('community')}
+                    className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-colors ${source === 'community' ? 'text-pink-500 bg-pink-500/10 border-b-2 border-pink-500' : 'text-[var(--color-secondary)] hover:bg-[var(--color-muted)]'}`}
+                >
+                    <Users size={14} />
+                    Community
+                </button>
             </div>
+
+            {/* Discovery Banner */}
+            {source === 'community' && !loading && (
+                <div className="px-4 py-2 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between">
+                    {discovery ? (
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-[var(--color-secondary)] uppercase font-bold">Discovered By</span>
+                            <span className="text-xs font-bold text-pink-500">{discovery.by}</span>
+                        </div>
+                    ) : (
+                        <span className="text-[10px] text-[var(--color-secondary)] italic">New territory! Make a move to claim discovery.</span>
+                    )}
+                </div>
+            )}
 
             {/* Stats Header */}
             {!loading && stats.total > 0 && (
@@ -79,9 +100,15 @@ export function ExplorerPanel() {
                                         </td>
                                         <td className="px-2 py-2">
                                             <div className="flex h-1.5 w-full rounded-full overflow-hidden bg-zinc-800">
-                                                <div style={{ width: `${getBarWidth(move.white, total)}%` }} className="bg-zinc-200" />
-                                                <div style={{ width: `${getBarWidth(move.draws, total)}%` }} className="bg-zinc-500" />
-                                                <div style={{ width: `${getBarWidth(move.black, total)}%` }} className="bg-zinc-800" />
+                                                {total > 0 ? (
+                                                    <>
+                                                        <div style={{ width: `${getBarWidth(move.white, total)}%` }} className="bg-zinc-200" />
+                                                        <div style={{ width: `${getBarWidth(move.draws, total)}%` }} className="bg-zinc-500" />
+                                                        <div style={{ width: `${getBarWidth(move.black, total)}%` }} className="bg-zinc-800" />
+                                                    </>
+                                                ) : (
+                                                    <div className="w-full h-full bg-pink-500/20" />
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

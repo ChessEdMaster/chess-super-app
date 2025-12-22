@@ -11,6 +11,7 @@ import ChessScene from '@/components/3d/ChessScene';
 import { ExplorerPanel } from '@/components/analysis/ExplorerPanel';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GitBranch, LayoutGrid, Database, Settings } from 'lucide-react';
 import { EngineLinesPanel } from '@/components/analysis/EngineLinesPanel'; // We can reuse or update this
+import { DatabasePanel } from '@/components/analysis/DatabasePanel';
 
 function AnalysisLayout() {
   const {
@@ -186,9 +187,7 @@ function AnalysisLayout() {
             )}
 
             {activeTab === 'database' && (
-              <div className="flex h-full items-center justify-center text-[var(--color-secondary)] text-xs">
-                Saved Games (Coming Soon)
-              </div>
+              <DatabasePanel />
             )}
           </div>
         </GameCard>
