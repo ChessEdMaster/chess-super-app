@@ -552,10 +552,26 @@ export default function PlayPage() {
         </div>
 
         {/* Center: Chessboard Area */}
-        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden bg-[var(--background)]">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-          <div className="absolute inset-0 bg-gradient-radial from-transparent to-[var(--background)] pointer-events-none" />
+        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden">
+          {/* Dynamic Background based on GameMode */}
+          <div className={cn(
+            "absolute inset-0 transition-all duration-1000",
+            gameMode === 'blitz' ? "bg-slate-900" :
+              gameMode === 'bullet' ? "bg-amber-950" :
+                "bg-sky-900"
+          )}>
+            <div className={`absolute inset-0 opacity-30 ${gameMode === 'blitz' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black' :
+                gameMode === 'bullet' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-700 via-orange-900 to-black' :
+                  'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400 via-blue-900 to-black'
+              }`} />
+            {/* Stars/Particles (CSS only) */}
+            <div className="absolute inset-0 bg-[url('/assets/noise.png')] opacity-5 mix-blend-overlay"></div>
+          </div>
+
+          {/* Floor/Stage Effect */}
+          <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center pointer-events-none">
+            <div className="w-[800px] h-[400px] bg-white/5 blur-3xl rounded-full transform scale-y-25 translate-y-20"></div>
+          </div>
 
           {/* View Mode Toggle */}
           <div className="absolute top-4 right-4 z-20 bg-[var(--panel-bg)] backdrop-blur-md p-1 rounded-xl flex gap-1 border border-[var(--border)] shadow-xl">
@@ -578,7 +594,7 @@ export default function PlayPage() {
           </div>
 
           {/* Board Container */}
-          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden border-[length:var(--card-border-width)] border-[var(--board-border)] bg-[var(--board-bg)] ring-1 ring-white/5">
+          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden border-[length:var(--card-border-width)] border-[var(--board-border)] bg-[var(--board-bg)] ring-1 ring-white/5 backdrop-blur-sm">
             {/* Board Inner shadow */}
             <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] pointer-events-none z-20 rounded-lg"></div>
 
