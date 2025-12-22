@@ -56,7 +56,7 @@ export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/
     const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0);
 
     // Engine State
-    const [engineEnabled, setEngineEnabled] = useState(true);
+    const [engineEnabled, setEngineEnabled] = useState(false);
     const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
     const [lines, setLines] = useState<EngineLine[]>([]);
 
