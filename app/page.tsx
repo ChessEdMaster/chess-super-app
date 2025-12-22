@@ -11,11 +11,43 @@ import { Zap, Timer, Turtle, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
+import { toast } from 'sonner';
+
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const { chests } = usePlayerStore();
+  const { chests, startUnlockChest, openChest, updateChestTimers } = usePlayerStore();
   const [selectedLeague, setSelectedLeague] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
   const router = useRouter();
+
+  // Timer for chests
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      updateChestTimers();
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [updateChestTimers]);
+
+  const handleChestClick = (index: number) => {
+    const chest = chests[index];
+    if (!chest) return;
+
+    if (chest.status === 'LOCKED') {
+      const isAnyUnlocking = chests.some(c => c && c.status === 'UNLOCKING');
+      if (isAnyUnlocking) {
+        toast.error("Ja estàs desbloquejant un cofre. Espera que acabi.");
+        return;
+      }
+      startUnlockChest(index);
+      toast.success("Desbloqueig iniciat!");
+    } else if (chest.status === 'READY') {
+      const rewards = openChest(index);
+      if (rewards) {
+        toast.success(`Cofre obert! Guanyat: ${rewards.gold} Or, ${rewards.gems} Gemmes`);
+      }
+    } else if (chest.status === 'UNLOCKING') {
+      toast.info("Aquest cofre s'està desbloquejant...");
+    }
+  };
 
   if (loading) {
     return <div className="h-full flex items-center justify-center bg-[var(--background)] text-[var(--color-secondary)]">Loading...</div>;
@@ -35,7 +67,11 @@ export default function HomePage() {
     <div className="h-full w-full relative overflow-hidden bg-[var(--background)]">
       {/* 3D Background */}
       <div className="absolute inset-0 z-0">
-        <LobbyScene />
+        <LobbyScene
+          chests={chests}
+          selectedLeague={selectedLeague}
+          onChestClick={handleChestClick}
+        />
       </div>
 
       {/* UI Overlay */}
@@ -96,27 +132,8 @@ export default function HomePage() {
           </div>
 
           {/* Chest Slots */}
-          <div className="h-32 bg-gradient-to-t from-[var(--background)] to-transparent px-4 pb-8 flex items-end justify-center gap-3 pointer-events-auto">
-            {chests.map((chest, index) => (
-              <div
-                key={index}
-                className="w-1/4 h-24 glass-panel bg-[var(--glass-bg)] border-[var(--glass-border)] rounded-xl flex flex-col items-center justify-center relative overflow-hidden group hover:bg-[var(--color-muted)] transition-colors backdrop-blur-md shadow-lg"
-              >
-                {chest ? (
-                  <>
-                    <div className="text-3xl mb-1 drop-shadow-md transition-transform group-hover:scale-110">📦</div>
-                    <span className="text-[10px] font-bold text-[var(--color-gold)] font-display tracking-wide uppercase">{chest.type}</span>
-                    <span className="text-[9px] text-[var(--color-secondary)] font-mono mt-0.5 font-bold">{Math.floor(chest.unlockTime / 60)}m</span>
-                  </>
-                ) : (
-                  <div className="text-[var(--color-secondary)] flex flex-col items-center opacity-50">
-                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-[var(--color-border)] flex items-center justify-center mb-1">
-                      <span className="text-xs font-bold">+</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="h-32 px-4 pb-8 flex items-end justify-center gap-3 pointer-events-none">
+            {/* 3D Chests handle clicks now. We keep this empty or use it for 2D overlays later if needed. */}
           </div>
         </div>
       </div>
