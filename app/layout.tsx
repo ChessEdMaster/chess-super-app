@@ -10,6 +10,7 @@ import Image from "next/image";
 import { Toaster } from '@/components/ui/sonner';
 import { AssistantWidget } from "@/components/ai/assistant-widget";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SplashScreen } from "@/components/splash-screen";
 
 export const metadata: Metadata = {
   title: "CHESS CLANS",
@@ -36,6 +37,7 @@ export default function RootLayout({
               <PresenceSync />
               <ThemeProvider>
                 <MobileLayout>
+                  <SplashScreen />
                   {children}
                 </MobileLayout>
                 <AssistantWidget />
