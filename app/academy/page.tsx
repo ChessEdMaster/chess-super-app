@@ -161,7 +161,7 @@ export default function AcademyPage() {
         <div className="h-full w-full p-6 pb-24 max-w-[1600px] mx-auto flex flex-col gap-8">
 
             {/* HEADER */}
-            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-zinc-900/90 border-zinc-700">
+            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-[var(--header-bg)] border-[var(--border)]">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg border border-white/20">
                         <GraduationCap className="text-white" size={32} />
@@ -170,7 +170,7 @@ export default function AcademyPage() {
                         <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-500 tracking-tight font-display drop-shadow-sm text-stroke">
                             Acadèmia
                         </h1>
-                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">
+                        <p className="text-[var(--color-secondary)] text-xs font-bold uppercase tracking-widest mt-1">
                             Mestratge i Sabiduria
                         </p>
                     </div>
@@ -184,15 +184,15 @@ export default function AcademyPage() {
                     </Link>
 
                     {stats.totalLessonsCompleted > 0 && (
-                        <GameCard variant="default" className="px-6 py-2 flex items-center gap-6 bg-zinc-900/80 border-zinc-700 h-12">
+                        <GameCard variant="default" className="px-6 py-2 flex items-center gap-6 bg-[var(--panel-bg)] border-[var(--border)] h-12">
                             <div className="flex flex-col items-center leading-none">
-                                <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-0.5">Lliçons</span>
-                                <span className="text-lg font-black text-white font-display text-shadow">{stats.totalLessonsCompleted}</span>
+                                <span className="text-[9px] uppercase font-bold text-[var(--color-secondary)] tracking-wider mb-0.5">Lliçons</span>
+                                <span className="text-lg font-black text-[var(--foreground)] font-display text-shadow">{stats.totalLessonsCompleted}</span>
                             </div>
-                            <div className="w-px h-6 bg-white/10" />
+                            <div className="w-px h-6 bg-[var(--border)]" />
                             <div className="flex flex-col items-center leading-none">
-                                <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-0.5">Exercicis</span>
-                                <span className="text-lg font-black text-white font-display text-shadow">{stats.totalExercisesSolved}</span>
+                                <span className="text-[9px] uppercase font-bold text-[var(--color-secondary)] tracking-wider mb-0.5">Exercicis</span>
+                                <span className="text-lg font-black text-[var(--foreground)] font-display text-shadow">{stats.totalExercisesSolved}</span>
                             </div>
                         </GameCard>
                     )}
@@ -204,10 +204,10 @@ export default function AcademyPage() {
 
             {/* EMPTY STATE */}
             {visibleCourses.length === 0 && (
-                <GameCard variant="default" className="text-center py-20 bg-zinc-900/50 border-dashed border-zinc-700/50">
-                    <Lock className="mx-auto text-zinc-700 mb-6 opacity-50" size={64} />
-                    <h2 className="text-2xl font-black text-zinc-400 mb-2 font-display uppercase tracking-wide">No Courses Available</h2>
-                    <p className="text-zinc-500 max-w-lg mx-auto mb-8 text-sm font-bold">
+                <GameCard variant="default" className="text-center py-20 bg-[var(--panel-bg)] border-dashed border-[var(--border)]">
+                    <Lock className="mx-auto text-[var(--color-secondary)] mb-6 opacity-50" size={64} />
+                    <h2 className="text-2xl font-black text-[var(--color-secondary)] mb-2 font-display uppercase tracking-wide">No Courses Available</h2>
+                    <p className="text-[var(--color-secondary)] max-w-lg mx-auto mb-8 text-sm font-bold">
                         Subject: <span className="text-emerald-500">{SUBJECTS[selectedSubject]?.label}</span>
                     </p>
                 </GameCard>
@@ -224,12 +224,12 @@ export default function AcademyPage() {
                             return (
                                 <section key={track} className="relative">
                                     <div className="flex items-center gap-3 mb-6 pl-2">
-                                        <div className="p-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-inner">
+                                        <div className="p-2 bg-[var(--color-muted)] rounded-lg border border-[var(--border)] shadow-inner">
                                             <TrackIcon className="text-emerald-500" size={20} />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-black text-white font-display tracking-wide leading-none">{TRACK_TITLES[track]}</h2>
-                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold mt-1">
+                                            <h2 className="text-xl font-black text-[var(--foreground)] font-display tracking-wide leading-none">{TRACK_TITLES[track]}</h2>
+                                            <p className="text-[var(--color-secondary)] text-[10px] uppercase tracking-widest font-bold mt-1">
                                                 Target: {track === 'sport' ? 'Clubs i Federacions' : 'Escoles i Instituts'}
                                             </p>
                                         </div>
@@ -245,12 +245,12 @@ export default function AcademyPage() {
                     ) : (
                         <section className="relative">
                             <div className="flex items-center gap-3 mb-6 pl-2">
-                                <div className="p-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-inner">
+                                <div className="p-2 bg-[var(--color-muted)] rounded-lg border border-[var(--border)] shadow-inner">
                                     <GraduationCap className="text-emerald-500" size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-white font-display uppercase tracking-wide leading-none">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
-                                    <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold mt-1">Des de P3 fins al Doctorat</p>
+                                    <h2 className="text-xl font-black text-[var(--foreground)] font-display uppercase tracking-wide leading-none">Currículum de {SUBJECTS[selectedSubject]?.label}</h2>
+                                    <p className="text-[var(--color-secondary)] text-[10px] uppercase tracking-widest font-bold mt-1">Des de P3 fins al Doctorat</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -289,8 +289,8 @@ function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (
                             relative px-5 py-3 rounded-xl flex items-center gap-3 transition-all min-w-[140px]
                             border-2
                             ${isSelected
-                                ? 'bg-zinc-800 border-emerald-500 shadow-lg shadow-emerald-900/20 translate-y-[-2px]'
-                                : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:border-zinc-700 hover:text-zinc-300'}
+                                ? 'bg-[var(--panel-bg)] border-emerald-500 shadow-lg shadow-emerald-900/20 translate-y-[-2px]'
+                                : 'bg-[var(--panel-bg)] border-[var(--border)] text-[var(--color-secondary)] hover:bg-[var(--color-muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]'}
                         `}
                     >
                         <Icon size={18} className={isSelected ? 'text-emerald-400' : 'opacity-50'} />
@@ -312,9 +312,9 @@ function CourseCard({ course }: { course: AcademyCourse }) {
             transition={{ duration: 0.2 }}
         >
             <Link href={`/academy/course/${course.id}`} className="block h-full cursor-pointer">
-                <GameCard variant="default" className="h-full flex flex-col p-0 overflow-hidden group hover:border-emerald-500/50 transition-colors bg-zinc-900/80">
+                <GameCard variant="default" className="h-full flex flex-col p-0 overflow-hidden group hover:border-emerald-500/50 transition-colors bg-[var(--card-bg)]">
                     {/* Cover Image */}
-                    <div className="h-40 bg-zinc-950 relative overflow-hidden border-b border-zinc-800">
+                    <div className="h-40 bg-[var(--background)] relative overflow-hidden border-b border-[var(--border)]">
                         {course.image_url ? (
                             <Image
                                 src={course.image_url}
@@ -324,14 +324,14 @@ function CourseCard({ course }: { course: AcademyCourse }) {
                                 unoptimized
                             />
                         ) : (
-                            <div className="w-full h-full bg-zinc-950 flex items-center justify-center relative">
+                            <div className="w-full h-full bg-[var(--background)] flex items-center justify-center relative">
                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-                                <School className="text-zinc-800 group-hover:text-emerald-900/40 transition-colors duration-500" size={64} />
+                                <School className="text-[var(--color-secondary)] group-hover:text-emerald-900/40 transition-colors duration-500" size={64} />
                             </div>
                         )}
 
                         {/* Gradient Overlay */}
-                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-zinc-900 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--background)] to-transparent" />
 
                         {/* Grade Badge */}
                         <div className="absolute top-3 left-3">
@@ -342,15 +342,15 @@ function CourseCard({ course }: { course: AcademyCourse }) {
                     </div>
 
                     <div className="p-5 flex flex-col flex-1 relative z-10">
-                        <h3 className="text-lg font-black text-white mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide">
+                        <h3 className="text-lg font-black text-[var(--foreground)] mb-2 leading-tight group-hover:text-emerald-400 transition-colors font-display tracking-wide">
                             {course.title}
                         </h3>
-                        <p className="text-zinc-500 text-xs line-clamp-3 mb-6 flex-1 leading-relaxed font-bold">
+                        <p className="text-[var(--color-secondary)] text-xs line-clamp-3 mb-6 flex-1 leading-relaxed font-bold">
                             {course.description}
                         </p>
 
-                        <div className="border-t border-zinc-800 pt-4 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-auto">
-                            <span className="flex items-center gap-1.5 bg-zinc-950/50 px-2 py-1 rounded border border-zinc-800">
+                        <div className="border-t border-[var(--border)] pt-4 flex items-center justify-between text-[10px] text-[var(--color-secondary)] font-bold uppercase tracking-widest mt-auto">
+                            <span className="flex items-center gap-1.5 bg-[var(--color-muted)] px-2 py-1 rounded border border-[var(--border)]">
                                 <Target size={12} className="text-amber-500" />
                                 {course.difficulty_level === 'beginner' ? 'Novell' : course.difficulty_level === 'intermediate' ? 'Intermedi' : 'Expert'}
                             </span>

@@ -36,34 +36,34 @@ function BackgroundSelector() {
     }, [isOpen]);
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
             <div
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-zinc-800 transition"
+                className="flex items-center justify-between p-3 cursor-pointer hover:bg-[var(--panel-bg)] transition"
             >
                 <div className="flex items-center gap-3">
                     <ImageIcon size={18} className="text-purple-400" />
-                    <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Fons de Pantalla</span>
+                    <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Fons de Pantalla</span>
                 </div>
-                <div className="text-xs text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-2">
+                <div className="text-xs text-[var(--color-secondary)] font-bold uppercase tracking-wider flex items-center gap-2">
                     {backgroundImage ? 'Personalitzat' : 'Per defecte'}
                     {isOpen ? <X size={14} /> : <Edit2 size={14} />}
                 </div>
             </div>
 
             {isOpen && (
-                <div className="p-3 border-t border-zinc-800 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scrollbar">
+                <div className="p-3 border-t border-[var(--border)] grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scrollbar">
                     {backgrounds.map((bg) => (
                         <div
                             key={bg}
                             onClick={() => setBackgroundImage(bg)}
-                            className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition hover:scale-105 ${backgroundImage === bg ? 'border-purple-500' : 'border-zinc-800'}`}
+                            className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition hover:scale-105 ${backgroundImage === bg ? 'border-purple-500' : 'border-[var(--border)]'}`}
                         >
                             <Image src={bg} alt="bg" fill className="object-cover" sizes="150px" />
                         </div>
                     ))}
                     {backgrounds.length === 0 && (
-                        <div className="col-span-2 text-center text-xs text-zinc-500 py-4 font-medium uppercase">
+                        <div className="col-span-2 text-center text-xs text-[var(--color-secondary)] py-4 font-medium uppercase">
                             Carregant fons...
                         </div>
                     )}
@@ -155,7 +155,7 @@ export function UserProfile() {
     // Mentres comprovem l'usuari, mostrem càrrega
     if (authLoading || !user || loadingGames) {
         return (
-            <div className="h-full flex items-center justify-center text-zinc-500">
+            <div className="h-full flex items-center justify-center text-[var(--color-secondary)]">
                 <Loader2 className="animate-spin mr-2" /> <span className="uppercase font-bold tracking-widest text-xs">Verificant accés...</span>
             </div>
         );
@@ -202,14 +202,14 @@ export function UserProfile() {
                     {/* Targeta d'Usuari */}
                     <GameCard variant="default" className="flex flex-col items-center text-center relative overflow-hidden p-0 border-[var(--card-border)]">
                         {/* Banner Background */}
-                        <div className="w-full h-32 bg-gradient-to-b from-indigo-900 via-indigo-950 to-zinc-950/0 relative">
+                        <div className="w-full h-32 bg-gradient-to-b from-indigo-900 via-indigo-950 to-transparent relative">
                             <div className="absolute inset-0 bg-[url('/patterns/topography.svg')] opacity-10"></div>
                         </div>
 
                         <div className="relative -mt-16 mb-4 group">
                             {/* Avatar Glow */}
                             <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500 via-purple-500 to-amber-500 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-500 animate-spin-slow"></div>
-                            <div className="relative w-32 h-32 bg-zinc-950 rounded-full p-1.5 flex items-center justify-center overflow-hidden border-4 border-[var(--card-border)] shadow-2xl z-10">
+                            <div className="relative w-32 h-32 bg-[var(--background)] rounded-full p-1.5 flex items-center justify-center overflow-hidden border-4 border-[var(--card-border)] shadow-2xl z-10">
                                 {user.user_metadata?.avatar_url ? (
                                     <Image
                                         src={user.user_metadata.avatar_url}
@@ -236,13 +236,13 @@ export function UserProfile() {
                                         type="text"
                                         value={editUsername}
                                         onChange={(e) => setEditUsername(e.target.value)}
-                                        className="bg-zinc-950 border-2 border-indigo-500/50 rounded-xl px-3 py-2 text-foreground text-center w-full focus:outline-none focus:border-indigo-500 font-bold"
+                                        className="bg-[var(--input-bg)] border-2 border-indigo-500/50 rounded-xl px-3 py-2 text-foreground text-center w-full focus:outline-none focus:border-indigo-500 font-bold"
                                         autoFocus
                                     />
                                     <button onClick={handleSaveProfile} className="p-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-foreground shadow-lg shadow-emerald-900/20 active:translate-y-0.5 transition-all outline-none">
                                         <Save size={18} />
                                     </button>
-                                    <button onClick={() => setIsEditing(false)} className="p-2 bg-zinc-700 hover:bg-zinc-600 rounded-xl text-foreground shadow-lg active:translate-y-0.5 transition-all outline-none">
+                                    <button onClick={() => setIsEditing(false)} className="p-2 bg-[var(--color-muted)] hover:bg-[var(--border)] rounded-xl text-foreground shadow-lg active:translate-y-0.5 transition-all outline-none">
                                         <X size={18} />
                                     </button>
                                 </div>
@@ -251,7 +251,7 @@ export function UserProfile() {
                                     <h2 className="text-2xl font-black text-foreground font-display uppercase tracking-wide text-stroke shadow-black drop-shadow-md">
                                         {profile.username || user.user_metadata?.full_name || 'Jugador'}
                                     </h2>
-                                    <button onClick={() => setIsEditing(true)} className="text-zinc-500 hover:text-indigo-400 transition-colors bg-[var(--card-bg)]/50 p-1.5 rounded-lg">
+                                    <button onClick={() => setIsEditing(true)} className="text-[var(--color-secondary)] hover:text-indigo-400 transition-colors bg-[var(--card-bg)]/50 p-1.5 rounded-lg">
                                         <Edit2 size={14} />
                                     </button>
                                 </div>
@@ -285,7 +285,7 @@ export function UserProfile() {
                             <div className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <Globe size={18} className="text-indigo-400" />
-                                    <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Idioma</span>
+                                    <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Idioma</span>
                                 </div>
                                 <select
                                     value={profile.settings?.language || 'ca'}
@@ -300,7 +300,7 @@ export function UserProfile() {
                                         saveProfile();
                                         toast.success("Idioma actualitzat");
                                     }}
-                                    className="bg-zinc-950 border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                    className="bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-[var(--foreground)] focus:outline-none focus:border-indigo-500 font-bold uppercase"
                                 >
                                     <option value="ca">Català</option>
                                     <option value="es">Español</option>
@@ -320,13 +320,13 @@ export function UserProfile() {
                                     saveProfile();
                                     toast.success(`Notificacions ${newNotif ? 'activades' : 'desactivades'}`);
                                 }}
-                                className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
+                                className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-[var(--panel-bg)] transition"
                             >
                                 <div className="flex items-center gap-3">
-                                    <Bell size={18} className={profile.settings?.notifications ? "text-indigo-400" : "text-zinc-600"} />
-                                    <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Notificacions</span>
+                                    <Bell size={18} className={profile.settings?.notifications ? "text-indigo-400" : "text-[var(--color-secondary)]"} />
+                                    <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Notificacions</span>
                                 </div>
-                                <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${profile.settings?.notifications ? 'bg-indigo-600 border-indigo-400' : 'bg-zinc-700 border-zinc-600'}`}>
+                                <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${profile.settings?.notifications ? 'bg-indigo-600 border-indigo-400' : 'bg-[var(--color-muted)] border-[var(--border)]'}`}>
                                     <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${profile.settings?.notifications ? 'left-5' : 'left-0.5'}`}></div>
                                 </div>
                             </div>
@@ -335,7 +335,7 @@ export function UserProfile() {
                             <div className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <Palette size={18} className="text-pink-400" />
-                                    <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Tema Visual</span>
+                                    <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Tema Visual</span>
                                 </div>
                                 <select
                                     value={profile.settings?.theme || 'light'}
@@ -344,7 +344,7 @@ export function UserProfile() {
                                         setTheme(newTheme);
                                         toast.success(`Tema canviat a ${newTheme === 'light' ? 'Professional' : 'Gamer'}`);
                                     }}
-                                    className="bg-zinc-950 border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                    className="bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-[var(--foreground)] focus:outline-none focus:border-indigo-500 font-bold uppercase"
                                 >
                                     <option value="light">Professional</option>
                                     <option value="clash">Gamer (Clash)</option>
@@ -357,18 +357,18 @@ export function UserProfile() {
                             {/* Social Privacy Settings */}
                             {socialSettings && (
                                 <>
-                                    <div className="h-px bg-zinc-800 my-4 bg-gradient-to-r from-transparent via-zinc-700 to-transparent"></div>
+                                    <div className="h-px bg-[var(--border)] my-4 bg-gradient-to-r from-transparent via-[var(--border)] to-transparent"></div>
 
                                     {/* Privacy Level */}
                                     <div className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm">
                                         <div className="flex items-center gap-3">
                                             <Shield size={18} className="text-emerald-400" />
-                                            <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Privacitat</span>
+                                            <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Privacitat</span>
                                         </div>
                                         <select
                                             value={socialSettings.privacy_level}
                                             onChange={(e) => updateSettings({ privacy_level: e.target.value as any })}
-                                            className="bg-zinc-950 border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500 font-bold uppercase"
+                                            className="bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg text-xs px-2 py-1 text-[var(--foreground)] focus:outline-none focus:border-indigo-500 font-bold uppercase"
                                         >
                                             <option value="public">Públic</option>
                                             <option value="friends_only">Només Amics</option>
@@ -379,13 +379,13 @@ export function UserProfile() {
                                     {/* Show Online Status */}
                                     <div
                                         onClick={() => updateSettings({ show_online_status: !socialSettings.show_online_status })}
-                                        className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
+                                        className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-[var(--panel-bg)] transition"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <Activity size={18} className={socialSettings.show_online_status ? "text-green-400" : "text-zinc-600"} />
-                                            <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Estat Online</span>
+                                            <Activity size={18} className={socialSettings.show_online_status ? "text-green-400" : "text-[var(--color-secondary)]"} />
+                                            <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Estat Online</span>
                                         </div>
-                                        <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${socialSettings.show_online_status ? 'bg-green-600 border-green-400' : 'bg-zinc-700 border-zinc-600'}`}>
+                                        <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${socialSettings.show_online_status ? 'bg-green-600 border-green-400' : 'bg-[var(--color-muted)] border-[var(--border)]'}`}>
                                             <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${socialSettings.show_online_status ? 'left-5' : 'left-0.5'}`}></div>
                                         </div>
                                     </div>
@@ -393,13 +393,13 @@ export function UserProfile() {
                                     {/* Allow Friend Requests */}
                                     <div
                                         onClick={() => updateSettings({ allow_friend_requests: !socialSettings.allow_friend_requests })}
-                                        className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-zinc-800 transition"
+                                        className="flex items-center justify-between p-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-sm cursor-pointer hover:bg-[var(--panel-bg)] transition"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <User size={18} className={socialSettings.allow_friend_requests ? "text-blue-400" : "text-zinc-600"} />
-                                            <span className="text-sm font-bold text-zinc-300 uppercase tracking-wide">Peticions Amistat</span>
+                                            <User size={18} className={socialSettings.allow_friend_requests ? "text-blue-400" : "text-[var(--color-secondary)]"} />
+                                            <span className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wide">Peticions Amistat</span>
                                         </div>
-                                        <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${socialSettings.allow_friend_requests ? 'bg-blue-600 border-blue-400' : 'bg-zinc-700 border-zinc-600'}`}>
+                                        <div className={`w-10 h-5 rounded-full relative transition-colors border border-transparent ${socialSettings.allow_friend_requests ? 'bg-blue-600 border-blue-400' : 'bg-[var(--color-muted)] border-[var(--border)]'}`}>
                                             <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm ${socialSettings.allow_friend_requests ? 'left-5' : 'left-0.5'}`}></div>
                                         </div>
                                     </div>
@@ -416,22 +416,22 @@ export function UserProfile() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-amber-500/20 bg-[var(--card-bg)]">
                             <Zap className="text-amber-400 mb-2 drop-shadow-md" size={32} />
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Agressivitat</span>
+                            <span className="text-[10px] text-[var(--color-secondary)] uppercase font-black tracking-widest mb-1">Agressivitat</span>
                             <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.AGGRESSION}</span>
                         </GameCard>
                         <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-emerald-500/20 bg-[var(--card-bg)]">
                             <ShieldCheck className="text-emerald-400 mb-2 drop-shadow-md" size={32} />
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Solidesa</span>
+                            <span className="text-[10px] text-[var(--color-secondary)] uppercase font-black tracking-widest mb-1">Solidesa</span>
                             <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.SOLIDITY}</span>
                         </GameCard>
                         <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-blue-500/20 bg-[var(--card-bg)]">
                             <Brain className="text-blue-400 mb-2 drop-shadow-md" size={32} />
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Coneixement</span>
+                            <span className="text-[10px] text-[var(--color-secondary)] uppercase font-black tracking-widest mb-1">Coneixement</span>
                             <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.KNOWLEDGE}</span>
                         </GameCard>
                         <GameCard variant="default" className="p-4 flex flex-col items-center justify-center border-purple-500/20 bg-[var(--card-bg)]">
                             <Activity className="text-purple-400 mb-2 drop-shadow-md" size={32} />
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1">Velocitat</span>
+                            <span className="text-[10px] text-[var(--color-secondary)] uppercase font-black tracking-widest mb-1">Velocitat</span>
                             <span className="text-2xl font-black text-foreground font-display text-stroke">{profile.attributes.SPEED}</span>
                         </GameCard>
                     </div>
@@ -453,8 +453,8 @@ export function UserProfile() {
                         <Panel className="p-0 overflow-hidden bg-[var(--card-bg)]/50">
                             {games.length === 0 ? (
                                 <div className="p-12 text-center flex flex-col items-center justify-center">
-                                    <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-                                        <Swords className="text-zinc-600" size={32} />
+                                    <div className="w-16 h-16 bg-[var(--color-muted)] rounded-full flex items-center justify-center mb-4">
+                                        <Swords className="text-[var(--color-secondary)]" size={32} />
                                     </div>
                                     <p className="text-muted-foreground font-bold mb-4">Encara no has jugat cap partida.</p>
                                     <Link href="/play">
@@ -465,7 +465,7 @@ export function UserProfile() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="divide-y divide-zinc-800">
+                                    <div className="divide-y divide-[var(--border)]">
                                         {games.slice(0, 5).map((game) => {
                                             const isWhite = game.white_player_id === user.id;
                                             // Determinar nom del rival
@@ -479,7 +479,7 @@ export function UserProfile() {
                                             // Determinem si has guanyat tu
                                             let outcomeColor = 'text-muted-foreground';
                                             let outcomeLabel = 'Taules';
-                                            let outcomeBg = 'bg-zinc-800/50';
+                                            let outcomeBg = 'bg-[var(--color-muted)]/50';
                                             let outcomeBorder = 'border-[var(--card-border)]';
 
                                             if (game.result === '1/2-1/2') {
@@ -500,7 +500,7 @@ export function UserProfile() {
                                                 <div
                                                     key={game.id}
                                                     onClick={() => router.push(`/analysis?gameId=${game.id}`)}
-                                                    className="p-4 hover:bg-white/5 transition flex flex-col sm:flex-row justify-between items-center gap-4 cursor-pointer group"
+                                                    className="p-4 hover:bg-[var(--panel-bg)] transition flex flex-col sm:flex-row justify-between items-center gap-4 cursor-pointer group"
                                                 >
                                                     <div className="flex items-center gap-4 w-full sm:w-auto">
                                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-md border-2 ${isWhite ? 'bg-zinc-200 text-zinc-900 border-white' : 'bg-zinc-800 text-zinc-200 border-zinc-600'}`}>
@@ -508,7 +508,7 @@ export function UserProfile() {
                                                         </div>
                                                         <div>
                                                             <p className="font-bold text-foreground group-hover:text-indigo-400 transition-colors text-lg">vs {opponentName}</p>
-                                                            <p className="text-xs text-zinc-500 flex items-center gap-1 font-bold uppercase tracking-wider">
+                                                            <p className="text-xs text-[var(--color-secondary)] flex items-center gap-1 font-bold uppercase tracking-wider">
                                                                 <Calendar size={12} /> {new Date(game.created_at).toLocaleDateString()}
                                                             </p>
                                                         </div>
@@ -517,7 +517,7 @@ export function UserProfile() {
                                                     <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
                                                         <div className={`px-4 py-2 rounded-lg border ${outcomeBg} ${outcomeBorder} text-center min-w-[100px]`}>
                                                             <p className={`font-black uppercase text-xs tracking-widest ${outcomeColor}`}>{outcomeLabel}</p>
-                                                            <p className="text-xs text-zinc-500 font-mono font-bold mt-1">{game.result}</p>
+                                                            <p className="text-xs text-[var(--color-secondary)] font-mono font-bold mt-1">{game.result}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -525,7 +525,7 @@ export function UserProfile() {
                                         })}
                                     </div>
                                     {games.length > 5 && (
-                                        <div className="p-3 bg-zinc-900 text-center border-t border-zinc-800">
+                                        <div className="p-3 bg-[var(--card-bg)] text-center border-t border-[var(--border)]">
                                             <Link href="/profile/games" className="text-xs text-indigo-400 hover:text-indigo-300 font-black uppercase tracking-widest hover:underline flex items-center justify-center gap-2">
                                                 Veure totes les partides ({games.length})
                                             </Link>

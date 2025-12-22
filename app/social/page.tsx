@@ -54,9 +54,9 @@ function SocialPageContent() {
     ];
 
     return (
-        <div className="h-full w-full flex flex-col bg-zinc-950">
+        <div className="h-full w-full flex flex-col bg-[var(--background)]">
             {/* Header Tabs */}
-            <div className="p-4 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-20 border-b border-zinc-800 shadow-lg">
+            <div className="p-4 bg-[var(--header-bg)] backdrop-blur-sm sticky top-0 z-20 border-b border-[var(--border)] shadow-lg">
                 <Panel className="flex p-2 gap-2 overflow-x-auto no-scrollbar justify-start md:justify-center">
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab.id;
@@ -122,7 +122,7 @@ function SocialPageContent() {
 export default function SocialPage() {
     return (
         <Suspense fallback={
-            <div className="h-full w-full flex items-center justify-center bg-zinc-950 text-white">
+            <div className="h-full w-full flex items-center justify-center bg-[var(--background)] text-[var(--foreground)]">
                 <div className="flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-amber-500"></div>
                     <p className="text-amber-500 font-bold tracking-wide text-xs animate-pulse">Carregant...</p>

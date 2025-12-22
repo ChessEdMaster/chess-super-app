@@ -56,7 +56,7 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
     return (
         <div className="mt-8">
             {!compact && (
-                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <h3 className="text-xs font-bold text-[var(--color-secondary)] uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Archive size={14} /> Cofres
                 </h3>
             )}
@@ -67,15 +67,15 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
                         onClick={() => handleChestClick(i)}
                         whileHover={chest ? { scale: 1.05 } : {}}
                         whileTap={chest ? { scale: 0.95 } : {}}
-                        className={`aspect-square rounded border flex flex-col items-center justify-center relative cursor-pointer ${chest ? 'border-amber-500/30 bg-amber-900/10' : 'border-zinc-800 bg-zinc-900'}`}
+                        className={`aspect-square rounded border flex flex-col items-center justify-center relative cursor-pointer ${chest ? 'border-amber-500/30 bg-amber-900/10' : 'border-[var(--border)] bg-[var(--card-bg)]'}`}
                     >
                         {chest ? (
                             <>
-                                <Gift className={`mb-1 ${chest.status === 'LOCKED' ? 'text-zinc-500' : 'text-amber-500'}`} size={16} />
+                                <Gift className={`mb-1 ${chest.status === 'LOCKED' ? 'text-[var(--color-secondary)]' : 'text-amber-500'}`} size={16} />
 
                                 {chest.status === 'READY' && <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
 
-                                <span className="text-[8px] font-bold uppercase text-zinc-400">
+                                <span className="text-[8px] font-bold uppercase text-[var(--color-secondary)]">
                                     {chest.status === 'LOCKED' && 'LOCKED'}
                                     {chest.status === 'UNLOCKING' && 'OPENING'}
                                     {chest.status === 'READY' && 'READY'}
@@ -87,7 +87,7 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
                                     </span>
                                 )}
                             </>
-                        ) : <span className="text-zinc-700 text-[8px]">EMPTY</span>}
+                        ) : <span className="text-[var(--color-muted)] text-[8px]">EMPTY</span>}
                     </motion.div>
                 ))}
             </div>

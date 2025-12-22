@@ -372,33 +372,33 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="h-dvh w-full flex flex-col overflow-hidden">
+    <div className="h-dvh w-full flex flex-col overflow-hidden bg-[var(--background)]">
       {/* Header - Compact */}
-      <header className="flex-none py-3 px-4 border-b border-black/20 bg-zinc-950/80 backdrop-blur-md flex items-center justify-between z-20 shadow-xl">
-        <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 font-display tracking-wide text-stroke drop-shadow-sm">
-          <Sword className="h-6 w-6 text-amber-500 fill-amber-500 stroke-amber-900 stroke-2" />
+      <header className="flex-none py-3 px-4 border-b border-[var(--border)] bg-[var(--header-bg)] backdrop-blur-md flex items-center justify-between z-20 shadow-xl">
+        <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-gold)] to-yellow-600 font-display tracking-wide text-stroke drop-shadow-sm">
+          <Sword className="h-6 w-6 text-[var(--color-gold)] fill-[var(--color-gold)] stroke-amber-900 stroke-2" />
           Arena Competitiva
         </h1>
         {userProfile && (
           <div className="flex gap-2 text-xs md:text-xs">
             <div className="hidden md:flex gap-2">
               <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-                <span className="font-bold text-zinc-500 tracking-wide">Bullet</span>
-                <strong className="text-white font-mono">{userProfile.elo_bullet || 1200}</strong>
+                <span className="font-bold text-[var(--color-secondary)] tracking-wide">Bullet</span>
+                <strong className="text-[var(--foreground)] font-mono">{userProfile.elo_bullet || 1200}</strong>
               </div>
               <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-                <span className="font-bold text-zinc-500 tracking-wide">Blitz</span>
-                <strong className="text-white font-mono">{userProfile.elo_blitz || 1200}</strong>
+                <span className="font-bold text-[var(--color-secondary)] tracking-wide">Blitz</span>
+                <strong className="text-[var(--foreground)] font-mono">{userProfile.elo_blitz || 1200}</strong>
               </div>
               <div className="bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-                <span className="font-bold text-zinc-500 tracking-wide">Rapid</span>
-                <strong className="text-white font-mono">{userProfile.elo_rapid || 1200}</strong>
+                <span className="font-bold text-[var(--color-secondary)] tracking-wide">Rapid</span>
+                <strong className="text-[var(--foreground)] font-mono">{userProfile.elo_rapid || 1200}</strong>
               </div>
             </div>
             {/* Mobile View Elo - Simplified */}
             <div className="md:hidden bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-inner">
-              <span className="font-bold text-zinc-400">elo</span>
-              <strong className="text-white font-mono">{userProfile.elo_blitz || 1200}</strong>
+              <span className="font-bold text-[var(--color-secondary)]">elo</span>
+              <strong className="text-[var(--foreground)] font-mono">{userProfile.elo_blitz || 1200}</strong>
             </div>
           </div>
         )}
@@ -408,12 +408,12 @@ export default function PlayPage() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
 
         {/* Left Sidebar: Controls */}
-        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-black/20 bg-zinc-950/40 overflow-y-auto scrollbar-hide z-10 lg:shadow-2xl">
+        <div className="w-full lg:w-80 flex-none p-4 lg:border-r border-[var(--border)] bg-[var(--panel-bg)] overflow-y-auto scrollbar-hide z-10 lg:shadow-2xl">
           <div className="space-y-6">
             {gameState === 'idle' && (
-              <GameCard className="p-4 space-y-3 bg-zinc-900/90 border-zinc-700">
-                <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 tracking-wide">
-                  <Trophy className="h-3 w-3 text-amber-500" />
+              <GameCard className="p-4 space-y-3">
+                <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-[var(--color-secondary)] tracking-wide">
+                  <Trophy className="h-3 w-3 text-[var(--color-gold)]" />
                   Arenas
                 </h3>
                 <div className="space-y-2">
@@ -425,8 +425,8 @@ export default function PlayPage() {
             )}
 
             {/* Chests Section */}
-            <GameCard className="p-4 space-y-3 bg-zinc-900/90 border-zinc-700">
-              <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-zinc-400 tracking-wide">
+            <GameCard className="p-4 space-y-3">
+              <h3 className="font-black text-xs mb-2 flex items-center gap-2 text-[var(--color-secondary)] tracking-wide">
                 <Archive className="h-3 w-3 text-indigo-400" />
                 Cofres
               </h3>
@@ -437,7 +437,7 @@ export default function PlayPage() {
                     onClick={() => handleChestClick(index, chest)}
                     className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center relative overflow-hidden transition-all active:scale-95 group shadow-lg ${chest
                       ? 'border-amber-600/40 bg-gradient-to-br from-zinc-800 to-amber-950/40 cursor-pointer hover:border-amber-500'
-                      : 'border-black/50 bg-black/30'
+                      : 'border-[var(--border)] bg-[var(--color-muted)]'
                       }`}
                   >
                     {chest ? (
@@ -467,15 +467,15 @@ export default function PlayPage() {
                         )}
                       </>
                     ) : (
-                      <span className="text-zinc-700 text-[8px] font-black">+</span>
+                      <span className="text-[var(--color-secondary)] text-[8px] font-black">+</span>
                     )}
                   </div>
                 ))}
               </div>
             </GameCard>
 
-            <GameCard className="p-4 bg-zinc-900/90 border-zinc-700">
-              <h3 className="font-black text-xs mb-4 flex items-center gap-2 text-zinc-400 tracking-wide">
+            <GameCard className="p-4">
+              <h3 className="font-black text-xs mb-4 flex items-center gap-2 text-[var(--color-secondary)] tracking-wide">
                 <Timer className="h-3 w-3 text-emerald-500" />
                 Ritme de Joc
               </h3>
@@ -483,7 +483,7 @@ export default function PlayPage() {
               <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
                 <Button
                   variant={gameMode === 'bullet' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'bullet' ? 'bg-emerald-700 border-emerald-500 text-white shadow-[0_4px_0_#064e3b] translate-y-0' : 'bg-transparent border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
+                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'bullet' ? 'bg-emerald-700 border-emerald-500 text-white shadow-[0_4px_0_#064e3b] translate-y-0' : 'bg-transparent border-[var(--border)] text-[var(--color-secondary)] hover:bg-[var(--color-muted)]'}`}
                   onClick={() => setGameMode('bullet')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
@@ -492,7 +492,7 @@ export default function PlayPage() {
                 </Button>
                 <Button
                   variant={gameMode === 'blitz' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'blitz' ? 'bg-amber-700 border-amber-500 text-white shadow-[0_4px_0_#78350f] translate-y-0' : 'bg-transparent border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
+                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'blitz' ? 'bg-amber-700 border-amber-500 text-white shadow-[0_4px_0_#78350f] translate-y-0' : 'bg-transparent border-[var(--border)] text-[var(--color-secondary)] hover:bg-[var(--color-muted)]'}`}
                   onClick={() => setGameMode('blitz')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
@@ -501,7 +501,7 @@ export default function PlayPage() {
                 </Button>
                 <Button
                   variant={gameMode === 'rapid' ? 'default' : 'outline'}
-                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'rapid' ? 'bg-indigo-700 border-indigo-500 text-white shadow-[0_4px_0_#312e81] translate-y-0' : 'bg-transparent border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
+                  className={`justify-between h-auto py-2 px-3 rounded-lg transition-all duration-200 border-2 ${gameMode === 'rapid' ? 'bg-indigo-700 border-indigo-500 text-white shadow-[0_4px_0_#312e81] translate-y-0' : 'bg-transparent border-[var(--border)] text-[var(--color-secondary)] hover:bg-[var(--color-muted)]'}`}
                   onClick={() => setGameMode('rapid')}
                   disabled={gameState === 'playing' || gameState === 'searching'}
                 >
@@ -516,7 +516,7 @@ export default function PlayPage() {
                     Jugar Partida
                   </ShinyButton>
                 ) : gameState === 'searching' ? (
-                  <GameCard className="flex flex-col items-center gap-3 py-4 bg-zinc-950/50 border-dashed border-zinc-800">
+                  <GameCard className="flex flex-col items-center gap-3 py-4 border-dashed bg-[var(--color-muted)] border-[var(--border)]">
                     <div className="flex items-center gap-2 text-emerald-400 font-bold animate-pulse text-xs tracking-wide">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Cercant...
@@ -524,7 +524,7 @@ export default function PlayPage() {
                     <div className="text-3xl font-mono font-black text-white px-4 py-1 bg-black/60 rounded-lg border border-white/10 shadow-inner text-stroke">
                       00:{searchTimer.toString().padStart(2, '0')}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-8 text-[10px] uppercase font-black tracking-wider">
+                    <Button variant="ghost" size="sm" onClick={() => setGameState('idle')} className="text-[var(--color-secondary)] hover:text-red-400 hover:bg-red-500/10 h-8 text-[10px] uppercase font-black tracking-wider">
                       Cancel·lar
                     </Button>
                   </GameCard>
@@ -552,18 +552,18 @@ export default function PlayPage() {
         </div>
 
         {/* Center: Chessboard Area */}
-        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden bg-zinc-900">
+        <div className="flex-1 flex items-center justify-center relative p-4 overflow-hidden bg-[var(--background)]">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-          <div className="absolute inset-0 bg-gradient-radial from-transparent to-black/80 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-radial from-transparent to-[var(--background)] pointer-events-none" />
 
           {/* View Mode Toggle */}
-          <div className="absolute top-4 right-4 z-20 bg-black/40 backdrop-blur-md p-1 rounded-xl flex gap-1 border border-white/10 shadow-xl">
+          <div className="absolute top-4 right-4 z-20 bg-[var(--panel-bg)] backdrop-blur-md p-1 rounded-xl flex gap-1 border border-[var(--border)] shadow-xl">
             <Button
               variant={viewMode === '2d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('2d')}
-              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${viewMode === '2d' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${viewMode === '2d' ? 'bg-[var(--color-primary)] text-white shadow-md' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--color-muted)]'}`}
             >
               2D
             </Button>
@@ -571,14 +571,14 @@ export default function PlayPage() {
               variant={viewMode === '3d' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('3d')}
-              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${viewMode === '3d' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${viewMode === '3d' ? 'bg-[var(--color-primary)] text-white shadow-md' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--color-muted)]'}`}
             >
               3D
             </Button>
           </div>
 
           {/* Board Container */}
-          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden border-[10px] border-zinc-800 bg-zinc-900 ring-1 ring-white/5">
+          <div className="w-full max-w-[min(85vh,85vw)] aspect-square relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden border-[length:var(--card-border-width)] border-[var(--board-border)] bg-[var(--board-bg)] ring-1 ring-white/5">
             {/* Board Inner shadow */}
             <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] pointer-events-none z-20 rounded-lg"></div>
 
@@ -637,18 +637,18 @@ export default function PlayPage() {
 
       {/* Arena Path Dialog */}
       <Dialog open={!!selectedArena} onOpenChange={(open) => !open && setSelectedArena(null)}>
-        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-zinc-950 border-zinc-800 text-white overflow-hidden shadow-2xl rounded-3xl">
-          <DialogHeader className="p-4 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl">
+        <DialogContent className="max-w-md h-[80vh] flex flex-col p-0 bg-[var(--background)] border-[var(--border)] text-[var(--foreground)] overflow-hidden shadow-2xl rounded-3xl">
+          <DialogHeader className="p-4 border-b border-[var(--border)] bg-[var(--header-bg)] backdrop-blur-xl">
             <DialogTitle className="flex items-center gap-2 font-display tracking-wide text-sm">
               <Trophy className="h-4 w-4 text-amber-500" />
               {selectedArena === 'bullet' ? 'Bullet Arena' : selectedArena === 'blitz' ? 'Blitz Arena' : 'Rapid Arena'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 text-xs font-bold tracking-wide">
+            <DialogDescription className="text-[var(--color-secondary)] text-xs font-bold tracking-wide">
               Journey to Glory (0 - 1000 Cups)
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-4 bg-zinc-950/80">
+          <div className="flex-1 overflow-y-auto p-4 bg-[var(--background)]/80">
             {selectedArena && progress[selectedArena] && (
               <ArenaPath
                 progress={progress[selectedArena]!}
@@ -667,43 +667,43 @@ export default function PlayPage() {
 
       {/* Bot Proposal Modal */}
       <Dialog open={showBotModal} onOpenChange={setShowBotModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white rounded-2xl max-w-sm">
+        <DialogContent className="bg-[var(--panel-bg)] border-[var(--border)] text-[var(--foreground)] rounded-2xl max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-display text-amber-500 uppercase tracking-wider text-xl">
               <AlertCircle className="h-6 w-6" />
               Oponent no trobat
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 font-medium">
+            <DialogDescription className="text-[var(--color-secondary)] font-medium">
               Sembla que no hi ha ningú disponible. Vols jugar contra un Bot?
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid grid-cols-3 gap-3 py-4">
-            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-zinc-800 border-b-4 border-zinc-950 hover:border-emerald-500 hover:bg-zinc-700 transition-all group rounded-xl p-2" onClick={() => startBotGame('easy')}>
+            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-[var(--card-bg)] border-b-4 border-[var(--border)] hover:border-emerald-500 hover:bg-[var(--panel-bg)] transition-all group rounded-xl p-2" onClick={() => startBotGame('easy')}>
               <span className="text-2xl group-hover:scale-110 transition-transform">🌱</span>
               <div className="flex flex-col items-center">
-                <span className="font-bold text-white group-hover:text-emerald-400 text-xs uppercase">Easy</span>
-                <span className="text-[8px] text-zinc-500 font-mono">800</span>
+                <span className="font-bold text-[var(--foreground)] group-hover:text-emerald-400 text-xs uppercase">Easy</span>
+                <span className="text-[8px] text-[var(--color-secondary)] font-mono">800</span>
               </div>
             </Button>
-            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-zinc-800 border-b-4 border-zinc-950 hover:border-blue-500 hover:bg-zinc-700 transition-all group rounded-xl p-2" onClick={() => startBotGame('medium')}>
+            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-[var(--card-bg)] border-b-4 border-[var(--border)] hover:border-blue-500 hover:bg-[var(--panel-bg)] transition-all group rounded-xl p-2" onClick={() => startBotGame('medium')}>
               <span className="text-2xl group-hover:scale-110 transition-transform">⚖️</span>
               <div className="flex flex-col items-center">
-                <span className="font-bold text-white group-hover:text-blue-400 text-xs uppercase">Mid</span>
-                <span className="text-[8px] text-zinc-500 font-mono">1200</span>
+                <span className="font-bold text-[var(--foreground)] group-hover:text-blue-400 text-xs uppercase">Mid</span>
+                <span className="text-[8px] text-[var(--color-secondary)] font-mono">1200</span>
               </div>
             </Button>
-            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-zinc-800 border-b-4 border-zinc-950 hover:border-red-500 hover:bg-zinc-700 transition-all group rounded-xl p-2" onClick={() => startBotGame('hard')}>
+            <Button variant="outline" className="flex flex-col h-24 gap-2 bg-[var(--card-bg)] border-b-4 border-[var(--border)] hover:border-red-500 hover:bg-[var(--panel-bg)] transition-all group rounded-xl p-2" onClick={() => startBotGame('hard')}>
               <span className="text-2xl group-hover:scale-110 transition-transform">🔥</span>
               <div className="flex flex-col items-center">
-                <span className="font-bold text-white group-hover:text-red-400 text-xs uppercase">Hard</span>
-                <span className="text-[8px] text-zinc-500 font-mono">1800</span>
+                <span className="font-bold text-[var(--foreground)] group-hover:text-red-400 text-xs uppercase">Hard</span>
+                <span className="text-[8px] text-[var(--color-secondary)] font-mono">1800</span>
               </div>
             </Button>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setShowBotModal(false); setGameState('idle'); }} className="text-zinc-500 hover:text-white font-bold uppercase tracking-wider text-xs">
+            <Button variant="ghost" onClick={() => { setShowBotModal(false); setGameState('idle'); }} className="text-[var(--color-secondary)] hover:text-[var(--foreground)] font-bold uppercase tracking-wider text-xs">
               Cancel·lar
             </Button>
           </DialogFooter>

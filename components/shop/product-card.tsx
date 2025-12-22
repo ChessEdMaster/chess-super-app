@@ -38,7 +38,7 @@ export function ProductCard({ product }: ProductCardProps) {
         >
             <GameCard variant={cardVariant} className="h-full flex flex-col p-0 overflow-hidden hover:scale-[1.02] transition-transform duration-300">
                 {/* Image Section */}
-                <div className="relative aspect-square bg-zinc-900 border-b-4 border-zinc-800 group-hover:border-transparent transition-colors">
+                <div className="relative aspect-square bg-[var(--background)] border-b-4 border-[var(--border)] group-hover:border-transparent transition-colors">
                     {product.images && product.images.length > 0 ? (
                         <Image
                             src={product.images[0]}
@@ -48,7 +48,7 @@ export function ProductCard({ product }: ProductCardProps) {
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-700 bg-[url('/patterns/grid.svg')]">
+                        <div className="w-full h-full flex items-center justify-center text-[var(--color-muted)] bg-[url('/patterns/grid.svg')]">
                             <ShoppingCart size={48} className="opacity-50" />
                         </div>
                     )}
@@ -75,15 +75,15 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
 
                 {/* Content Section */}
-                <div className="p-4 flex flex-col flex-1 bg-zinc-900/90 relative">
+                <div className="p-4 flex flex-col flex-1 bg-[var(--card-bg)]/90 relative">
                     {/* Category Tag */}
                     {product.category && (
-                        <div className="absolute -top-3 right-3 bg-zinc-800 border border-zinc-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-zinc-300 shadow-sm z-10">
+                        <div className="absolute -top-3 right-3 bg-[var(--panel-bg)] border border-[var(--border)] px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-[var(--color-secondary)] shadow-sm z-10">
                             {product.category.name}
                         </div>
                     )}
 
-                    <h3 className="font-bold text-white mb-1 line-clamp-2 text-sm uppercase tracking-wide group-hover:text-amber-400 transition-colors h-10 flex items-center">
+                    <h3 className="font-bold text-[var(--foreground)] mb-1 line-clamp-2 text-sm uppercase tracking-wide group-hover:text-amber-400 transition-colors h-10 flex items-center">
                         {product.name}
                     </h3>
 
@@ -93,7 +93,7 @@ export function ProductCard({ product }: ProductCardProps) {
                             <Star
                                 key={star}
                                 size={12}
-                                className={star <= 4 ? 'fill-amber-400 text-amber-500' : 'fill-zinc-800 text-zinc-700'}
+                                className={star <= 4 ? 'fill-amber-400 text-amber-500' : 'fill-[var(--card-border)] text-[var(--color-muted)]'}
                             />
                         ))}
                     </div>
@@ -102,11 +102,11 @@ export function ProductCard({ product }: ProductCardProps) {
                         <div className="flex items-end justify-between mb-3">
                             <div className="flex flex-col">
                                 {product.sale_price && (
-                                    <span className="text-xs text-zinc-500 line-through font-bold decoration-red-500/50">
+                                    <span className="text-xs text-[var(--color-muted)] line-through font-bold decoration-red-500/50">
                                         {formatPrice(product.price)}
                                     </span>
                                 )}
-                                <span className={`text-xl font-black ${product.sale_price ? 'text-amber-400' : 'text-white'} font-mono`}>
+                                <span className={`text-xl font-black ${product.sale_price ? 'text-amber-400' : 'text-[var(--foreground)]'} font-mono`}>
                                     {formatPrice(currentPrice)}
                                 </span>
                             </div>

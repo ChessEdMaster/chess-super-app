@@ -94,22 +94,22 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-zinc-800 text-white">
+            <DialogContent className="sm:max-w-[425px] bg-[var(--panel-bg)] border-[var(--border)] text-[var(--foreground)]">
                 <DialogHeader>
                     <DialogTitle>Jugar una Partida</DialogTitle>
                 </DialogHeader>
 
                 {/* Opponent Selector */}
-                <div className="flex gap-2 mb-4 p-1 bg-zinc-800 rounded-lg">
+                <div className="flex gap-2 mb-4 p-1 bg-[var(--card-bg)] rounded-lg">
                     <button
                         onClick={() => setOpponentType('human')}
-                        className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${opponentType === 'human' ? 'bg-zinc-700 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                        className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${opponentType === 'human' ? 'bg-[var(--panel-bg)] text-[var(--foreground)] shadow' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)]'}`}
                     >
                         Vs Human
                     </button>
                     <button
                         onClick={() => setOpponentType('bot')}
-                        className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${opponentType === 'bot' ? 'bg-zinc-700 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                        className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${opponentType === 'bot' ? 'bg-[var(--panel-bg)] text-[var(--foreground)] shadow' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)]'}`}
                     >
                         Vs Bot
                     </button>
@@ -121,10 +121,10 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="color" className="text-right">Color</Label>
                                 <Select value={color} onValueChange={(v: any) => setColor(v)}>
-                                    <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                    <SelectTrigger className="col-span-3 bg-[var(--card-bg)] border-[var(--border)]">
                                         <SelectValue placeholder="Select color" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-zinc-800 border-zinc-700">
+                                    <SelectContent className="bg-[var(--card-bg)] border-[var(--border)]">
                                         <SelectItem value="white">Blanques</SelectItem>
                                         <SelectItem value="black">Negres</SelectItem>
                                         <SelectItem value="random">Aleatori</SelectItem>
@@ -134,10 +134,10 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="time" className="text-right">Temps</Label>
                                 <Select value={timeControl} onValueChange={setTimeControl}>
-                                    <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                    <SelectTrigger className="col-span-3 bg-[var(--card-bg)] border-[var(--border)]">
                                         <SelectValue placeholder="Select time" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-zinc-800 border-zinc-700">
+                                    <SelectContent className="bg-[var(--card-bg)] border-[var(--border)]">
                                         <SelectItem value="bullet">Bullet (1+0)</SelectItem>
                                         <SelectItem value="blitz">Blitz (3+2)</SelectItem>
                                         <SelectItem value="rapid">Rapid (10+0)</SelectItem>
@@ -147,10 +147,10 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="mode" className="text-right">Mode</Label>
                                 <Select value={mode} onValueChange={(v: any) => setMode(v)}>
-                                    <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                    <SelectTrigger className="col-span-3 bg-[var(--card-bg)] border-[var(--border)]">
                                         <SelectValue placeholder="Select mode" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-zinc-800 border-zinc-700">
+                                    <SelectContent className="bg-[var(--card-bg)] border-[var(--border)]">
                                         <SelectItem value="rated">Competitiu</SelectItem>
                                         <SelectItem value="casual">Casual</SelectItem>
                                     </SelectContent>
@@ -161,10 +161,10 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="difficulty" className="text-right">Nivell</Label>
                             <Select value={botDifficulty} onValueChange={setBotDifficulty}>
-                                <SelectTrigger className="col-span-3 bg-zinc-800 border-zinc-700">
+                                <SelectTrigger className="col-span-3 bg-[var(--card-bg)] border-[var(--border)]">
                                     <SelectValue placeholder="Select difficulty" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-zinc-800 border-zinc-700">
+                                <SelectContent className="bg-[var(--card-bg)] border-[var(--border)]">
                                     <SelectItem value="easy">Fàcil (800)</SelectItem>
                                     <SelectItem value="medium">Mitjà (1200)</SelectItem>
                                     <SelectItem value="hard">Difícil (1800)</SelectItem>
@@ -174,8 +174,8 @@ export function CreateChallengeModal({ isOpen, onClose, defaultTimeControl = 'bl
                     )}
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="border-zinc-700 hover:bg-zinc-800 hover:text-white">Cancel·lar</Button>
-                    <Button onClick={handleCreate} disabled={loading} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
+                    <Button variant="outline" onClick={onClose} className="border-[var(--border)] hover:bg-[var(--card-bg)] text-[var(--foreground)] hover:text-[var(--foreground)]">Cancel·lar</Button>
+                    <Button onClick={handleCreate} disabled={loading} className="bg-[var(--color-primary)] hover:opacity-90 text-black font-bold border-none">
                         {loading ? 'Creant...' : (opponentType === 'bot' ? 'Jugar contra Bot' : 'Crear Sala')}
                     </Button>
                 </DialogFooter>

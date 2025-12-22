@@ -96,14 +96,14 @@ const GAMES: GameItem[] = [
 
 export default function MinigamesPage() {
     return (
-        <div className="min-h-screen p-6 overflow-hidden relative flex flex-col gap-8">
+        <div className="min-h-screen p-6 overflow-hidden relative flex flex-col gap-8 bg-[var(--background)]">
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
             {/* Header */}
-            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-zinc-900/90 border-zinc-700 relative z-10">
+            <Panel className="flex flex-col md:flex-row items-center justify-between p-6 bg-[var(--header-bg)] border-[var(--border)] relative z-10">
                 <div className="flex items-center gap-6">
                     <Link href="/">
-                        <Button variant="ghost" className="hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl h-12 w-12 p-0 flex items-center justify-center border border-white/5">
+                        <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)] hover:text-[var(--foreground)] rounded-xl h-12 w-12 p-0 flex items-center justify-center border border-[var(--border)]">
                             <ArrowLeft size={24} />
                         </Button>
                     </Link>
@@ -112,7 +112,7 @@ export default function MinigamesPage() {
                             <Gamepad2 className="text-indigo-400 fill-indigo-900 stroke-[1.5]" size={48} />
                             Arcade Zone
                         </h1>
-                        <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs mt-2 ml-1">
+                        <p className="text-[var(--color-secondary)] font-bold uppercase tracking-widest text-xs mt-2 ml-1">
                             Minigames & Variants Collection
                         </p>
                     </div>
@@ -129,11 +129,11 @@ export default function MinigamesPage() {
                         transition={{ delay: i * 0.05 }}
                     >
                         <Link href={game.href || '#'} className={`block h-full ${!game.href ? 'cursor-not-allowed opacity-60' : ''}`} onClick={e => !game.href && e.preventDefault()}>
-                            <GameCard variant="default" className="h-full bg-zinc-900/40 hover:bg-zinc-800/60 transition-all group relative overflow-hidden flex flex-col border-zinc-800 hover:border-indigo-500/50">
+                            <GameCard variant="default" className="h-full bg-[var(--card-bg)] hover:bg-[var(--panel-bg)] transition-all group relative overflow-hidden flex flex-col border-[var(--border)] hover:border-indigo-500/50">
 
                                 {/* Header */}
                                 <div className="flex justify-between items-start mb-4 p-4 pb-0 z-10">
-                                    <div className={`p-3 rounded-xl bg-zinc-950 border border-white/5 shadow-inner group-hover:scale-110 transition-transform duration-300 ${game.color}`}>
+                                    <div className={`p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] shadow-inner group-hover:scale-110 transition-transform duration-300 ${game.color}`}>
                                         <game.icon size={28} />
                                     </div>
                                     <div className="flex flex-col items-end gap-1">
@@ -152,10 +152,10 @@ export default function MinigamesPage() {
 
                                 {/* Content */}
                                 <div className="p-4 pt-0 flex-1 flex flex-col z-10">
-                                    <h3 className="text-xl font-black mb-2 text-zinc-100 group-hover:text-indigo-400 transition-colors font-display uppercase tracking-wide">
+                                    <h3 className="text-xl font-black mb-2 text-[var(--foreground)] group-hover:text-indigo-400 transition-colors font-display uppercase tracking-wide">
                                         {game.title}
                                     </h3>
-                                    <p className="text-xs font-medium text-zinc-500 leading-relaxed">
+                                    <p className="text-xs font-medium text-[var(--color-secondary)] leading-relaxed">
                                         {game.description}
                                     </p>
                                 </div>
@@ -167,7 +167,7 @@ export default function MinigamesPage() {
 
                                 {!game.href && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                                        <div className="transform rotate-[-10deg] border-2 border-zinc-500 text-zinc-500 px-4 py-1 font-black text-xl uppercase tracking-widest bg-black">
+                                        <div className="transform rotate-[-10deg] border-2 border-[var(--color-secondary)] text-[var(--color-secondary)] px-4 py-1 font-black text-xl uppercase tracking-widest bg-black">
                                             Coming Soon
                                         </div>
                                     </div>

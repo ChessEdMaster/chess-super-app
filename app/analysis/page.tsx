@@ -682,12 +682,12 @@ function AnalysisContent() {
             <div className="absolute inset-0 w-full h-full shadow-2xl rounded-xl overflow-hidden glass-panel bg-black/20 flex items-center justify-center border-4 lg:border-8 border-[var(--board-border)]">
               {/* Engine Bar Overlay (Minimal) */}
               {isAnalyzing && evaluation && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-2 shadow-xl">
-                  <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'animate-pulse bg-emerald-500' : 'bg-zinc-500'}`} />
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-md border border-[var(--border)] px-3 py-1 rounded-full flex items-center gap-2 shadow-xl">
+                  <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'animate-pulse bg-emerald-500' : 'bg-[var(--color-secondary)]'}`} />
                   <span className={`font-mono font-bold text-sm ${evaluation.value > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                     {getEvalText(evaluation)}
                   </span>
-                  <span className="text-[10px] text-zinc-500 font-mono">d{evaluation.depth}</span>
+                  <span className="text-[10px] text-[var(--color-secondary)] font-mono">d{evaluation.depth}</span>
                 </div>
               )}
 
@@ -700,7 +700,7 @@ function AnalysisContent() {
                   arrows={allArrows}
                 />
               ) : (
-                <div className="w-full h-full bg-zinc-900">
+                <div className="w-full h-full bg-[var(--board-bg)]">
                   <Chessboard2D
                     fen={fen}
                     onSquareClick={onSquareClick}
@@ -745,14 +745,14 @@ function AnalysisContent() {
             </button>
             <button
               onClick={() => { setActiveTab('database'); setIsSetupMode(false); }}
-              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'database' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'database' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--color-muted)]'}`}
             >
               <DatabaseIcon />
               <span className="text-[10px] font-bold tracking-wide">Database</span>
             </button>
             <button
               onClick={() => { setActiveTab('setup'); setIsSetupMode(true); }}
-              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'setup' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
+              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'setup' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--color-muted)]'}`}
             >
               <SetupIcon />
               <span className="text-[10px] uppercase font-bold tracking-widest">Setup</span>
@@ -765,35 +765,35 @@ function AnalysisContent() {
               <div className="flex flex-col h-full p-2 gap-2">
                 {/* WORK MODE TOGGLE - Only show if game is saved */}
                 {gameId && (
-                  <div className="flex items-center justify-between bg-zinc-950/30 p-2 rounded-lg border border-white/5 mb-2">
+                  <div className="flex items-center justify-between bg-[var(--panel-bg)]/30 p-2 rounded-lg border border-[var(--border)] mb-2">
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Work Mode</span>
-                      <span className="text-[10px] text-zinc-600">Rich editing & drawings</span>
+                      <span className="text-xs font-bold text-[var(--color-secondary)] uppercase tracking-wider">Work Mode</span>
+                      <span className="text-[10px] text-[var(--color-secondary)]">Rich editing & drawings</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {!hasWorkPgn && isWorkMode && <span className="text-[10px] text-zinc-500 italic">Unsaved</span>}
+                      {!hasWorkPgn && isWorkMode && <span className="text-[10px] text-[var(--color-secondary)] italic">Unsaved</span>}
                       <Switch checked={isWorkMode} onCheckedChange={(checked) => setIsWorkMode(checked)} />
                     </div>
                   </div>
                 )}
 
                 {/* MODE SELECTOR */}
-                <div className="flex bg-zinc-950/50 rounded-lg p-1 border border-white/5 shrink-0">
+                <div className="flex bg-[var(--panel-bg)]/50 rounded-lg p-1 border border-[var(--border)] shrink-0">
                   <button
                     onClick={() => setAnalysisMode('manual')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'manual' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'manual' ? 'bg-[var(--color-muted)] text-[var(--foreground)] shadow-sm' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)]'}`}
                   >
                     Manual
                   </button>
                   <button
                     onClick={() => setAnalysisMode('stockfish')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'stockfish' ? 'bg-blue-600/20 text-blue-400 shadow-sm border border-blue-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'stockfish' ? 'bg-blue-600/20 text-blue-400 shadow-sm border border-blue-500/20' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)]'}`}
                   >
                     Stockfish
                   </button>
                   <button
                     onClick={() => setAnalysisMode('syzygy')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'syzygy' ? 'bg-amber-600/20 text-amber-400 shadow-sm border border-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${analysisMode === 'syzygy' ? 'bg-amber-600/20 text-amber-400 shadow-sm border border-amber-500/20' : 'text-[var(--color-secondary)] hover:text-[var(--foreground)]'}`}
                   >
                     Syzygy
                   </button>
@@ -803,7 +803,7 @@ function AnalysisContent() {
 
                 {/* MANUAL MODE */}
                 {analysisMode === 'manual' && (
-                  <div className="flex-1 min-h-0 border border-white/5 rounded-lg overflow-hidden bg-zinc-900/30">
+                  <div className="flex-1 min-h-0 border border-[var(--border)] rounded-lg overflow-hidden bg-[var(--panel-bg)]/30">
                     <PGNEditor
                       tree={pgnTree}
                       onTreeChange={setPgnTree}
@@ -846,7 +846,7 @@ function AnalysisContent() {
                         isAnalyzing={isAnalyzing}
                       />
                     </div>
-                    <div className="flex-1 min-h-0 border border-white/5 rounded-lg overflow-hidden bg-zinc-900/30">
+                    <div className="flex-1 min-h-0 border border-[var(--border)] rounded-lg overflow-hidden bg-[var(--panel-bg)]/30">
                       <PGNEditor
                         tree={pgnTree}
                         onTreeChange={setPgnTree}
@@ -924,7 +924,7 @@ function AnalysisContent() {
 
 export default function AnalysisPage() {
   return (
-    <React.Suspense fallback={<div className="h-full flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>}>
+    <React.Suspense fallback={<div className="h-full flex items-center justify-center text-[var(--color-secondary)]"><Loader2 className="animate-spin mr-2" /> Carregant...</div>}>
       <AnalysisContent />
     </React.Suspense>
   );

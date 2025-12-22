@@ -18,7 +18,7 @@ export default function HomePage() {
   const router = useRouter();
 
   if (loading) {
-    return <div className="h-full flex items-center justify-center bg-zinc-950 text-zinc-500">Loading...</div>;
+    return <div className="h-full flex items-center justify-center bg-[var(--background)] text-[var(--color-secondary)]">Loading...</div>;
   }
 
   if (!user) {
@@ -32,7 +32,7 @@ export default function HomePage() {
   ] as const;
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative overflow-hidden bg-[var(--background)]">
       {/* 3D Background */}
       <div className="absolute inset-0 z-0">
         <LobbyScene />
@@ -41,11 +41,10 @@ export default function HomePage() {
       {/* UI Overlay */}
       <div className="absolute inset-0 z-10 flex flex-col justify-between pointer-events-none">
 
-        {/* Top Area: Story Mode & Minigames & League Selector */}
-        <div className="pt-4 px-4 flex flex-col gap-4 pointer-events-auto h-full">
-          {/* Top Area: League Selector */}
+        {/* Top Area: League Selector */}
+        <div className="pt-6 px-4 flex flex-col gap-4 pointer-events-auto h-full">
           {/* League Selector (Visual) */}
-          <div className="self-center glass-panel rounded-full p-1.5 flex gap-1 transform hover:scale-105 transition-transform duration-300">
+          <div className="self-center glass-panel bg-[var(--glass-bg)] border-[var(--glass-border)] rounded-full p-1.5 flex gap-1 transform hover:scale-105 transition-transform duration-300 shadow-xl backdrop-blur-xl">
             {leagues.map((league) => (
               <button
                 key={league.id}
@@ -53,11 +52,11 @@ export default function HomePage() {
                 className={cn(
                   "px-4 py-2 rounded-full flex items-center gap-2 transition-all font-bold text-[10px]",
                   selectedLeague === league.id
-                    ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                    ? "bg-[var(--color-primary)] text-[var(--background)] shadow-lg"
+                    : "text-[var(--color-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--color-muted)]"
                 )}
               >
-                <league.icon size={14} className={selectedLeague === league.id ? league.color : "currentColor"} />
+                <league.icon size={14} className={cn(selectedLeague === league.id ? "text-[var(--background)]" : league.color)} />
                 <span className={cn(selectedLeague !== league.id && "hidden sm:inline")}>
                   {league.label}
                 </span>
@@ -69,11 +68,11 @@ export default function HomePage() {
           <div className="flex-1" />
 
           {/* Battle Button Area */}
-          <div className="flex flex-col items-center gap-4 py-6 pointer-events-auto">
-            <div className="text-amber-400/80 text-[10px] font-bold tracking-widest font-display drop-shadow-md">
-              Enter the Arena
+          <div className="flex flex-col items-center gap-4 py-8 pointer-events-auto">
+            <div className="text-[var(--color-gold)] text-[10px] font-bold tracking-widest font-display drop-shadow-md text-glow">
+              ENTER THE ARENA
             </div>
-            <Link href="/lobby">
+            <Link href="/play">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -85,34 +84,34 @@ export default function HomePage() {
                   repeat: Infinity,
                   repeatType: "loop"
                 }}
-                className="bg-gradient-to-b from-amber-400 via-amber-500 to-amber-700 text-black font-black text-2xl px-12 py-5 rounded-2xl border-2 border-amber-300 shadow-2xl relative overflow-hidden group font-display tracking-wide"
+                className="bg-gradient-to-b from-[var(--color-gold)] via-amber-500 to-amber-700 text-black font-black text-2xl px-12 py-5 rounded-2xl border-2 border-amber-300 shadow-[0_10px_40px_-10px_rgba(245,158,11,0.5)] relative overflow-hidden group font-display tracking-wide"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 skew-y-12" />
                 <div className="flex items-center gap-3 relative z-10">
                   <Swords size={28} className="text-amber-950" />
-                  <span>Battle</span>
+                  <span>BATTLE</span>
                 </div>
               </motion.button>
             </Link>
           </div>
 
           {/* Chest Slots */}
-          <div className="h-28 bg-gradient-to-t from-black/90 to-transparent px-4 pb-6 flex items-end justify-center gap-3 pointer-events-auto">
+          <div className="h-32 bg-gradient-to-t from-[var(--background)] to-transparent px-4 pb-8 flex items-end justify-center gap-3 pointer-events-auto">
             {chests.map((chest, index) => (
               <div
                 key={index}
-                className="w-1/4 h-20 glass-panel rounded-xl flex flex-col items-center justify-center relative overflow-hidden group hover:bg-zinc-800/40 transition-colors"
+                className="w-1/4 h-24 glass-panel bg-[var(--glass-bg)] border-[var(--glass-border)] rounded-xl flex flex-col items-center justify-center relative overflow-hidden group hover:bg-[var(--color-muted)] transition-colors backdrop-blur-md shadow-lg"
               >
                 {chest ? (
                   <>
-                    <div className="text-2xl mb-1 drop-shadow-md transition-transform group-hover:scale-110">📦</div>
-                    <span className="text-[10px] font-bold text-amber-500 font-display tracking-wide">{chest.type}</span>
-                    <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{Math.floor(chest.unlockTime / 60)}m</span>
+                    <div className="text-3xl mb-1 drop-shadow-md transition-transform group-hover:scale-110">📦</div>
+                    <span className="text-[10px] font-bold text-[var(--color-gold)] font-display tracking-wide uppercase">{chest.type}</span>
+                    <span className="text-[9px] text-[var(--color-secondary)] font-mono mt-0.5 font-bold">{Math.floor(chest.unlockTime / 60)}m</span>
                   </>
                 ) : (
-                  <div className="text-zinc-700 flex flex-col items-center opacity-50">
-                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-zinc-800 flex items-center justify-center mb-1">
-                      <span className="text-xs">+</span>
+                  <div className="text-[var(--color-secondary)] flex flex-col items-center opacity-50">
+                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-[var(--color-border)] flex items-center justify-center mb-1">
+                      <span className="text-xs font-bold">+</span>
                     </div>
                   </div>
                 )}
