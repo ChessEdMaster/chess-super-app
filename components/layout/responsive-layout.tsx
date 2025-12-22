@@ -35,22 +35,13 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
     const desktopTabs = [
         { name: 'Batalla', icon: Swords, href: '/' },
-        { name: 'Social', icon: Users, href: '/social' },
-        { name: 'Arcade', icon: Trophy, href: '/minigames' },
         { name: 'Anàlisi', icon: Search, href: '/analysis' },
-        { name: 'Cartes', icon: Layers, href: '/cards' },
-        { name: 'Acadèmia', icon: GraduationCap, href: '/academy' },
-        { name: 'Studio', icon: Sparkles, href: '/studio' },
-        { name: 'Perfil', icon: User, href: '/profile' },
     ];
 
     // Limit mobile tabs to 5 key items to fit screen
     const mobileTabs = [
         { name: 'Batalla', icon: Swords, href: '/' },
-        { name: 'Social', icon: Users, href: '/social' },
         { name: 'Anàlisi', icon: Search, href: '/analysis' },
-        { name: 'Acadèmia', icon: GraduationCap, href: '/academy' },
-        { name: 'Perfil', icon: User, href: '/profile' },
     ];
 
     if (!user) {

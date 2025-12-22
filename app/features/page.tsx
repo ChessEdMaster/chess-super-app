@@ -64,6 +64,34 @@ export default function FeaturesPage() {
                     description="User management"
                     color="bg-red-500"
                 />
+                <FeatureCard
+                    href="/cards"
+                    icon={LayoutDashboard}
+                    title="Cards"
+                    description="Card collection"
+                    color="bg-purple-500"
+                />
+                <FeatureCard
+                    href="/academy"
+                    icon={Trophy}
+                    title="Academy"
+                    description="Learn chess"
+                    color="bg-cyan-500"
+                />
+                <FeatureCard
+                    href="/puzzles"
+                    icon={LayoutDashboard}
+                    title="Puzzles"
+                    description="Tactical puzzles"
+                    color="bg-yellow-500"
+                />
+                <FeatureCard
+                    href="/mapa-escacs"
+                    icon={LayoutDashboard}
+                    title="Map"
+                    description="Chess Map"
+                    color="bg-green-500"
+                />
             </div>
         </div>
     );
