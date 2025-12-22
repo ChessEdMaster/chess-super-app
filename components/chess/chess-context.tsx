@@ -236,6 +236,7 @@ export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/
             mainLine,
             makeMove,
             setGameFromFen,
+            importPGN,
             resetGame,
             undo,
             redo,
