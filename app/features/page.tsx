@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Castle, Users, Trophy, ShoppingBag, Palette, LayoutDashboard, Shield } from 'lucide-react';
+import { Castle, Users, Trophy, ShoppingBag, Palette, LayoutDashboard, Shield, BookOpen } from 'lucide-react';
 
 export default function FeaturesPage() {
     return (
@@ -91,6 +91,13 @@ export default function FeaturesPage() {
                     title="Map"
                     description="Chess Map"
                     color="bg-green-500"
+                />
+                <FeatureCard
+                    href="/openings"
+                    icon={BookOpen}
+                    title="Encyclopedia"
+                    description="Box of Openings"
+                    color="bg-indigo-500"
                 />
             </div>
         </div>

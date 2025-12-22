@@ -93,35 +93,19 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                         );
                     })}
 
-                    <div className="pt-4 mt-4 border-t border-[var(--panel-border)]">
-                        <p className="px-4 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2">Eines</p>
-                        <Link href="/openings" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-[var(--color-muted)] hover:text-foreground transition-all">
-                            <BookOpen size={18} />
-                            Enciclopèdia
-                        </Link>
-                        <Link href="/shop" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-[var(--color-muted)] hover:text-foreground transition-all">
-                            <ShoppingBag size={18} />
-                            Botiga
-                        </Link>
-                        <Link href="/features" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-amber-500 hover:bg-[var(--color-muted)] hover:text-amber-400 transition-all">
-                            <Sparkles size={18} />
-                            Beta Features
-                        </Link>
-                        <Link href="/puzzles" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-[var(--color-muted)] hover:text-foreground transition-all">
-                            <div className="w-4 h-4 border-2 border-current rounded-sm" />
-                            Puzzles
-                        </Link>
-                        <Link href="/mapa-escacs" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-[var(--color-muted)] hover:text-foreground transition-all">
-                            <span className="text-lg leading-none">🗺️</span>
-                            Mapa
-                        </Link>
-                        {profile.role === 'SuperAdmin' && (
+                    {profile.role === 'SuperAdmin' && (
+                        <div className="pt-4 mt-4 border-t border-[var(--panel-border)]">
+                            <p className="px-4 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2">SuperAdmin Tools</p>
+                            <Link href="/features" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-amber-500 hover:bg-[var(--color-muted)] hover:text-amber-400 transition-all">
+                                <Sparkles size={18} />
+                                Beta Features
+                            </Link>
                             <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-[var(--color-muted)] hover:text-red-300 transition-all">
                                 <Shield size={18} />
                                 Admin
                             </Link>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </nav>
 
                 {/* Sidebar Footer (User) */}
@@ -178,22 +162,22 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                         <>
                             <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setProfileOpen(false)} />
                             <div className="absolute top-16 left-4 w-64 bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-top-2">
-                                <Link href="/features" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-amber-500 hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
-                                    <Sparkles size={18} /> Features Beta
+                                {profile.role === 'SuperAdmin' && (
+                                    <>
+                                        <Link href="/features" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-amber-500 hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                            <Sparkles size={18} /> Features Beta
+                                        </Link>
+                                        <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                            <Shield size={18} /> Admin Panel
+                                        </Link>
+                                        <div className="h-px bg-[var(--border)] my-1" />
+                                    </>
+                                )}
+
+                                <Link href="/profile" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                    <User size={18} /> El meu perfil
                                 </Link>
-                                <Link href="/minigames" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
-                                    <Trophy size={18} /> Arcade
-                                </Link>
-                                <Link href="/studio" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
-                                    <Layers size={18} /> Studio & Cartes
-                                </Link>
-                                <div className="h-px bg-[var(--border)] my-1" />
-                                <Link href="/shop" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
-                                    <ShoppingBag size={18} /> Botiga
-                                </Link>
-                                <Link href="/openings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
-                                    <BookOpen size={18} /> Enciclopèdia
-                                </Link>
+
                                 <div className="h-px bg-[var(--border)] my-1" />
                                 <button
                                     className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
