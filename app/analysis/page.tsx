@@ -106,10 +106,36 @@ function AnalysisLayout() {
       // Quick fix: Use the current FEN as the "PGN" or just a very simple PGN with FEN tag.
       const pgn = `[FEN "${fen}"]\n*`;
 
+      // 1. Get or Create Collection
+      let { data: collection, error: colError } = await supabase
+        .from('pgn_collections')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('title', 'My Analyses')
+        .maybeSingle();
+
+      if (colError) throw colError;
+
+      if (!collection) {
+        const { data: newCol, error: createError } = await supabase
+          .from('pgn_collections')
+          .insert({
+            user_id: user.id,
+            title: 'My Analyses',
+            description: 'Default collection for your analysis sessions'
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        collection = newCol;
+      }
+
+      // 2. Insert Game
       const { error } = await supabase
         .from('pgn_games')
         .insert({
-          user_id: user.id,
+          collection_id: collection.id,
           white: user.email?.split('@')[0] || 'User',
           black: 'Engine/Analysis',
           event: title,
