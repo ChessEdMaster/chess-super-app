@@ -40,6 +40,7 @@ function AnalysisLayout() {
     removeComment,
     toggleNAG,
     setEvaluation,
+    importPGN,
     undo,
     redo
   } = useChess();
