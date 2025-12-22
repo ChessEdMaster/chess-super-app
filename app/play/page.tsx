@@ -1,5 +1,7 @@
 'use client';
 
+import { cn } from '@/lib/utils';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Chess, Square } from 'chess.js';
@@ -561,8 +563,8 @@ export default function PlayPage() {
                 "bg-sky-900"
           )}>
             <div className={`absolute inset-0 opacity-30 ${gameMode === 'blitz' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black' :
-                gameMode === 'bullet' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-700 via-orange-900 to-black' :
-                  'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400 via-blue-900 to-black'
+              gameMode === 'bullet' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-700 via-orange-900 to-black' :
+                'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400 via-blue-900 to-black'
               }`} />
             {/* Stars/Particles (CSS only) */}
             <div className="absolute inset-0 bg-[url('/assets/noise.png')] opacity-5 mix-blend-overlay"></div>
