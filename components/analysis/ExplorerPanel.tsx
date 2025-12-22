@@ -23,14 +23,18 @@ export function ExplorerPanel() {
             const move = game.move(san);
             const nextFen = game.fen();
 
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                toast.error('Has d\'estar loguejat per contribuir a la base de dades');
+                return;
+            }
+
             // Fetch current position to update
             const { data, error } = await supabase
                 .from('chess_positions')
                 .select('*')
                 .eq('fen', fen)
-                .single();
-
-            const { data: { user } } = await supabase.auth.getUser();
+                .maybeSingle();
 
             if (data) {
                 const existingMoves = data.moves || [];
@@ -46,9 +50,19 @@ export function ExplorerPanel() {
                     nextFen: nextFen
                 });
 
+                // Update metadata for discovery if not already discovered
+                const metadata = { ...data.metadata };
+                if (!metadata.discovered_by) {
+                    metadata.discovered_by = user.email || 'User';
+                    metadata.discovered_at = new Date().toISOString();
+                }
+
                 await supabase
                     .from('chess_positions')
-                    .update({ moves: existingMoves })
+                    .update({
+                        moves: existingMoves,
+                        metadata: metadata
+                    })
                     .eq('fen', fen);
             } else {
                 // Initialize NEW position
@@ -69,7 +83,7 @@ export function ExplorerPanel() {
                         links: []
                     },
                     metadata: {
-                        discovered_by: user?.email || 'Anonymous Discovery',
+                        discovered_by: user.email || 'User',
                         discovered_at: new Date().toISOString(),
                         view_count: 1,
                         analysis_status: 'queued'

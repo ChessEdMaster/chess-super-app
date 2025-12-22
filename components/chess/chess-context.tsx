@@ -1,9 +1,9 @@
-'use client';
-
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Chess, Move, Square } from 'chess.js';
-import { useStockfish, Evaluation, EngineLine } from '@/hooks/use-stockfish';
+import { useStockfish, Evaluation as EngineEvaluation, EngineLine } from '@/hooks/use-stockfish';
 import { toast } from 'sonner';
+import { PGNTree } from '@/lib/pgn/tree';
+import { MoveNode, Annotation, Variation, NAGSymbol, Evaluation } from '@/types/pgn';
 
 interface ChessContextType {
     // Game State
@@ -12,21 +12,34 @@ interface ChessContextType {
     orientation: 'white' | 'black';
     setOrientation: (o: 'white' | 'black') => void;
 
+    // Tree State
+    tree: PGNTree;
+    currentNode: MoveNode | null;
+    mainLine: MoveNode[];
+
     // Actions
     makeMove: (from: string, to: string, promotion?: string) => boolean;
     setGameFromFen: (fen: string) => void;
+    importPGN: (pgn: string) => void;
     resetGame: () => void;
     undo: () => void;
     redo: () => void;
 
-    // History
-    history: string[]; // FEN history
+    // Navigation
     currentHistoryIndex: number;
     goToMove: (index: number) => void;
+    goToNode: (node: MoveNode | null) => void;
+
+    // Annotations
+    addComment: (text: string, position?: 'before' | 'after') => void;
+    updateComment: (index: number, text: string) => void;
+    removeComment: (index: number) => void;
+    toggleNAG: (nag: NAGSymbol) => void;
+    setEvaluation: (evaluation: Evaluation | undefined) => void;
 
     // Engine
     isEvaluating: boolean;
-    evaluation: Evaluation | null;
+    evaluation: EngineEvaluation | null;
     lines: EngineLine[];
     toggleEngine: (active: boolean) => void;
     engineEnabled: boolean;
@@ -46,28 +59,30 @@ interface ChessProviderProps {
 }
 
 export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' }: ChessProviderProps) {
-    // Core Game State
-    const [game, setGame] = useState(() => new Chess(initialFen));
-    const [fen, setFen] = useState(initialFen);
-    const [orientation, setOrientation] = useState<'white' | 'black'>('white');
+    // Core PGN Tree (Source of truth)
+    const [tree, setTree] = useState(() => new PGNTree(initialFen));
+    const [revision, setRevision] = useState(0); // Trigger re-renders on tree changes
 
-    // History State
-    const [history, setHistory] = useState<string[]>([initialFen]);
-    const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0);
+    // Memoized derivatives
+    const game = useMemo(() => tree['chess'], [tree, revision]);
+    const fen = useMemo(() => tree.getCurrentFen(), [tree, revision]);
+    const currentNode = useMemo(() => tree.getCurrentNode(), [tree, revision]);
+    const mainLine = useMemo(() => tree.getMainLine(), [tree, revision]);
+
+    const [orientation, setOrientation] = useState<'white' | 'black'>('white');
 
     // Engine State
     const [engineEnabled, setEngineEnabled] = useState(false);
-    const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+    const [engineEvaluation, setEngineEvaluation] = useState<EngineEvaluation | null>(null);
     const [lines, setLines] = useState<EngineLine[]>([]);
 
-    // Engine Hook
+    // Stockfish Hook
     const { startAnalysis, stopAnalysis, isAnalyzing } = useStockfish({
         depth: 20,
-        multipv: 3, // Default to 3 lines
-        onEval: setEvaluation,
+        multipv: 3,
+        onEval: setEngineEvaluation,
         onLines: (newLines) => {
             setLines(prev => {
-                // Merge lines logic: update existing ID or append
                 const updated = [...prev];
                 newLines.forEach(line => {
                     const idx = updated.findIndex(l => l.id === line.id);
@@ -79,90 +94,132 @@ export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/
         }
     });
 
-    // ENGINE EFFECTS
+    // Reset analysis when FEN changes
     useEffect(() => {
         if (engineEnabled) {
             startAnalysis(fen);
         } else {
             stopAnalysis();
-            setEvaluation(null);
+            setEngineEvaluation(null);
             setLines([]);
         }
     }, [engineEnabled, fen, startAnalysis, stopAnalysis]);
 
-    const updateGameState = useCallback((newGame: Chess) => {
-        const newFen = newGame.fen();
-        setGame(newGame);
-        setFen(newFen);
-
-        // Update History
-        // If we are in the middle of history and make a move, we overwrite the future
-        const newHistory = [...history.slice(0, currentHistoryIndex + 1), newFen];
-        setHistory(newHistory);
-        setCurrentHistoryIndex(newHistory.length - 1);
-    }, [history, currentHistoryIndex]);
+    const triggerUpdate = useCallback(() => setRevision(r => r + 1), []);
 
     const makeMove = useCallback((from: string, to: string, promotion: string = 'q') => {
         const gameCopy = new Chess(fen);
         try {
             const result = gameCopy.move({ from, to, promotion });
             if (result) {
-                updateGameState(gameCopy);
+                // If the move already exists from this position, just navigate to it
+                // Otherwise, add it. PGNTree.addMove doesn't automatically check for duplicates in variations...
+                // Actually PGNTree.addMove always adds a new node.
+                // We should check if this move is already a continuation or variation.
 
-                // Sound Effects (Placeholder)
-                // const audio = new Audio(result.capture ? '/sounds/capture.mp3' : '/sounds/move.mp3');
-                // audio.play();
+                // For now, let's keep it simple: add it as a move.
+                // If it's the same move as the mainline continuation, we might want to just go forward.
 
+                tree.addMove(result.san);
+                triggerUpdate();
                 return true;
             }
         } catch (e) {
             console.error("Move failed", e);
         }
         return false;
-    }, [fen, updateGameState]);
+    }, [fen, tree, triggerUpdate]);
 
     const setGameFromFen = useCallback((newFen: string) => {
         try {
-            const newGame = new Chess(newFen);
-            setGame(newGame);
-            setFen(newFen);
-            // Reset history when manually setting FEN (New Chapter)
-            setHistory([newFen]);
-            setCurrentHistoryIndex(0);
+            const newTree = new PGNTree(newFen);
+            setTree(newTree);
+            triggerUpdate();
         } catch (e) {
             toast.error("Invalid FEN string");
         }
-    }, []);
+    }, [triggerUpdate]);
+
+    const importPGN = useCallback((pgn: string) => {
+        try {
+            const { PGNParser } = require('@/lib/pgn/parser');
+            const newTree = PGNParser.parse(pgn);
+            setTree(newTree);
+            triggerUpdate();
+            toast.success("PGN carregat correctament");
+        } catch (e) {
+            console.error("PGN Import error:", e);
+            toast.error("Error al carregar el PGN");
+        }
+    }, [triggerUpdate]);
 
     const resetGame = useCallback(() => {
         setGameFromFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
     }, [setGameFromFen]);
 
     const undo = useCallback(() => {
-        if (currentHistoryIndex > 0) {
-            goToMove(currentHistoryIndex - 1);
-        }
-    }, [currentHistoryIndex]);
+        tree.goBack();
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
 
     const redo = useCallback(() => {
-        if (currentHistoryIndex < history.length - 1) {
-            goToMove(currentHistoryIndex + 1);
-        }
-    }, [currentHistoryIndex, history.length]);
+        tree.goForward();
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
+
+    const goToNode = useCallback((node: MoveNode | null) => {
+        tree.goToNode(node);
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
 
     const goToMove = useCallback((index: number) => {
-        if (index >= 0 && index < history.length) {
-            const targetFen = history[index];
-            try {
-                const newGame = new Chess(targetFen);
-                setGame(newGame);
-                setFen(targetFen);
-                setCurrentHistoryIndex(index);
-            } catch (e) {
-                console.error("History corruption", e);
-            }
+        // Compatibility for linear history
+        const moves = tree.getMainLine();
+        if (index === -1) {
+            tree.goToNode(null);
+        } else if (index >= 0 && index < moves.length) {
+            tree.goToNode(moves[index]);
         }
-    }, [history]);
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
+
+    // Annotation Actions
+    const addComment = useCallback((text: string, position: 'before' | 'after' = 'after') => {
+        tree.addComment(text, position);
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
+
+    const updateComment = useCallback((index: number, text: string) => {
+        tree.updateComment(index, text);
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
+
+    const removeComment = useCallback((index: number) => {
+        tree.removeComment(index);
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
+
+    const toggleNAG = useCallback((nag: NAGSymbol) => {
+        const node = tree.getCurrentNode();
+        if (!node) return;
+        if (node.annotation.nags.includes(nag)) {
+            tree.removeNAG(nag);
+        } else {
+            tree.addNAG(nag);
+        }
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
+
+    const setEvaluation = useCallback((evaluation: Evaluation | undefined) => {
+        if (evaluation) {
+            tree.setEvaluation(evaluation);
+        } else {
+            // Remove evaluation (not explicitly in PGNTree, but we can set it to undefined)
+            const node = tree.getCurrentNode();
+            if (node) node.annotation.evaluation = undefined;
+        }
+        triggerUpdate();
+    }, [tree, triggerUpdate]);
 
     const toggleEngine = useCallback((active: boolean) => {
         setEngineEnabled(active);
@@ -174,16 +231,24 @@ export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/
             fen,
             orientation,
             setOrientation,
+            tree,
+            currentNode,
+            mainLine,
             makeMove,
             setGameFromFen,
             resetGame,
             undo,
             redo,
-            history,
-            currentHistoryIndex,
+            currentHistoryIndex: mainLine.indexOf(currentNode as any),
             goToMove,
+            goToNode,
+            addComment,
+            updateComment,
+            removeComment,
+            toggleNAG,
+            setEvaluation,
             isEvaluating: isAnalyzing,
-            evaluation,
+            evaluation: engineEvaluation,
             lines,
             toggleEngine,
             engineEnabled

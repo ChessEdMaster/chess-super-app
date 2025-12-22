@@ -9,9 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
 import { ExplorerPanel } from '@/components/analysis/ExplorerPanel';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GitBranch, LayoutGrid, Database, Settings, Save } from 'lucide-react';
-import { EngineLinesPanel } from '@/components/analysis/EngineLinesPanel'; // We can reuse or update this
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GitBranch, LayoutGrid, Database, Settings, Save, FilePlus } from 'lucide-react';
+import { EngineLinesPanel } from '@/components/analysis/EngineLinesPanel';
 import { DatabasePanel } from '@/components/analysis/DatabasePanel';
+import { AnnotationPanel } from '@/components/chess/annotation-panel';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -23,14 +24,24 @@ function AnalysisLayout() {
     orientation,
     makeMove,
     goToMove,
+    goToNode,
     currentHistoryIndex,
-    history,
+    mainLine,
+    tree,
+    currentNode,
     resetGame,
     isEvaluating,
     evaluation,
     lines,
     toggleEngine,
-    engineEnabled
+    engineEnabled,
+    addComment,
+    updateComment,
+    removeComment,
+    toggleNAG,
+    setEvaluation,
+    undo,
+    redo
   } = useChess();
 
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
@@ -48,32 +59,21 @@ function AnalysisLayout() {
     }
 
     if (sourceSquare) {
-      // Attempt move
       const moveMade = makeMove(sourceSquare, square);
       if (moveMade) {
         setSourceSquare(null);
         setCustomSquareStyles({});
       } else {
-        // If invalid move, but clicked on own piece, switch selection
-        // We don't have easy access to piece ownership here without querying game state
-        // For now, just reset
         setSourceSquare(null);
         setCustomSquareStyles({});
       }
     } else {
-      // Select piece
       setSourceSquare(square);
       setCustomSquareStyles({
         [square]: { background: 'rgba(255, 255, 0, 0.4)' }
       });
     }
   };
-
-  // Navigation handlers
-  const goBack = () => goToMove(currentHistoryIndex - 1);
-  const goForward = () => goToMove(currentHistoryIndex + 1);
-  const goToStart = () => goToMove(0);
-  const goToEnd = () => goToMove(history.length - 1);
 
   const handleSaveGame = async () => {
     const title = prompt('Entra un títol per aquesta anàlisi:', 'Anàlisi de ' + new Date().toLocaleDateString());
@@ -86,25 +86,8 @@ function AnalysisLayout() {
         return;
       }
 
-      // We need a PGN. Since useChess only gives FEN history, we can generate a basic PGN.
-      // Or if we had a pgnTree we would use it. 
-      // For now, let's just save the current FEN and some metadata.
-      // But the table is 'pgn_games', so it expects PGN.
-      const { Chess } = await import('chess.js');
-      const tempGame = new Chess();
-      // Replay history to build PGN
-      history.forEach(f => {
-        try {
-          if (f !== INITIAL_FEN) {
-            // This is actually complex because we don't have the moves, only FENS.
-            // chess.js move() needs san/uci. 
-            // Better: if we had a pgn generator.
-          }
-        } catch (e) { }
-      });
-
-      // Quick fix: Use the current FEN as the "PGN" or just a very simple PGN with FEN tag.
-      const pgn = `[FEN "${fen}"]\n*`;
+      const pgn = tree.toString();
+      const workData = tree.toJSON();
 
       // 1. Get or Create Collection
       let { data: collection, error: colError } = await supabase
@@ -131,10 +114,10 @@ function AnalysisLayout() {
         collection = newCol;
       }
 
-      // 2. Insert Game
       if (!collection) throw new Error('Failed to identify collection');
 
-      const { error } = await supabase
+      // 2. Insert Game
+      const { data: gameData, error } = await supabase
         .from('pgn_games')
         .insert({
           collection_id: collection.id,
@@ -144,12 +127,32 @@ function AnalysisLayout() {
           pgn: pgn,
           result: '*',
           date: new Date().toISOString().split('T')[0]
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // 3. Save WorkPGN (Extended Data)
+      const { error: workError } = await supabase
+        .from('work_pgns')
+        .insert({
+          game_id: gameData.id,
+          data: workData
+        });
+
+      if (workError) console.error('Failed to save WorkPGN:', workError);
+
       toast.success('Anàlisi desada correctament!');
     } catch (e: any) {
       toast.error('Error al desar: ' + e.message);
+    }
+  };
+
+  const handleImportPGN = () => {
+    const pgn = prompt('Enganxa el PGN aquí:');
+    if (pgn) {
+      importPGN(pgn);
     }
   };
 
@@ -202,19 +205,24 @@ function AnalysisLayout() {
 
           {/* Controls */}
           <Panel className="flex items-center justify-center gap-2 w-full p-2 bg-[var(--panel-bg)] border-[var(--panel-border)] backdrop-blur-md mx-auto max-w-lg rounded-xl shadow-lg">
-            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goToStart} disabled={currentHistoryIndex === 0} size="icon"><ChevronsLeft size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goBack} disabled={currentHistoryIndex === 0} size="icon"><ChevronLeft size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goForward} disabled={currentHistoryIndex === history.length - 1} size="icon"><ChevronRight size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goToEnd} disabled={currentHistoryIndex === history.length - 1} size="icon"><ChevronsRight size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={() => goToNode(null)} disabled={currentHistoryIndex === -1 && !currentNode} size="icon"><ChevronsLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={undo} size="icon"><ChevronLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={redo} size="icon"><ChevronRight size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={() => goToMove(mainLine.length - 1)} size="icon"><ChevronsRight size={20} /></Button>
             <div className="h-6 w-px bg-[var(--color-border)] mx-2" />
             <div className="flex bg-[var(--input-bg)] rounded-lg p-0.5 border border-[var(--input-border)]">
               <button onClick={() => setViewMode('2d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '2d' ? 'bg-[var(--color-secondary)] text-white shadow-sm' : 'text-[var(--color-secondary)] hover:text-[var(--color-primary)]'}`}>2D</button>
               <button onClick={() => setViewMode('3d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '3d' ? 'bg-[var(--color-secondary)] text-white shadow-sm' : 'text-[var(--color-secondary)] hover:text-[var(--color-primary)]'}`}>3D</button>
             </div>
             <div className="h-6 w-px bg-[var(--color-border)] mx-2" />
-            <Button variant="ghost" className="hover:bg-indigo-500/10 text-indigo-400 gap-2 px-3" onClick={handleSaveGame} size="sm">
-              <Save size={16} /> <span className="text-[10px] font-bold uppercase">Save</span>
-            </Button>
+            <div className="flex gap-1">
+              <Button variant="ghost" className="hover:bg-indigo-500/10 text-indigo-400 gap-2 px-3" onClick={handleSaveGame} size="sm">
+                <Save size={16} /> <span className="text-[10px] font-bold uppercase">Save</span>
+              </Button>
+              <Button variant="ghost" className="hover:bg-amber-500/10 text-amber-500 gap-2 px-3" onClick={handleImportPGN} size="sm">
+                <FilePlus size={16} /> <span className="text-[10px] font-bold uppercase">Import</span>
+              </Button>
+            </div>
           </Panel>
         </div>
 
@@ -223,7 +231,7 @@ function AnalysisLayout() {
           {/* Tabs */}
           <div className="flex border-b border-[var(--panel-border)] bg-[var(--color-muted)]/20 backdrop-blur">
             <button onClick={() => setActiveTab('analysis')} className={`flex-1 py-3 flex flex-col items-center gap-1 border-b-2 transition-colors ${activeTab === 'analysis' ? 'border-amber-500 text-amber-500 bg-amber-500/5' : 'border-transparent text-[var(--color-secondary)]'}`}>
-              <LayoutGrid size={16} /> <span className="text-[10px] font-bold uppercase">Engine</span>
+              <LayoutGrid size={16} /> <span className="text-[10px] font-bold uppercase">Analysis</span>
             </button>
             <button onClick={() => setActiveTab('explorer')} className={`flex-1 py-3 flex flex-col items-center gap-1 border-b-2 transition-colors ${activeTab === 'explorer' ? 'border-indigo-500 text-indigo-500 bg-indigo-500/5' : 'border-transparent text-[var(--color-secondary)]'}`}>
               <GitBranch size={16} /> <span className="text-[10px] font-bold uppercase">Explore</span>
@@ -233,17 +241,32 @@ function AnalysisLayout() {
             </button>
           </div>
 
-          <div className="flex-1 min-h-0 relative bg-[var(--background)]/50 p-2">
+          <div className="flex-1 min-h-0 relative bg-[var(--background)]/50 p-2 overflow-y-auto">
             {activeTab === 'analysis' && (
               <div className="flex flex-col gap-4 h-full">
+                {/* Engine Settings */}
                 <div className="flex items-center justify-between bg-[var(--panel-bg)] p-3 rounded-lg border border-[var(--border)]">
                   <span className="text-xs font-bold flex items-center gap-2">
                     <Settings size={14} /> Stockfish 16 (WASM)
                   </span>
                   <Switch checked={engineEnabled} onCheckedChange={toggleEngine} />
                 </div>
-                <div className="flex-1 overflow-y-auto">
-                  {/* Simple Lines Render for now */}
+
+                {/* Annotation Panel */}
+                <div className="flex-none">
+                  <AnnotationPanel
+                    node={currentNode}
+                    onAddComment={(text) => addComment(text, 'after')}
+                    onUpdateComment={updateComment}
+                    onRemoveComment={removeComment}
+                    onToggleNAG={toggleNAG}
+                    onSetEvaluation={(e: any) => setEvaluation(e)}
+                    isWorkMode={true}
+                  />
+                </div>
+
+                {/* Engine Lines */}
+                <div className="flex-1 overflow-y-auto min-h-[200px]">
                   {engineEnabled ? (
                     <div className="space-y-2">
                       {lines.map((line) => (
