@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useChess } from '@/components/chess/chess-context';
-import { useExplorer, ExplorerSource } from '@/hooks/use-explorer';
+import { useExplorer, ExplorerSource, ExplorerMove } from '@/hooks/use-explorer';
 import { Trophy, Users, Globe, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
