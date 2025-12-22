@@ -520,14 +520,13 @@ function AnalysisContent() {
 
     if (!move) return false;
 
-    const newTree = new PGNTree();
-    Object.assign(newTree, pgnTree);
-    newTree.addMove(move.san, createVariation);
+    const nextTree = pgnTree.clone();
+    nextTree.addMove(move.san, createVariation);
 
     setGame(gameCopy);
     setFen(gameCopy.fen());
     setLastMove(move.san);
-    setPgnTree(newTree);
+    setPgnTree(nextTree);
     if (createVariation) setCreateVariation(false);
     return true;
   }
@@ -598,34 +597,40 @@ function AnalysisContent() {
     }
   };
   const goBack = () => {
-    const newTree = new PGNTree();
-    Object.assign(newTree, pgnTree);
-    newTree.goBack();
-    handlePositionChange(newTree.getCurrentFen());
-    setPgnTree(newTree);
+    const nextTree = pgnTree.clone();
+    const parent = nextTree.goBack();
+    setPgnTree(nextTree);
+    if (parent) {
+      handlePositionChange(parent.fen);
+    } else {
+      handlePositionChange(nextTree.getGame().rootPosition);
+    }
   };
+
   const goForward = () => {
-    const newTree = new PGNTree();
-    Object.assign(newTree, pgnTree);
-    newTree.goForward();
-    handlePositionChange(newTree.getCurrentFen());
-    setPgnTree(newTree);
+    const nextTree = pgnTree.clone();
+    const next = nextTree.goForward();
+    setPgnTree(nextTree);
+    if (next) {
+      handlePositionChange(next.fen);
+    }
   };
+
   const goToStart = () => {
-    const newTree = new PGNTree();
-    Object.assign(newTree, pgnTree);
-    newTree.reset();
-    handlePositionChange(newTree.getCurrentFen());
-    setPgnTree(newTree);
+    const nextTree = pgnTree.clone();
+    nextTree.reset();
+    setPgnTree(nextTree);
+    handlePositionChange(nextTree.getGame().rootPosition);
   };
+
   const goToEnd = () => {
-    const newTree = new PGNTree();
-    Object.assign(newTree, pgnTree);
-    const mainLine = newTree.getMainLine();
+    const nextTree = pgnTree.clone();
+    const mainLine = nextTree.getMainLine();
     if (mainLine.length > 0) {
-      newTree.goToNode(mainLine[mainLine.length - 1]);
-      handlePositionChange(newTree.getCurrentFen());
-      setPgnTree(newTree);
+      const lastNode = mainLine[mainLine.length - 1];
+      nextTree.goToNode(lastNode);
+      setPgnTree(nextTree);
+      handlePositionChange(lastNode.fen);
     }
   };
 
@@ -806,16 +811,14 @@ function AnalysisContent() {
                       engineEval={evaluation}
                       isWorkMode={isWorkMode}
                       onAddImage={(url) => {
-                        const newTree = new PGNTree();
-                        Object.assign(newTree, pgnTree);
-                        newTree.addImage(url);
-                        setPgnTree(newTree);
+                        const nextTree = pgnTree.clone();
+                        nextTree.addImage(url);
+                        setPgnTree(nextTree);
                       }}
                       onRemoveImage={(index) => {
-                        const newTree = new PGNTree();
-                        Object.assign(newTree, pgnTree);
-                        newTree.removeImage(index);
-                        setPgnTree(newTree);
+                        const nextTree = pgnTree.clone();
+                        nextTree.removeImage(index);
+                        setPgnTree(nextTree);
                       }}
                     />
                   </div>

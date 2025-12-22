@@ -36,7 +36,41 @@ export class PGNTree {
 
     // Generate unique ID for nodes
     private generateId(): string {
-        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return Math.random().toString(36).substr(2, 9);
+    }
+
+    /**
+     * Create a deep clone of the tree
+     */
+    clone(): PGNTree {
+        const newTree = new PGNTree(this.game.rootPosition);
+
+        // Use JSON for deep clone of the game structure (careful with parent refs)
+        // We'll use the serialization/deserialization logic we already have or a custom one
+        const data = this.toJSON();
+        const cloned = PGNTree.fromJSON(data);
+
+        // Ensure current node is correctly set in the clone
+        if (this.game.currentNode) {
+            // Re-find the current node in the new tree by ID
+            const findNodeById = (nodeId: string, nodes: MoveNode[]): MoveNode | null => {
+                for (const node of nodes) {
+                    if (node.id === nodeId) return node;
+                    for (const v of node.variations) {
+                        const found = findNodeById(nodeId, v.moves);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            cloned.game.currentNode = findNodeById(this.game.currentNode.id, cloned.game.mainLine);
+            if (cloned.game.currentNode) {
+                cloned.goToNode(cloned.game.currentNode);
+            }
+        }
+
+        return cloned;
     }
 
     // Create empty annotation
