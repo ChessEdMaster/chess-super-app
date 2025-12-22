@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, BookOpen, ChevronRight, X, Play, Copy, RefreshCw, Library } from 'lucide-react';
@@ -247,6 +248,7 @@ function extractMoves(description: string): string {
 }
 
 function OpeningDetailModal({ opening, onClose }: { opening: Opening, onClose: () => void }) {
+    const router = useRouter();
     const { pgn, fen } = useMemo(() => {
         const moves = extractMoves(opening.description);
         let calculatedFen = 'start';
@@ -259,6 +261,15 @@ function OpeningDetailModal({ opening, onClose }: { opening: Opening, onClose: (
         }
         return { pgn: moves, fen: calculatedFen };
     }, [opening]);
+
+    const handlePractice = () => {
+        if (pgn) {
+            localStorage.setItem('analysis_pgn', pgn);
+            router.push('/analysis');
+        } else {
+            toast.error('No moves available for this opening');
+        }
+    };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(pgn);
@@ -324,6 +335,7 @@ function OpeningDetailModal({ opening, onClose }: { opening: Opening, onClose: (
                         </Button>
                         <ShinyButton
                             variant="primary"
+                            onClick={handlePractice}
                             className="h-12 text-xs uppercase tracking-wider"
                         >
                             <Play size={16} className="mr-2" /> Practice
