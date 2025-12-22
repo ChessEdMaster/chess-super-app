@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, User, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, BookOpen, Menu, X, Bot } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, User, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, BookOpen, Menu, X, Bot, Users, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -33,10 +33,22 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const tabs = [
+    const desktopTabs = [
         { name: 'Batalla', icon: Swords, href: '/' },
+        { name: 'Social', icon: Users, href: '/social' },
+        { name: 'Arcade', icon: Trophy, href: '/minigames' },
         { name: 'Anàlisi', icon: Search, href: '/analysis' },
         { name: 'Cartes', icon: Layers, href: '/cards' },
+        { name: 'Acadèmia', icon: GraduationCap, href: '/academy' },
+        { name: 'Studio', icon: Sparkles, href: '/studio' },
+        { name: 'Perfil', icon: User, href: '/profile' },
+    ];
+
+    // Limit mobile tabs to 5 key items to fit screen
+    const mobileTabs = [
+        { name: 'Batalla', icon: Swords, href: '/' },
+        { name: 'Social', icon: Users, href: '/social' },
+        { name: 'Anàlisi', icon: Search, href: '/analysis' },
         { name: 'Acadèmia', icon: GraduationCap, href: '/academy' },
         { name: 'Perfil', icon: User, href: '/profile' },
     ];
@@ -71,7 +83,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
                 {/* Sidebar Nav */}
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-subtle">
-                    {tabs.map((tab) => {
+                    {desktopTabs.map((tab) => {
                         const isActive = pathname === tab.href;
                         return (
                             <Link
@@ -100,6 +112,24 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                             <ShoppingBag size={18} />
                             Botiga
                         </Link>
+                        <Link href="/features" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-amber-500 hover:bg-[var(--color-muted)] hover:text-amber-400 transition-all">
+                            <Sparkles size={18} />
+                            Beta Features
+                        </Link>
+                        <Link href="/puzzles" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-[var(--color-muted)] hover:text-foreground transition-all">
+                            <div className="w-4 h-4 border-2 border-current rounded-sm" />
+                            Puzzles
+                        </Link>
+                        <Link href="/mapa-escacs" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-[var(--color-muted)] hover:text-foreground transition-all">
+                            <span className="text-lg leading-none">🗺️</span>
+                            Mapa
+                        </Link>
+                        {profile.role === 'SuperAdmin' && (
+                            <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-[var(--color-muted)] hover:text-red-300 transition-all">
+                                <Shield size={18} />
+                                Admin
+                            </Link>
+                        )}
                     </div>
                 </nav>
 
@@ -122,7 +152,10 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                         <Settings size={16} className="text-muted-foreground" />
                     </button>
                     {profileOpen && (
-                        <div className="absolute bottom-24 left-4 w-56 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl p-1 z-50 animate-in slide-in-from-left-2">
+                        <div className="absolute bottom-24 left-4 w-56 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl p-1 z-50 animate-in slide-in-from-left-2 pb-2">
+                            <Link href="/features" className="w-full text-left px-3 py-2 text-sm text-amber-500 hover:bg-[var(--color-muted)] rounded-lg flex items-center gap-2 mb-1">
+                                <Sparkles size={14} /> Beta Features
+                            </Link>
                             <button onClick={signOut} className="w-full text-left px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 rounded-lg flex items-center gap-2">
                                 <LogOut size={14} /> Tancar Sessió
                             </button>
@@ -149,6 +182,37 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                             />
                         </div>
                     </button>
+                    {/* Mobile Profile Dropdown Overlay */}
+                    {profileOpen && (
+                        <>
+                            <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setProfileOpen(false)} />
+                            <div className="absolute top-16 left-4 w-64 bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-top-2">
+                                <Link href="/features" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-amber-500 hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                    <Sparkles size={18} /> Features Beta
+                                </Link>
+                                <Link href="/minigames" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                    <Trophy size={18} /> Arcade
+                                </Link>
+                                <Link href="/studio" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                    <Layers size={18} /> Studio & Cartes
+                                </Link>
+                                <div className="h-px bg-[var(--border)] my-1" />
+                                <Link href="/shop" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                    <ShoppingBag size={18} /> Botiga
+                                </Link>
+                                <Link href="/openings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors" onClick={() => setProfileOpen(false)}>
+                                    <BookOpen size={18} /> Enciclopèdia
+                                </Link>
+                                <div className="h-px bg-[var(--border)] my-1" />
+                                <button
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+                                    onClick={() => { setProfileOpen(false); signOut(); }}
+                                >
+                                    <LogOut size={18} /> Tancar Sessió
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -174,7 +238,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
             {/* --- MOBILE BOTTOM NAV (Only Visible on Mobile/Tablet) --- */}
             <nav className="lg:hidden h-20 bg-[var(--nav-bg)] border-t border-[var(--border)] flex items-center justify-around z-50 pb-safe shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] transition-colors duration-300">
-                {tabs.map((tab) => {
+                {mobileTabs.map((tab) => {
                     const isActive = pathname === tab.href;
                     return (
                         <Link
