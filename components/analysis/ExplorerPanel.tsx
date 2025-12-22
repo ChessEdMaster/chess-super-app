@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useChess } from '@/components/chess/chess-context';
 import { useExplorer, ExplorerSource } from '@/hooks/use-explorer';
 import { Trophy, Users, Globe, BookOpen } from 'lucide-react';
-import { getPercent } from '@/lib/utils'; // Assuming utils exists, or inline helper
 
 export function ExplorerPanel() {
     const { fen, makeMove } = useChess();
