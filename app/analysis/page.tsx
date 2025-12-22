@@ -669,16 +669,17 @@ function AnalysisContent() {
   if (!isClient) return <div className="h-full flex items-center justify-center text-zinc-500"><Loader2 className="animate-spin mr-2" /> Carregant...</div>;
 
   return (
-    <div className="h-[calc(100vh-4rem)] w-full flex flex-col p-4">
+    <div className="w-full h-full flex flex-col p-2 lg:p-4 gap-2 lg:gap-4 max-w-[1600px] mx-auto">
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 h-full w-full max-w-7xl mx-auto min-h-0">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-2 lg:gap-4 min-h-0">
 
         {/* LEFT COLUMN: Board + Controls */}
-        <div className="flex-1 flex flex-col min-h-0 gap-3">
+        <div className="flex-none lg:flex-1 flex flex-col gap-2 min-h-0 lg:min-h-full">
 
-          {/* Board Container */}
-          <div className="flex-1 w-full min-h-0 relative flex items-center justify-center">
-            <div className="w-full h-full max-h-full aspect-square shadow-2xl rounded-2xl overflow-hidden glass-panel mx-auto bg-black/20 p-1 flex items-center justify-center relative border-8 border-zinc-800 ring-1 ring-white/10">
+          {/* Board Container - Mobile: Fixed Aspect Ratio, Desktop: Flexible */}
+          <div className="w-full aspect-square lg:aspect-auto lg:h-full lg:flex-1 relative shrink-0">
+            <div className="absolute inset-0 w-full h-full shadow-2xl rounded-xl overflow-hidden glass-panel bg-black/20 flex items-center justify-center border-4 lg:border-8 border-[var(--board-border)]">
               {/* Engine Bar Overlay (Minimal) */}
               {isAnalyzing && evaluation && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-2 shadow-xl">
@@ -713,31 +714,31 @@ function AnalysisContent() {
           </div>
 
           {/* Navigation Controls */}
-          <Panel className="flex items-center justify-center gap-2 w-full p-2 bg-zinc-900/60 border-zinc-800 mx-auto max-w-lg">
-            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goToStart} disabled={pgnTree.isAtStart()} size="icon"><ChevronsLeft size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goBack} disabled={pgnTree.isAtStart()} size="icon"><ChevronLeft size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goForward} disabled={pgnTree.isAtEnd()} size="icon"><ChevronRight size={20} /></Button>
-            <Button variant="ghost" className="hover:bg-zinc-800 text-zinc-400" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="icon"><ChevronsRight size={20} /></Button>
-            <div className="h-6 w-px bg-zinc-800 mx-2" />
-            <Button variant="ghost" onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "text-amber-500 bg-amber-500/10" : "text-zinc-500 hover:text-zinc-300"} size="icon" title="New Variation">
+          <Panel className="flex items-center justify-center gap-2 w-full p-2 bg-[var(--panel-bg)] border-[var(--panel-border)] backdrop-blur-md mx-auto max-w-lg rounded-xl shadow-lg">
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goToStart} disabled={pgnTree.isAtStart()} size="icon"><ChevronsLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goBack} disabled={pgnTree.isAtStart()} size="icon"><ChevronLeft size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goForward} disabled={pgnTree.isAtEnd()} size="icon"><ChevronRight size={20} /></Button>
+            <Button variant="ghost" className="hover:bg-[var(--color-muted)] text-[var(--color-secondary)]" onClick={goToEnd} disabled={pgnTree.isAtEnd()} size="icon"><ChevronsRight size={20} /></Button>
+            <div className="h-6 w-px bg-[var(--color-border)] mx-2" />
+            <Button variant="ghost" onClick={() => setCreateVariation(!createVariation)} className={createVariation ? "text-[var(--color-gold)] bg-[var(--color-gold)]/10" : "text-[var(--color-secondary)] hover:text-[var(--color-primary)]"} size="icon" title="New Variation">
               <GitBranch size={18} />
             </Button>
-            <div className="h-6 w-px bg-zinc-800 mx-2" />
-            <div className="flex bg-zinc-950/50 rounded-lg p-0.5 border border-white/5">
-              <button onClick={() => setViewMode('2d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '2d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-400'}`}>2D</button>
-              <button onClick={() => setViewMode('3d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '3d' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-400'}`}>3D</button>
+            <div className="h-6 w-px bg-[var(--color-border)] mx-2" />
+            <div className="flex bg-[var(--input-bg)] rounded-lg p-0.5 border border-[var(--input-border)]">
+              <button onClick={() => setViewMode('2d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '2d' ? 'bg-[var(--color-secondary)] text-white shadow-sm' : 'text-[var(--color-secondary)] hover:text-[var(--color-primary)]'}`}>2D</button>
+              <button onClick={() => setViewMode('3d')} className={`px-2 py-1 rounded text-xs font-bold transition-all ${viewMode === '3d' ? 'bg-[var(--color-secondary)] text-white shadow-sm' : 'text-[var(--color-secondary)] hover:text-[var(--color-primary)]'}`}>3D</button>
             </div>
           </Panel>
         </div>
 
         {/* RIGHT COLUMN: Tabbed Interface */}
-        <GameCard variant="default" className="w-full lg:w-[420px] h-full flex flex-col overflow-hidden bg-zinc-900/80 border-zinc-800 p-0">
+        <GameCard variant="default" className="w-full lg:w-[420px] h-full flex flex-col overflow-hidden bg-[var(--panel-bg)] border-[var(--panel-border)] p-0 shadow-xl">
 
           {/* TAB HEADERS */}
-          <div className="flex border-b border-black/20 bg-zinc-950/50 backdrop-blur">
+          <div className="flex border-b border-[var(--panel-border)] bg-[var(--color-muted)]/20 backdrop-blur">
             <button
               onClick={() => { setActiveTab('analysis'); setIsSetupMode(false); }}
-              className={`flex-1 py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'analysis' ? 'text-amber-400 bg-amber-500/5 border-b-2 border-amber-500' : 'text-zinc-600 hover:text-zinc-400 hover:bg-zinc-900'}`}
+              className={`flex-1 py-3 lg:py-4 flex flex-col items-center gap-1 transition-all ${activeTab === 'analysis' ? 'text-[var(--color-gold)] bg-[var(--color-gold)]/5 border-b-2 border-[var(--color-gold)]' : 'text-[var(--color-secondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]'}`}
             >
               <ActivityIcon size={20} />
               <span className="text-[10px] font-bold tracking-wide">Analysis</span>

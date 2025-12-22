@@ -10,17 +10,20 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 default:
-                    "bg-gradient-to-b from-amber-400 to-amber-600 text-black shadow-lg shadow-amber-900/40 hover:from-amber-300 hover:to-amber-500 hover:shadow-amber-500/20 border border-amber-300/20",
+                    "bg-[var(--color-primary)] text-[var(--background)] hover:opacity-90 shadow-md",
                 destructive:
-                    "bg-gradient-to-b from-red-500 to-red-700 text-white shadow-sm hover:from-red-400 hover:to-red-600",
+                    "bg-[var(--color-danger)] text-white shadow-sm hover:opacity-90",
                 outline:
-                    "border border-zinc-700 bg-zinc-900/50 shadow-sm hover:bg-zinc-800 hover:text-white backdrop-blur-sm",
+                    "border border-[var(--color-border)] bg-transparent shadow-sm hover:bg-[var(--color-muted)] hover:text-[var(--foreground)]",
                 secondary:
-                    "bg-zinc-800 text-zinc-300 shadow-sm hover:bg-zinc-700 hover:text-white border border-zinc-700/50",
-                ghost: "hover:bg-zinc-800/50 hover:text-white",
-                link: "text-amber-500 underline-offset-4 hover:underline",
-                premium: "bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-400 hover:to-orange-500 shadow-lg shadow-orange-900/40 border border-orange-400/50",
-                glass: "bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 backdrop-blur-md shadow-sm"
+                    "bg-[var(--color-secondary)] text-white shadow-sm hover:opacity-80",
+                ghost: "hover:bg-[var(--color-muted)] hover:text-[var(--foreground)]",
+                link: "text-[var(--color-accent)] underline-offset-4 hover:underline",
+                premium: "bg-gradient-to-r from-[var(--color-gold)] to-orange-600 text-white hover:opacity-90 shadow-lg border border-orange-400/50",
+                glass: "bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--foreground)] hover:bg-[var(--glass-border)] backdrop-blur-md shadow-sm",
+
+                // Legacy / Game specific (kept for specific game actions)
+                game: "bg-gradient-to-b from-amber-400 to-amber-600 text-black shadow-lg shadow-amber-900/40 hover:from-amber-300 hover:to-amber-500 hover:shadow-amber-500/20 border border-amber-300/20",
             },
             size: {
                 default: "h-10 px-6 py-2",

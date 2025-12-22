@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { AuthProvider } from "@/components/auth-provider";
-import { MobileLayout } from "@/components/layout/mobile-layout";
+import { ResponsiveLayout } from "@/components/layout/responsive-layout";
 import { PlayerStoreSync } from "@/components/player-store-sync";
 import { PresenceSync } from "@/components/presence/presence-sync";
 import { GlobalBackground } from "@/components/global-background";
@@ -10,7 +10,6 @@ import Image from "next/image";
 import { Toaster } from '@/components/ui/sonner';
 import { AssistantWidget } from "@/components/ai/assistant-widget";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SplashScreen } from "@/components/splash-screen";
 
 export const metadata: Metadata = {
   title: "CHESS CLANS",
@@ -36,10 +35,9 @@ export default function RootLayout({
             <PlayerStoreSync>
               <PresenceSync />
               <ThemeProvider>
-                <MobileLayout>
-                  <SplashScreen />
+                <ResponsiveLayout>
                   {children}
-                </MobileLayout>
+                </ResponsiveLayout>
                 <AssistantWidget />
                 <Toaster position="top-center" richColors />
               </ThemeProvider>

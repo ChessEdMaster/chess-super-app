@@ -20,7 +20,7 @@ const GameCard = React.forwardRef<HTMLDivElement, GameCardProps>(
             <div
                 ref={ref}
                 className={cn(
-                    'relative rounded-2xl border-4 p-4 md:p-5',
+                    'relative rounded-2xl border-[length:var(--card-border-width)] p-4 md:p-5',
                     'transition-transform hover:scale-[1.02] active:scale-[0.98]',
                     variants[variant],
                     className

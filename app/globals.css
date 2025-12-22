@@ -38,12 +38,23 @@
   /* Slate-900 (Main text/actions) */
   --color-secondary: #475569;
   /* Slate-600 */
+  --neutral-bg: #94a3b8;
 
   /* Accents (Use sparingly) */
   --color-accent: #2563eb;
   /* Blue-600 */
   --color-gold: #d97706;
   /* Amber-600 (Darker for light mode contrast) */
+
+  /* Specific UI Elements */
+  --board-border: #94a3b8;
+  --board-bg: #e2e8f0;
+
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --panel-border: #cbd5e1;
+
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
 
   /* Status */
   --color-success: #16a34a;
@@ -56,6 +67,7 @@
   --shadow-comic-hover: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
   --text-stroke-width: 0px;
   /* No text stroke in pro mode */
+  --card-border-width: 1px;
 }
 
 /* --- CLASH ROYALE THEME (OVERRIDE) --- */
@@ -78,9 +90,6 @@
   --overlay-mid: rgba(30, 27, 75, 0.5);
   --overlay-end: rgba(2, 6, 23, 0.9);
 
-  --overlay-mid: rgba(30, 27, 75, 0.5);
-  --overlay-end: rgba(2, 6, 23, 0.9);
-
   --card-bg: #18181b;
   /* Zinc-900 */
   --card-border: #27272a;
@@ -88,9 +97,21 @@
   --muted-bg: #27272a;
   /* Zinc-800 */
   --color-secondary: #94a3b8;
+  --neutral-bg: #3f3f46;
 
   --color-accent: #00e5ff;
   --color-gold: #ffd700;
+
+  /* Specific UI Elements */
+  --board-border: #4a044e;
+  /* Deep purple/magenta border */
+  --board-bg: #18181b;
+
+  --panel-bg: rgba(24, 24, 27, 0.8);
+  --panel-border: #3f3f46;
+
+  --input-bg: #27272a;
+  --input-border: #3f3f46;
 
   --color-success: #00c853;
   --color-danger: #d50000;
@@ -98,6 +119,7 @@
   --shadow-comic: 0px 4px 0px 0px rgba(0, 0, 0, 0.4);
   --shadow-comic-hover: 0px 2px 0px 0px rgba(0, 0, 0, 0.4);
   --text-stroke-width: 1px;
+  --card-border-width: 4px;
 }
 
 @theme inline {
@@ -111,11 +133,15 @@
 
   --color-border: var(--border);
 
-  --color-border: var(--border);
-
   --color-card: var(--card-bg);
   --color-card-border: var(--card-border);
   --color-muted: var(--muted-bg);
+  --color-neutral: var(--neutral-bg);
+
+  --color-panel: var(--panel-bg);
+  --color-panel-border: var(--panel-border);
+  --color-input: var(--input-bg);
+  --color-input-border: var(--input-border);
 
   --color-success: var(--color-success);
   --color-danger: var(--color-danger);
@@ -147,7 +173,7 @@ body {
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 2px solid var(--glass-border);
+  border: var(--card-border-width) solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
   border-radius: 1.5rem;
   /* rounded-3xl */
