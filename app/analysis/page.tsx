@@ -169,6 +169,9 @@ function AnalysisContent() {
             white: pgnTree.getHeader('White') || '?',
             black: pgnTree.getHeader('Black') || '?',
             result: pgnTree.getHeader('Result') || '*',
+            date: pgnTree.getHeader('Date') || new Date().toISOString().split('T')[0],
+            event: pgnTree.getHeader('Event') || 'Analysis Session',
+            site: pgnTree.getHeader('Site') || '?',
             updated_at: new Date().toISOString()
           }).eq('id', targetGameId);
 

@@ -55,56 +55,38 @@ export class PGNParser {
      */
     private static extractMetadata(pgn: string): PGNMetadata {
         const metadata: PGNMetadata = {};
-        const headerRegex = /\[(\w+)\s+"([^"]*)"\]/g;
+        // Match [Key "Value"] even across multiple lines if needed
+        const headerRegex = /\[(\w+)\s+"([\s\S]*?)"\]/g;
         let match;
 
         while ((match = headerRegex.exec(pgn)) !== null) {
-            const key = match[1].toLowerCase();
+            const originalKey = match[1];
             const value = match[2];
 
-            switch (key) {
-                case 'event':
-                    metadata.event = value;
-                    break;
-                case 'site':
-                    metadata.site = value;
-                    break;
-                case 'date':
-                    metadata.date = value;
-                    break;
-                case 'round':
-                    metadata.round = value;
-                    break;
-                case 'white':
-                    metadata.white = value;
-                    break;
-                case 'black':
-                    metadata.black = value;
-                    break;
-                case 'result':
-                    metadata.result = value;
-                    break;
-                case 'whiteelo':
-                    metadata.whiteElo = value;
-                    break;
-                case 'blackelo':
-                    metadata.blackElo = value;
-                    break;
-                case 'eco':
-                    metadata.eco = value;
-                    break;
-                case 'opening':
-                    metadata.opening = value;
-                    break;
-                case 'timecontrol':
-                    metadata.timeControl = value;
-                    break;
-                case 'annotator':
-                    metadata.annotator = value;
-                    break;
-                default:
-                    metadata[key] = value;
-            }
+            // Normalize standard keys to match PGNMetadata interface or preserve case for custom ones
+            const lowerKey = originalKey.toLowerCase();
+
+            // Standard PGN tags usually follow this capitalization
+            const standardTags: Record<string, string> = {
+                'event': 'event',
+                'site': 'site',
+                'date': 'date',
+                'round': 'round',
+                'white': 'white',
+                'black': 'black',
+                'result': 'result',
+                'whiteelo': 'whiteElo',
+                'blackelo': 'blackElo',
+                'eco': 'eco',
+                'opening': 'opening',
+                'timecontrol': 'timeControl',
+                'annotator': 'annotator',
+                'fen': 'fen',
+                'setup': 'setUp'
+            };
+
+            const targetKey = standardTags[lowerKey] || originalKey;
+            metadata[targetKey] = value;
         }
 
         return metadata;

@@ -386,28 +386,31 @@ export class PGNTree {
     toString(): string {
         let pgn = '';
 
-        // 1. Headers
-        const headers: Record<string, string> = {
-            'Event': '?',
-            'Site': '?',
-            'Date': '????.??.??',
-            'Round': '?',
-            'White': '?',
-            'Black': '?',
-            'Result': '*',
-            ...this.game.metadata
-        };
+        // 1. Headers (Seven Tag Roster first)
+        const standardOrder = ['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result'];
+        const metadata = { ...this.game.metadata };
 
-        for (const [key, value] of Object.entries(headers)) {
+        // Ensure standard headers exist even if empty
+        standardOrder.forEach(key => {
+            const value = metadata[key] || '?';
             pgn += `[${key} "${value}"]\n`;
-        }
+            delete metadata[key];
+        });
+
+        // Add remaining headers
+        Object.entries(metadata).forEach(([key, value]) => {
+            if (value !== undefined) {
+                pgn += `[${key} "${value}"]\n`;
+            }
+        });
         pgn += '\n';
 
         // 2. Moves
         pgn += this.renderVariations(this.game.mainLine);
 
         // 3. Result
-        pgn += ` ${headers['Result'] || '*'}`;
+        const result = this.game.metadata['Result'] || '*';
+        pgn += ` ${result}`;
 
         return pgn;
     }

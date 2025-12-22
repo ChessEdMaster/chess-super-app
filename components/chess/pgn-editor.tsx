@@ -13,10 +13,13 @@ import {
     FileText,
     GitBranch,
     Check,
+    Settings2,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PGNTagsEditor } from './pgn-tags-editor';
 import { PGNTree } from '@/lib/pgn/tree';
 import { PGNParser } from '@/lib/pgn/parser';
-import type { MoveNode, Evaluation, NAGSymbol } from '@/types/pgn';
+import type { MoveNode, Evaluation, NAGSymbol, PGNMetadata } from '@/types/pgn';
 import { VariationTree, MoveList } from './variation-tree';
 import { AnnotationPanel } from './annotation-panel';
 
@@ -44,6 +47,7 @@ export function PGNEditor({
 }: PGNEditorProps) {
     const [viewMode, setViewMode] = useState<'tree' | 'linear'>('linear');
     const [showAnnotationPanel] = useState(true);
+    const [isTagsEditorOpen, setIsTagsEditorOpen] = useState(false);
 
     const game = tree.getGame();
     const currentNode = tree.getCurrentNode();
@@ -132,8 +136,35 @@ export function PGNEditor({
         onTreeChange(tree);
     };
 
+    const handleUpdateMetadata = (newMetadata: PGNMetadata) => {
+        tree.setMetadata(newMetadata);
+        onTreeChange(tree);
+    };
+
     return (
         <div className="flex flex-col h-full gap-2">
+            {/* Header Info */}
+            <div className="flex items-center justify-between px-3 py-2 bg-zinc-950/50 rounded-lg border border-white/5">
+                <div className="flex flex-col overflow-hidden">
+                    <div className="flex items-center gap-1.5 font-bold text-xs truncate">
+                        <span className="text-zinc-200">{game.metadata.White || 'White'}</span>
+                        <span className="text-zinc-500 font-light">vs</span>
+                        <span className="text-zinc-200">{game.metadata.Black || 'Black'}</span>
+                    </div>
+                    <div className="text-[10px] text-zinc-500 truncate">
+                        {game.metadata.Event || 'Analysis'} • {game.metadata.Date || '????.??.??'}
+                    </div>
+                </div>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsTagsEditorOpen(true)}
+                    className="h-8 px-2 text-xs gap-1.5 text-zinc-400 hover:text-white"
+                >
+                    <Settings2 size={14} />
+                    Game Info
+                </Button>
+            </div>
 
             {/* Move Display */}
             <div className="flex-1 bg-zinc-950/30 rounded-lg overflow-y-auto scrollbar-subtle border border-white/5 relative group">
@@ -188,6 +219,13 @@ export function PGNEditor({
                     />
                 </div>
             )}
+
+            <PGNTagsEditor
+                isOpen={isTagsEditorOpen}
+                onClose={() => setIsTagsEditorOpen(false)}
+                metadata={game.metadata}
+                onSave={handleUpdateMetadata}
+            />
         </div>
     );
 }

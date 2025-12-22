@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from '@/components/ui/badge';
 import { minePuzzles, getLichessTV } from '@/app/actions/lichess-actions';
+import { PGNParser } from '@/lib/pgn/parser';
 import { toast } from 'sonner';
 
 interface DatabaseManagerProps {
@@ -146,14 +147,19 @@ export const DatabaseManager = ({ onLoadGame, currentPgn }: DatabaseManagerProps
         if (importFile) {
             pgnContent = await importFile.text();
         }
+
+        const tree = PGNParser.parse(pgnContent);
+        const metadata = tree.getGame().metadata;
+
         const { error } = await supabase.from('pgn_games').insert({
             collection_id: targetCollection,
             pgn: pgnContent,
-            white: extractTag(pgnContent, 'White') || 'Unknown',
-            black: extractTag(pgnContent, 'Black') || 'Unknown',
-            event: extractTag(pgnContent, 'Event') || 'Imported Game',
-            date: extractTag(pgnContent, 'Date') || new Date().toISOString().split('T')[0],
-            result: extractTag(pgnContent, 'Result') || '*',
+            white: metadata.white || 'Unknown',
+            black: metadata.black || 'Unknown',
+            event: metadata.event || 'Imported Game',
+            date: metadata.date || new Date().toISOString().split('T')[0],
+            result: metadata.result || '*',
+            site: metadata.site || '?',
         });
         if (!error) {
             setIsImportOpen(false);
@@ -166,14 +172,19 @@ export const DatabaseManager = ({ onLoadGame, currentPgn }: DatabaseManagerProps
 
     const handleSaveGame = async () => {
         if (!currentPgn || !targetCollection) return;
+
+        const tree = PGNParser.parse(currentPgn);
+        const metadata = tree.getGame().metadata;
+
         const { error } = await supabase.from('pgn_games').insert({
             collection_id: targetCollection,
             pgn: currentPgn,
-            white: extractTag(currentPgn, 'White') || 'Unknown',
-            black: extractTag(currentPgn, 'Black') || 'Unknown',
-            event: extractTag(currentPgn, 'Event') || 'Analysis Game',
-            date: extractTag(currentPgn, 'Date') || new Date().toISOString().split('T')[0],
-            result: extractTag(currentPgn, 'Result') || '*',
+            white: metadata.white || 'Unknown',
+            black: metadata.black || 'Unknown',
+            event: metadata.event || 'Analysis Game',
+            date: metadata.date || new Date().toISOString().split('T')[0],
+            result: metadata.result || '*',
+            site: metadata.site || '?',
         });
         if (!error) {
             setIsSaveOpen(false);
