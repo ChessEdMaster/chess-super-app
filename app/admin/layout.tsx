@@ -8,12 +8,12 @@ export default function AdminLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex flex-col min-h-screen bg-zinc-950 font-sans">
+        <div className="flex flex-col min-h-screen bg-[var(--background)] font-sans">
             <SiteHeader />
             <div className="flex-1 container mx-auto py-8 px-4">
-                <div className="mb-8 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800 flex overflow-x-auto">
+                <div className="mb-8 p-1 bg-[var(--panel-bg)]/50 rounded-xl border border-[var(--border)] flex overflow-x-auto">
                     <AdminNavLink href="/admin" icon={LayoutDashboard} exact>Dashboard</AdminNavLink>
-                    <div className="w-px bg-zinc-800 mx-1"></div>
+                    <div className="w-px bg-[var(--border)] mx-1"></div>
                     <AdminNavLink href="/admin/users" icon={Users}>Usuaris</AdminNavLink>
                     <AdminNavLink href="/admin/roles" icon={Shield}>Rols</AdminNavLink>
                     <AdminNavLink href="/admin/permissions" icon={Lock}>Permisos</AdminNavLink>
@@ -32,7 +32,7 @@ function AdminNavLink({ href, children, icon: Icon, exact }: { href: string; chi
     return (
         <Link
             href={href}
-            className="flex-1 min-w-[120px] px-4 py-3 flex items-center justify-center gap-2 text-sm font-bold text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all group"
+            className="flex-1 min-w-[120px] px-4 py-3 flex items-center justify-center gap-2 text-sm font-bold text-[var(--color-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] rounded-lg transition-all group"
         >
             <Icon size={16} className="group-hover:text-indigo-400 transition-colors" />
             {children}

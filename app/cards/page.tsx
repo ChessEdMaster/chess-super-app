@@ -48,38 +48,38 @@ export default function CardsPage() {
     return (
         <div className="h-full w-full p-4 md:p-6 overflow-y-auto custom-scrollbar pb-24 max-w-7xl mx-auto">
             {/* Header */}
-            <Panel className="mb-8 p-6 flex items-center justify-between border-b-4 border-zinc-800">
+            <Panel className="mb-8 p-6 flex items-center justify-between border-b-4 border-[var(--border)]">
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg border-2 border-amber-300 transform -rotate-3">
                         <BookOpen size={32} className="text-white drop-shadow-md" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black text-white uppercase tracking-wider font-display text-stroke shadow-black drop-shadow-md">
+                        <h1 className="text-3xl font-black text-[var(--foreground)] uppercase tracking-wider font-display text-stroke shadow-black drop-shadow-md">
                             Collection
                         </h1>
-                        <p className="text-zinc-400 font-bold text-xs uppercase tracking-widest">
+                        <p className="text-[var(--color-secondary)] font-bold text-xs uppercase tracking-widest">
                             Manage your chess concepts / Level {profile.level}
                         </p>
                     </div>
                 </div>
-                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-900 rounded-xl border border-zinc-800">
+                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-[var(--card-bg)] rounded-xl border border-[var(--border)]">
                     <span className="text-amber-500 font-black text-lg">{profile.currencies.gold}</span>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Gold</span>
+                    <span className="text-[10px] text-[var(--color-secondary)] font-bold uppercase tracking-widest">Gold</span>
                 </div>
             </Panel>
 
             {/* Avatars Section */}
-            <div className="mb-8 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
-                <h2 className="text-xs font-black text-zinc-400 mb-4 flex items-center gap-2 uppercase tracking-widest font-display">
+            <div className="mb-8 bg-[var(--panel-bg)]/50 p-4 rounded-xl border border-[var(--border)]">
+                <h2 className="text-xs font-black text-[var(--color-secondary)] mb-4 flex items-center gap-2 uppercase tracking-widest font-display">
                     Avatars
                 </h2>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
                     {avatars.map((avatar, index) => (
-                        <div key={index} className="flex flex-col items-center gap-2 group cursor-pointer p-2 rounded-xl hover:bg-zinc-800/50 transition-colors">
-                            <div className="w-14 h-14 rounded-xl bg-zinc-900 border-2 border-zinc-800 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform group-hover:border-amber-500/50">
+                        <div key={index} className="flex flex-col items-center gap-2 group cursor-pointer p-2 rounded-xl hover:bg-[var(--card-bg)] transition-colors">
+                            <div className="w-14 h-14 rounded-xl bg-[var(--card-bg)] border-2 border-[var(--border)] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform group-hover:border-amber-500/50">
                                 <avatar.icon className={`h-7 w-7 ${avatar.color} filter drop-shadow-md`} />
                             </div>
-                            <span className="text-[10px] font-black text-zinc-500 uppercase group-hover:text-white transition-colors tracking-wider">{avatar.name}</span>
+                            <span className="text-[10px] font-black text-[var(--color-muted)] uppercase group-hover:text-[var(--foreground)] transition-colors tracking-wider">{avatar.name}</span>
                         </div>
                     ))}
                 </div>
@@ -115,7 +115,7 @@ export default function CardsPage() {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.8, opacity: 0, y: 20 }}
                         >
-                            <GameCard variant="default" className="w-full max-w-sm p-0 overflow-hidden shadow-2xl border-zinc-700">
+                            <GameCard variant="default" className="w-full max-w-sm p-0 overflow-hidden shadow-2xl border-[var(--border)]">
                                 {/* Close Button */}
                                 <button
                                     onClick={() => setSelectedCard(null)}
@@ -133,15 +133,15 @@ export default function CardsPage() {
                                 </div>
 
                                 {/* Details */}
-                                <div className="p-6 bg-zinc-900">
+                                <div className="p-6 bg-[var(--card-bg)]">
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
-                                            <h2 className="text-2xl font-black text-white mb-1 font-display uppercase italic text-stroke">{selectedCard.title}</h2>
+                                            <h2 className="text-2xl font-black text-[var(--foreground)] mb-1 font-display uppercase italic text-stroke">{selectedCard.title}</h2>
                                             <div className="flex items-center gap-2">
                                                 <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider ${selectedCard.rarity === 'LEGENDARY' ? 'bg-amber-500/20 text-amber-500' :
-                                                        selectedCard.rarity === 'EPIC' ? 'bg-purple-500/20 text-purple-500' :
-                                                            selectedCard.rarity === 'RARE' ? 'bg-blue-500/20 text-blue-500' :
-                                                                'bg-zinc-700/50 text-zinc-400'
+                                                    selectedCard.rarity === 'EPIC' ? 'bg-purple-500/20 text-purple-500' :
+                                                        selectedCard.rarity === 'RARE' ? 'bg-blue-500/20 text-blue-500' :
+                                                            'bg-zinc-700/50 text-zinc-400'
                                                     }`}>
                                                     {selectedCard.rarity}
                                                 </span>
@@ -152,7 +152,7 @@ export default function CardsPage() {
                                         </div>
                                     </div>
 
-                                    <p className="text-zinc-400 text-sm mb-6 leading-relaxed font-medium bg-zinc-950/50 p-3 rounded-xl border border-zinc-800/50">
+                                    <p className="text-[var(--color-secondary)] text-sm mb-6 leading-relaxed font-medium bg-[var(--field-bg)]/50 p-3 rounded-xl border border-[var(--border)]/50">
                                         {selectedCard.description}
                                     </p>
 

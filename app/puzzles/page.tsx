@@ -111,19 +111,19 @@ export default function PuzzlesPage() {
                     <h1>Mina de Puzzles</h1>
                 </div>
 
-                <GameCard variant="default" className="p-4 space-y-6 bg-zinc-900/90 border-zinc-700">
+                <GameCard variant="default" className="p-4 space-y-6 bg-[var(--card-bg)]/90 border-zinc-700">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-zinc-400 flex items-center gap-2 uppercase tracking-widest">
+                        <label className="text-xs font-bold text-[var(--color-secondary)] flex items-center gap-2 uppercase tracking-widest">
                             <Filter size={14} className="text-indigo-400" /> Temàtica
                         </label>
                         <Select
                             value={filters.theme}
                             onValueChange={(val) => setFilters(prev => ({ ...prev, theme: val }))}
                         >
-                            <SelectTrigger className="bg-zinc-950 border-zinc-800 text-white font-bold h-10">
+                            <SelectTrigger className="bg-[var(--background)] border-[var(--border)] text-[var(--foreground)] font-bold h-10">
                                 <SelectValue placeholder="Qualsevol" />
                             </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                            <SelectContent className="bg-[var(--card-bg)] border-[var(--border)] text-[var(--foreground)]">
                                 <SelectItem value="all">Qualsevol</SelectItem>
                                 {THEMES.map(t => (
                                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
@@ -159,8 +159,8 @@ export default function PuzzlesPage() {
                     </ShinyButton>
                 </GameCard>
 
-                <Panel className={`p-4 flex items-center justify-between border-2 transition-all ${streak > 0 ? 'border-orange-500/50 bg-orange-950/20 shadow-[0_0_20px_rgba(249,115,22,0.2)]' : 'border-zinc-800 bg-zinc-900/50'}`}>
-                    <span className="font-bold text-zinc-400 uppercase tracking-widest text-xs flex items-center gap-2">
+                <Panel className={`p-4 flex items-center justify-between border-2 transition-all ${streak > 0 ? 'border-orange-500/50 bg-orange-950/20 shadow-[0_0_20px_rgba(249,115,22,0.2)]' : 'border-[var(--border)] bg-[var(--card-bg)]/50'}`}>
+                    <span className="font-bold text-[var(--color-secondary)] uppercase tracking-widest text-xs flex items-center gap-2">
                         <Flame size={16} className={streak > 0 ? "text-orange-500 fill-orange-500 animate-pulse" : "text-zinc-600"} />
                         Ratxa Actual
                     </span>
@@ -175,16 +175,16 @@ export default function PuzzlesPage() {
                 {loading && !exercise ? (
                     <div className="flex flex-col items-center justify-center h-full w-full opacity-50 space-y-4">
                         <div className="relative">
-                            <div className="w-16 h-16 rounded-full border-4 border-zinc-800 border-t-indigo-500 animate-spin" />
+                            <div className="w-16 h-16 rounded-full border-4 border-[var(--border)] border-t-indigo-500 animate-spin" />
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <Loader2 className="animate-pulse text-indigo-500" size={24} />
                             </div>
                         </div>
-                        <p className="font-bold text-zinc-400 uppercase tracking-widest text-xs">Buscant puzzle...</p>
+                        <p className="font-bold text-[var(--color-secondary)] uppercase tracking-widest text-xs">Buscant puzzle...</p>
                     </div>
                 ) : exercise ? (
                     <div className="w-full max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <GameCard variant="default" className="bg-zinc-900/80 p-6 border-zinc-700">
+                        <GameCard variant="default" className="bg-[var(--card-bg)]/80 p-6 border-[var(--border)]">
                             <PuzzleSolver
                                 key={exercise.id}
                                 exercise={exercise}

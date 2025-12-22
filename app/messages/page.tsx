@@ -63,24 +63,24 @@ function MessagesPageContent() {
 
     if (authLoading || !user) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
                 <Loader2 className="animate-spin text-indigo-500" size={48} />
             </div>
         );
     }
 
     return (
-        <div className="h-screen bg-slate-950 flex flex-col">
+        <div className="h-screen bg-[var(--background)] flex flex-col">
             {/* Header */}
-            <div className="flex items-center gap-3 p-4 border-b border-zinc-800 bg-zinc-900/50">
+            <div className="flex items-center gap-3 p-4 border-b border-[var(--border)] bg-[var(--header-bg)]">
                 <MessageSquare size={24} className="text-purple-500" />
-                <h1 className="text-2xl font-bold text-white">Messages</h1>
+                <h1 className="text-2xl font-bold text-[var(--foreground)]">Messages</h1>
             </div>
 
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Conversations Sidebar */}
-                <div className="w-full md:w-80 border-r border-zinc-800 bg-zinc-900/30">
+                <div className="w-full md:w-80 border-r border-[var(--border)] bg-[var(--panel-bg)]/30">
                     {loading ? (
                         <div className="flex items-center justify-center h-full">
                             <Loader2 className="animate-spin text-purple-500" size={32} />
@@ -110,7 +110,7 @@ function MessagesPageContent() {
 export default function MessagesPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
                 <Loader2 className="animate-spin text-indigo-500" size={48} />
             </div>
         }>

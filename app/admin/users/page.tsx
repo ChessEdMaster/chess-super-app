@@ -75,8 +75,8 @@ export default async function AdminUsersPage() {
                     <AlertTriangle size={32} />
                     <h3 className="font-black uppercase tracking-wide text-xl">Error Loading Data</h3>
                 </div>
-                <p className="text-zinc-400 font-bold mb-4">Could not fetch users or roles. Please try again later.</p>
-                <div className="p-4 bg-black/50 rounded-xl overflow-auto border border-red-900/50">
+                <p className="text-[var(--color-secondary)] font-bold mb-4">Could not fetch users or roles. Please try again later.</p>
+                <div className="p-4 bg-[var(--background)]/50 rounded-xl overflow-auto border border-red-900/50">
                     <pre className="text-xs text-red-300 font-mono">
                         {JSON.stringify({ profilesError, rolesError }, null, 2)}
                     </pre>
@@ -99,13 +99,13 @@ export default async function AdminUsersPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 rounded-lg border border-zinc-800 shadow-inner">
-                        <span className="text-xs font-black text-zinc-500 uppercase tracking-wider">Total</span>
-                        <span className="text-xl font-black text-white font-mono">{profiles?.length || 0}</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-[var(--card-bg)] rounded-lg border border-[var(--border)] shadow-inner">
+                        <span className="text-xs font-black text-[var(--color-secondary)] uppercase tracking-wider">Total</span>
+                        <span className="text-xl font-black text-[var(--foreground)] font-mono">{profiles?.length || 0}</span>
                     </div>
                 </div>
 
-                <div className="bg-zinc-950/50 rounded-xl border border-zinc-800 overflow-hidden">
+                <div className="bg-[var(--panel-bg)]/50 rounded-xl border border-[var(--border)] overflow-hidden">
                     <UserManagementTable
                         initialProfiles={profiles as unknown as ProfileWithRole[]}
                         roles={roles as unknown as AppRole[]}
