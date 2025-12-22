@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LobbyScene } from '@/components/3d/LobbyScene';
+import { IsoHero } from '@/components/isometric/IsoHero';
+import { IsoChest } from '@/components/isometric/IsoChest';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -67,11 +68,41 @@ export default function HomePage() {
     <div className="h-full w-full relative overflow-hidden bg-[var(--background)]">
       {/* 3D Background */}
       <div className="absolute inset-0 z-0">
-        <LobbyScene
-          chests={chests}
-          selectedLeague={selectedLeague}
-          onChestClick={handleChestClick}
-        />
+        {/* Dynamic Background based on League */}
+        <div className={cn(
+          "absolute inset-0 transition-all duration-1000",
+          selectedLeague === 'blitz' ? "bg-slate-900" :
+            selectedLeague === 'bullet' ? "bg-amber-950" :
+              "bg-sky-900"
+        )}>
+          <div className={`absolute inset-0 opacity-30 ${selectedLeague === 'blitz' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black' :
+              selectedLeague === 'bullet' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-700 via-orange-900 to-black' :
+                'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400 via-blue-900 to-black'
+            }`} />
+          {/* Stars/Particles (CSS only) */}
+          <div className="absolute inset-0 bg-[url('/assets/noise.png')] opacity-5 mix-blend-overlay"></div>
+        </div>
+
+        {/* Floor/Stage */}
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center">
+          <div className="w-[800px] h-[400px] bg-white/5 blur-3xl rounded-full transform scale-y-25 translate-y-20"></div>
+        </div>
+
+        {/* Hero Stage */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pb-32 pointer-events-none">
+          <IsoHero />
+        </div>
+
+        {/* Chest Pedestals */}
+        <div className="absolute bottom-32 w-full flex justify-center gap-8 perspective-1000 pointer-events-auto">
+          {chests.map((chest, index) => (
+            <IsoChest
+              key={index}
+              chest={chest}
+              onClick={() => handleChestClick(index)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* UI Overlay */}
@@ -131,10 +162,8 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Chest Slots */}
-          <div className="h-32 px-4 pb-8 flex items-end justify-center gap-3 pointer-events-none">
-            {/* 3D Chests handle clicks now. We keep this empty or use it for 2D overlays later if needed. */}
-          </div>
+          {/* Bottom Spacer (Chests are now background) */}
+          <div className="h-48" />
         </div>
       </div>
     </div>
