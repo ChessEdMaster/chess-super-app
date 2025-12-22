@@ -31,6 +31,39 @@ function AnalysisLayout() {
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const [activeTab, setActiveTab] = useState<'analysis' | 'explorer' | 'database'>('analysis');
 
+  // Interaction State
+  const [sourceSquare, setSourceSquare] = useState<string | null>(null);
+  const [customSquareStyles, setCustomSquareStyles] = useState<Record<string, React.CSSProperties>>({});
+
+  const handleSquareClick = (square: string) => {
+    if (sourceSquare === square) {
+      setSourceSquare(null);
+      setCustomSquareStyles({});
+      return;
+    }
+
+    if (sourceSquare) {
+      // Attempt move
+      const moveMade = makeMove(sourceSquare, square);
+      if (moveMade) {
+        setSourceSquare(null);
+        setCustomSquareStyles({});
+      } else {
+        // If invalid move, but clicked on own piece, switch selection
+        // We don't have easy access to piece ownership here without querying game state
+        // For now, just reset
+        setSourceSquare(null);
+        setCustomSquareStyles({});
+      }
+    } else {
+      // Select piece
+      setSourceSquare(square);
+      setCustomSquareStyles({
+        [square]: { background: 'rgba(255, 255, 0, 0.4)' }
+      });
+    }
+  };
+
   // Navigation handlers
   const goBack = () => goToMove(currentHistoryIndex - 1);
   const goForward = () => goToMove(currentHistoryIndex + 1);
@@ -69,24 +102,15 @@ function AnalysisLayout() {
                 <ChessScene
                   fen={fen}
                   orientation={orientation}
-                  onSquareClick={(sq) => {
-                    // TODO: implement click to move in 3D logic inside or reuse helper
-                    // For now simpler placeholder
-                  }}
+                  onSquareClick={handleSquareClick}
                 />
               ) : (
                 <div className="w-full h-full bg-[var(--board-bg)]">
                   <Chessboard2D
                     fen={fen}
                     orientation={orientation}
-                    onSquareClick={(sq) => {
-                      // TODO: implement click to move
-                    }}
-                    // onPieceDrop is handled by dnd usually, simple click for now
-                    onPieceDrop={(source, target) => {
-                      makeMove(source, target);
-                      return true;
-                    }}
+                    onSquareClick={handleSquareClick}
+                    customSquareStyles={customSquareStyles}
                   />
                 </div>
               )}
