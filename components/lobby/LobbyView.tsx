@@ -115,13 +115,14 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
             .select();
 
         if (updateError) {
-            console.error("Join error:", updateError);
-            toast.error("Error unint-se a la partida: " + updateError.message);
+            console.error("Join error (games update):", updateError);
+            toast.error(`Error permís games: ${updateError.message} (Codi: ${updateError.code})`);
             return;
         }
 
         if (!updatedGame || updatedGame.length === 0) {
-            toast.error("No s'ha pogut actualitzar la partida. Revisa els permisos.");
+            console.error("Join error: No rows updated in games table.");
+            toast.error("Error: No t'has pogut unir. És possible que la partida ja no estigui disponible o faltin permisos RLS.");
             return;
         }
 
@@ -129,10 +130,12 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
         const { error: challengeError } = await supabase
             .from('challenges')
             .update({ status: 'accepted' })
-            .eq('id', challenge.id);
+            .eq('id', challenge.id)
+            .select();
 
         if (challengeError) {
-            console.error("Challenge update error:", challengeError);
+            console.error("Challenge update error (challenges update):", challengeError);
+            toast.error(`Error permís challenges: ${challengeError.message}`);
         }
 
         onJoinGame(challenge.id);

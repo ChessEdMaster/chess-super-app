@@ -101,6 +101,7 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
             const channel = supabase
                 .channel(`game_view_${gameId}`)
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, async (payload) => {
+                    console.log("Realtime update received:", payload);
                     const fresh = payload.new as GameData;
 
                     if (fresh.white_player_id) {
@@ -123,7 +124,12 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                     });
                     updateStatusDisplay(incomeGame, fresh);
                 })
-                .subscribe();
+                .subscribe((status) => {
+                    console.log(`Realtime status for game ${gameId}:`, status);
+                    if (status === 'CHANNEL_ERROR') {
+                        toast.error("Error de connexió en temps real. Prova de recarregar.");
+                    }
+                });
 
             return () => { supabase.removeChannel(channel); };
         };
@@ -154,7 +160,13 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
         if (!move) return false;
 
         const newFen = game.fen();
-        supabase.from('games').update({ fen: newFen, pgn: game.pgn() }).eq('id', gameId).then();
+        supabase.from('games').update({
+            fen: newFen,
+            pgn: game.pgn(),
+            last_move_at: new Date().toISOString()
+        }).eq('id', gameId).then(({ error }) => {
+            if (error) console.error("Error updating move:", error);
+        });
         return true;
     };
 
