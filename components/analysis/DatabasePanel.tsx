@@ -85,7 +85,7 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
                 .from('pgn_games')
                 .select('*')
                 .eq('collection_id', colId)
-                .order('updated_at', { ascending: false });
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
             setGames(data || []);
