@@ -10,9 +10,10 @@ interface ChessClockProps {
   isActive: boolean; // Si la partida està en marxa
   onTimeout: (winner: 'w' | 'b') => void;
   lastMoveAt?: string;
+  serverTimeOffset?: number;
 }
 
-export function ChessClock({ whiteTime, blackTime, turn, isActive, onTimeout, lastMoveAt }: ChessClockProps) {
+export function ChessClock({ whiteTime, blackTime, turn, isActive, onTimeout, lastMoveAt, serverTimeOffset = 0 }: ChessClockProps) {
   const [wTime, setWTime] = useState(whiteTime);
   const [bTime, setBTime] = useState(blackTime);
 
@@ -26,9 +27,9 @@ export function ChessClock({ whiteTime, blackTime, turn, isActive, onTimeout, la
     if (!isActive) return;
 
     const interval = setInterval(() => {
-      const now = new Date();
-      const lastMove = lastMoveAt ? new Date(lastMoveAt) : now;
-      const elapsed = Math.floor((now.getTime() - lastMove.getTime()) / 1000);
+      const now = Date.now() + serverTimeOffset;
+      const lastMove = lastMoveAt ? new Date(lastMoveAt).getTime() : now;
+      const elapsed = Math.floor((now - lastMove) / 1000);
 
       if (turn === 'w') {
         const currentW = Math.max(0, whiteTime - elapsed);

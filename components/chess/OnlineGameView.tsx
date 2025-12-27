@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Chess } from 'chess.js';
 import { Flag, Handshake, X, RotateCw, Search, Loader2 } from 'lucide-react';
@@ -44,6 +44,7 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
     const router = useRouter();
     const { addXp, addGold, addChest } = usePlayerStore();
     const { fen, makeMove, setGameFromFen, game } = useChessEngine();
+    const channelRef = useRef<any>(null);
 
     const [gameData, setGameData] = useState<GameData | null>(null);
     const [orientation, setOrientation] = useState<'white' | 'black'>('white');
@@ -52,6 +53,7 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
     const [drawOffer, setDrawOffer] = useState<string | null>(null);
     const [moveFrom, setMoveFrom] = useState<string | null>(null);
     const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; borderRadius?: string }>>({});
+    const [serverTimeOffset, setServerTimeOffset] = useState(0); // Offset inms
 
     const { boardTheme } = useSettings();
     const theme = BOARD_THEMES[boardTheme];
@@ -98,6 +100,15 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
             const startFen = initialGame.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
             setGameFromFen(startFen);
             updateStatusDisplay(new Chess(startFen), initialGame);
+
+            // Estimate server time offset
+            const startTime = Date.now();
+            const { data: timeData } = await supabase.rpc('get_server_time');
+            if (timeData) {
+                const serverTime = new Date(timeData).getTime();
+                const rtt = Date.now() - startTime;
+                setServerTimeOffset(serverTime - (Date.now() - rtt / 2));
+            }
 
             // Realtime
             const channel = supabase
@@ -153,7 +164,12 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                 updateStatusDisplay(incomeGame, fresh);
             };
 
-            return () => { supabase.removeChannel(channel); };
+            channelRef.current = channel;
+
+            return () => {
+                supabase.removeChannel(channel);
+                channelRef.current = null;
+            };
         };
 
         fetchAndSubscribe();
@@ -200,11 +216,13 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
         setGameData(updatedData);
 
         // 2. Broadcast move to opponent (Instant)
-        supabase.channel(`game_view_${gameId}`).send({
-            type: 'broadcast',
-            event: 'move',
-            payload: { move, fen: newFen, gameData: updatedData }
-        });
+        if (channelRef.current) {
+            channelRef.current.send({
+                type: 'broadcast',
+                event: 'move',
+                payload: { move, fen: newFen, gameData: updatedData }
+            });
+        }
 
         // 3. Persist to DB
         supabase.from('games').update({
@@ -310,6 +328,7 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                     turn={game.turn()}
                     isActive={gameData.status === 'active'}
                     lastMoveAt={gameData.last_move_at}
+                    serverTimeOffset={serverTimeOffset}
                     onTimeout={(w) => supabase.from('games').update({ status: 'finished', result: w === 'w' ? '1-0' : '0-1' }).eq('id', gameId)}
                 />
 
