@@ -17,7 +17,7 @@ import { AdvantageBar } from '@/components/analysis/AdvantageBar';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { SetupWorkflow } from '@/components/analysis/SetupWorkflow';
-import { useDebounce } from '@/hooks/use-debounce'; // Assuming this exists or I'll add it if not found, but I should probably check hooks dir first. Actually I'll check if I need it.
+
 
 const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
