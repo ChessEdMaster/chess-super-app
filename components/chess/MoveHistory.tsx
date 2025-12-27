@@ -85,7 +85,7 @@ export function MoveHistory({ mainLine, currentNode, onGoToNode }: MoveHistoryPr
                     {/* Black Move */}
                     {pair.black && (
                         <button
-                            onClick={() => onGoToNode(pair.black)}
+                            onClick={() => onGoToNode(pair.black!)}
                             className={`px-1 rounded hover:bg-indigo-500/20 transition-colors ${currentNode === pair.black ? 'bg-indigo-600 text-white font-bold' : 'text-zinc-300'}`}
                         >
                             {pair.black.move}

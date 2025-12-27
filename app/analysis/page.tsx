@@ -262,7 +262,7 @@ function AnalysisLayout() {
       setGameId(id);
       const { data, error } = await supabase
         .from('pgn_games')
-        .select('id, white, black, result, date, event, created_at')
+        .select('id, white, black, result, date, event, created_at, pgn, collection_id')
         .eq('id', id)
         .single();
       if (error) throw error;
