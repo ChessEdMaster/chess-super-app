@@ -43,6 +43,7 @@ interface ChessContextType {
     lines: EngineLine[];
     toggleEngine: (active: boolean) => void;
     engineEnabled: boolean;
+    revision: number;
 }
 
 const ChessContext = createContext<ChessContextType | null>(null);
@@ -252,7 +253,8 @@ export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/
             evaluation: engineEvaluation,
             lines,
             toggleEngine,
-            engineEnabled
+            engineEnabled,
+            revision
         }}>
             {children}
         </ChessContext.Provider>
