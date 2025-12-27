@@ -44,6 +44,7 @@ function AnalysisLayout() {
     toggleNAG,
     setEvaluation,
     importPGN,
+    setGameFromFen,
     undo,
     redo,
     revision
