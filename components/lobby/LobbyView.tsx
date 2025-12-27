@@ -104,13 +104,17 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
         }
 
         const joinAsWhite = gameDetails.white_player_id === null;
+        // Get server time for initial sync
+        const { data: serverTime } = await supabase.rpc('get_server_time');
+        const initialTime = serverTime ? new Date(serverTime).toISOString() : new Date().toISOString();
+
         const { data: updatedGame, error: updateError } = await supabase
             .from('games')
             .update({
                 white_player_id: joinAsWhite ? user.id : gameDetails.white_player_id,
                 black_player_id: joinAsWhite ? gameDetails.black_player_id : user.id,
                 status: 'active',
-                last_move_at: new Date().toISOString()
+                last_move_at: initialTime
             })
             .eq('id', challenge.id)
             .select();
@@ -128,18 +132,24 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
         }
 
         // Successfully updated game, now update challenge status
-        const { error: challengeError } = await supabase
+        await supabase
             .from('challenges')
             .update({ status: 'accepted' })
-            .eq('id', challenge.id)
-            .select();
+            .eq('id', challenge.id);
 
-        if (challengeError) {
-            console.error("Challenge update error (challenges update):", challengeError);
-            toast.error(`Error permís challenges: ${challengeError.message}`);
-        }
-
-        onJoinGame(challenge.id);
+        // Broadcast join to the game channel so the host sees it instantly
+        const tempChannel = supabase.channel(`game_view_${challenge.id}`);
+        tempChannel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+                await tempChannel.send({
+                    type: 'broadcast',
+                    event: 'join',
+                    payload: { gameId: challenge.id }
+                });
+                supabase.removeChannel(tempChannel);
+                onJoinGame(challenge.id);
+            }
+        });
     };
 
     return (

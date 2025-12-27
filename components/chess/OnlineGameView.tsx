@@ -135,6 +135,11 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                     syncGame(freshData);
                     playSound('move');
                 })
+                .on('broadcast', { event: 'join' }, async () => {
+                    console.log("Realtime (Broadcast) Join received! Refreshing data...");
+                    const { data } = await supabase.from('games').select('*').eq('id', gameId).single();
+                    if (data) syncGame(data);
+                })
                 .subscribe((status) => {
                     console.log(`Realtime status for game ${gameId}:`, status);
                     if (status === 'SUBSCRIBED') {
@@ -212,15 +217,21 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
         if (!move) return false;
 
         const newFen = game.fen();
-        const now = new Date();
-        const lastMoveAt = gameData.last_move_at ? new Date(gameData.last_move_at) : new Date(gameData.created_at || now);
-        const diffSeconds = Math.max(0, Math.floor((now.getTime() - lastMoveAt.getTime()) / 1000));
+
+        // Use compensated server time for consistency
+        const nowMs = Date.now() + serverTimeOffset;
+        const nowStr = new Date(nowMs).toISOString();
+        const lastMoveAtStr = gameData.last_move_at || gameData.created_at || nowStr;
+        const lastMoveAtMs = new Date(lastMoveAtStr).getTime();
+
+        // Safety: If for some reason our clock is very behind, don't allow negative diff
+        const diffSeconds = Math.max(0, Math.floor((nowMs - lastMoveAtMs) / 1000));
 
         const updatedData: GameData = {
             ...gameData,
             fen: newFen,
             pgn: game.pgn(),
-            last_move_at: now.toISOString(),
+            last_move_at: nowStr,
             white_time: turn === 'w' ? Math.max(0, (gameData.white_time || 600) - diffSeconds) : gameData.white_time,
             black_time: turn === 'b' ? Math.max(0, (gameData.black_time || 600) - diffSeconds) : gameData.black_time,
         };
