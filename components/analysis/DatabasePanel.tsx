@@ -173,7 +173,7 @@ export function DatabasePanel({ currentCollectionId, activeGameId, onLoadGame, o
                                     className="w-full h-32 bg-zinc-950 border border-zinc-800 rounded p-2 text-xs font-mono"
                                     placeholder="Enganxa el PGN aquí..."
                                     value={importText}
-                                    onChange={(e) => setImportText(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setImportText(e.target.value)}
                                 />
                             </div>
                             <DialogFooter>
@@ -267,23 +267,23 @@ export function DatabasePanel({ currentCollectionId, activeGameId, onLoadGame, o
                         <div className="grid grid-cols-2 gap-4 py-4">
                             <div className="space-y-2">
                                 <Label>Blanc</Label>
-                                <Input value={editingGame.white} onChange={e => setEditingGame({ ...editingGame, white: e.target.value })} />
+                                <Input value={editingGame.white} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingGame({ ...editingGame, white: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Negre</Label>
-                                <Input value={editingGame.black} onChange={e => setEditingGame({ ...editingGame, black: e.target.value })} />
+                                <Input value={editingGame.black} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingGame({ ...editingGame, black: e.target.value })} />
                             </div>
                             <div className="col-span-2 space-y-2">
                                 <Label>Esdeveniment</Label>
-                                <Input value={editingGame.event} onChange={e => setEditingGame({ ...editingGame, event: e.target.value })} />
+                                <Input value={editingGame.event} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingGame({ ...editingGame, event: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Data</Label>
-                                <Input type="date" value={editingGame.date} onChange={e => setEditingGame({ ...editingGame, date: e.target.value })} />
+                                <Input type="date" value={editingGame.date} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingGame({ ...editingGame, date: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Resultat</Label>
-                                <Input value={editingGame.result} onChange={e => setEditingGame({ ...editingGame, result: e.target.value })} />
+                                <Input value={editingGame.result} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingGame({ ...editingGame, result: e.target.value })} />
                             </div>
                         </div>
                     )}
