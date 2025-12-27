@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, Swords, Zap, Timer, Turtle } from 'lucide-react';
 import { Challenge } from '@/types/lobby';
 import { useAuth } from '@/components/auth-provider';
+import { cn } from '@/lib/utils';
 
 interface LobbyMapProps {
     challenges: Challenge[];
@@ -17,16 +18,20 @@ export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapPr
     const { user } = useAuth();
 
     return (
-        <div className="w-full h-full relative overflow-hidden rounded-xl bg-zinc-900/50 backdrop-blur border border-zinc-800 shadow-2xl">
+        <div className="w-full h-[400px] relative overflow-hidden rounded-3xl bg-slate-950 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] group/map">
             {/* Dynamic Background */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30 animate-pulse-slow pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/10 to-emerald-900/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(30,41,59,1)_0%,_rgba(2,6,23,1)_100%)] opacity-50" />
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
 
-            {/* Grid Lines for Map effect */}
-            <div className="absolute inset-0"
+            {/* Animated Glows */}
+            <div className="absolute top-0 left-1/4 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-amber-600/10 blur-[100px] rounded-full animate-pulse-slow" />
+
+            {/* Grid for "Map" feeling */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none"
                 style={{
-                    backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
-                    backgroundSize: '10% 10%'
+                    backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+                    backgroundSize: '40px 40px'
                 }}
             />
 
@@ -35,76 +40,94 @@ export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapPr
                     {challenges.map((challenge) => {
                         const isMyChallenge = challenge.host_id === user?.id;
 
+                        let Icon = Timer;
+                        let colorClass = "text-amber-400";
+                        let bgClass = "bg-amber-500/10 border-amber-500/50";
+                        let shadowClass = "shadow-amber-500/40";
+
+                        if (challenge.time_control_type === 'bullet') {
+                            Icon = Zap;
+                            colorClass = "text-orange-400";
+                            bgClass = "bg-orange-500/10 border-orange-500/50";
+                            shadowClass = "shadow-orange-500/40";
+                        } else if (challenge.time_control_type === 'rapid') {
+                            Icon = Turtle;
+                            colorClass = "text-emerald-400";
+                            bgClass = "bg-emerald-500/10 border-emerald-500/50";
+                            shadowClass = "shadow-emerald-500/40";
+                        }
+
                         return (
                             <motion.div
                                 key={challenge.id}
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
+                                initial={{ scale: 0, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0, opacity: 0 }}
                                 className="absolute transform -translate-x-1/2 -translate-y-1/2"
                                 style={{
-                                    left: `${challenge.map_x}%`,
-                                    top: `${challenge.map_y}%`
+                                    left: `${challenge.map_x || 50}%`,
+                                    top: `${challenge.map_y || 50}%`
                                 }}
                             >
-                                <div className="group relative">
-                                    {/* Pulse Effect */}
-                                    <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${challenge.rated ? 'bg-amber-500' : 'bg-emerald-500'
-                                        }`} />
+                                <div className="group/item relative">
+                                    {/* Waves effect */}
+                                    <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${challenge.rated ? 'bg-amber-500' : 'bg-emerald-500'}`} />
 
                                     {/* Node */}
                                     <button
                                         onClick={() => isMyChallenge ? onEnterOwnChallenge(challenge) : onJoin(challenge)}
-                                        className={`
-                      relative z-10 w-4 h-4 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-150 cursor-pointer
-                      ${challenge.rated ? 'bg-amber-400 shadow-amber-500/50' : 'bg-emerald-400 shadow-emerald-500/50'}
-                      ${isMyChallenge ? 'ring-2 ring-white animate-pulse' : 'hover:ring-4 ring-white/20'}
-                    `}
-                                    />
+                                        className={cn(
+                                            "relative z-10 w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-300",
+                                            "hover:scale-125 hover:rotate-6 active:scale-95 shadow-lg",
+                                            bgClass, shadowClass,
+                                            isMyChallenge ? "ring-2 ring-white animate-bounce" : ""
+                                        )}
+                                    >
+                                        <Icon className={cn("w-6 h-6", colorClass)} />
 
-                                    {/* Tooltip Card */}
-                                    <div className="absolute top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20 min-w-[180px]">
-                                        <div className="bg-zinc-900/95 backdrop-blur border border-zinc-700 p-3 rounded-lg shadow-xl text-center relative mt-2">
-                                            {/* Arrow */}
-                                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-700 rotate-45 transform" />
+                                        {/* Color Badge */}
+                                        <div className={cn(
+                                            "absolute -top-1 -right-1 w-3 h-3 rounded-full border border-black",
+                                            challenge.player_color === 'white' ? "bg-white" : challenge.player_color === 'black' ? "bg-black" : "bg-gradient-to-r from-white to-black"
+                                        )} />
+                                    </button>
 
-                                            <div className="flex items-center justify-center gap-2 mb-2">
-                                                <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden border border-zinc-600">
+                                    {/* Tooltip Card - More Premium */}
+                                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 transition-all duration-300 pointer-events-none z-50 min-w-[200px] translate-y-2 group-hover/item:translate-y-0">
+                                        <div className="bg-slate-900/95 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl relative">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-10 h-10 rounded-xl bg-zinc-800 overflow-hidden border border-white/10 shadow-inner">
                                                     {challenge.host?.avatar_url ? (
-                                                        <Image
-                                                            src={challenge.host.avatar_url}
-                                                            alt="Avatar"
-                                                            width={32}
-                                                            height={32}
-                                                            className="w-full h-full object-cover"
-                                                            unoptimized
-                                                        />
+                                                        <Image src={challenge.host.avatar_url} alt="Ava" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                                                     ) : (
-                                                        <User size={16} className="text-zinc-400 m-auto mt-1" />
+                                                        <div className="w-full h-full flex items-center justify-center font-black text-zinc-600 bg-zinc-900">?</div>
                                                     )}
                                                 </div>
                                                 <div className="text-left leading-tight">
-                                                    <div className="font-bold text-white text-sm">{challenge.host?.username || 'Player'}</div>
-                                                    <div className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                                                    <div className="font-black text-white text-sm tracking-tight">{challenge.host?.username || 'Guerrier'}</div>
+                                                    <div className="text-[10px] uppercase font-black tracking-widest text-zinc-500">
                                                         {challenge.rated ? 'Competitiu' : 'Casual'}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-center gap-2 bg-zinc-800/50 rounded p-1 mb-2">
-                                                {challenge.time_control_type === 'bullet' && <Zap size={14} className="text-orange-400" />}
-                                                {challenge.time_control_type === 'blitz' && <Timer size={14} className="text-amber-400" />}
-                                                {challenge.time_control_type === 'rapid' && <Turtle size={14} className="text-emerald-400" />}
-                                                <span className="text-xs font-mono font-bold text-zinc-300 uppercase">{challenge.time_control_type}</span>
+                                            <div className="flex items-center justify-between gap-2 bg-black/40 rounded-lg p-2 mb-3 border border-white/5">
+                                                <div className="flex items-center gap-2">
+                                                    <Icon size={14} className={colorClass} />
+                                                    <span className="text-[10px] font-black font-mono text-zinc-300 uppercase">{challenge.time_control}</span>
+                                                </div>
+                                                <span className="text-[10px] font-black text-amber-500">1200 ELO</span>
                                             </div>
 
-                                            {!isMyChallenge ? (
-                                                <div className="bg-emerald-600 text-white text-[10px] font-bold py-1 px-2 rounded uppercase tracking-widest flex items-center justify-center gap-1">
-                                                    Jugar <Swords size={10} />
-                                                </div>
-                                            ) : (
-                                                <div className="bg-indigo-600 text-white text-[10px] font-bold py-1 px-2 rounded uppercase tracking-widest">Entrar ⏳</div>
-                                            )}
+                                            <div className={cn(
+                                                "w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg",
+                                                !isMyChallenge ? "bg-amber-500 text-black" : "bg-indigo-600 text-white"
+                                            )}>
+                                                {!isMyChallenge ? <><Swords size={12} /> LLUITAR</> : "EL TEU REPTE"}
+                                            </div>
+
+                                            {/* Arrow down */}
+                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-r border-b border-white/10 rotate-45 transform" />
                                         </div>
                                     </div>
                                 </div>
@@ -114,14 +137,20 @@ export function LobbyMap({ challenges, onJoin, onEnterOwnChallenge }: LobbyMapPr
                 </AnimatePresence>
 
                 {challenges.length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="text-center opacity-30">
-                            <div className="w-64 h-64 border-2 border-dashed border-zinc-600 rounded-full animate-spin-slow m-auto mb-4" />
-                            <p className="text-zinc-500 font-mono text-sm uppercase tracking-widest">Esperant senyals...</p>
-                        </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-20">
+                        <Swords size={60} className="text-zinc-600 mb-4 animate-pulse" />
+                        <p className="text-zinc-500 font-black text-xs uppercase tracking-[0.3em]">Sense reptes actius</p>
                     </div>
                 )}
+            </div>
+
+            {/* Bottom Bar for the "Scene" */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur border border-white/10 flex gap-4 pointer-events-none">
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-500" /> <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Bullet</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-500" /> <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Blitz</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /> <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Rapid</span></div>
             </div>
         </div>
     );
 }
+

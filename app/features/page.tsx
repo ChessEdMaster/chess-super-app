@@ -13,11 +13,13 @@ import { GameCard } from '@/components/ui/design-system/GameCard';
 import { Trophy, Archive, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export default function FeaturesPage() {
     const { user, loading: authLoading } = useAuth();
     const { chests, profile, loadProfile, openChest, startUnlockChest } = usePlayerStore();
     const { progress, fetchArenaProgress, claimChest } = useArenaStore();
+    const router = useRouter();
 
     const [openingRewards, setOpeningRewards] = useState<any>(null);
     const [selectedArena, setSelectedArena] = useState<ArenaVariant>('blitz');
@@ -28,6 +30,12 @@ export default function FeaturesPage() {
             fetchArenaProgress(user.id);
         }
     }, [user, loadProfile, fetchArenaProgress]);
+
+    useEffect(() => {
+        if (!authLoading && user && profile.id && profile.role !== 'SuperAdmin') {
+            router.push('/');
+        }
+    }, [authLoading, user, profile.role, profile.id, router]);
 
     const handleOpenChest = (index: number) => {
         const chest = chests[index];
@@ -45,7 +53,7 @@ export default function FeaturesPage() {
         }
     };
 
-    if (authLoading || !user) {
+    if (authLoading || !user || (profile.id && profile.role !== 'SuperAdmin')) {
         return (
             <div className="h-screen flex items-center justify-center bg-slate-950">
                 <Loader2 className="animate-spin text-amber-500" />

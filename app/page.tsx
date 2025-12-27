@@ -8,11 +8,21 @@ import { OnlineGameView } from '@/components/chess/OnlineGameView';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Sword, Package } from 'lucide-react';
 import Link from 'next/link';
+import { usePlayerStore } from '@/lib/store/player-store';
 
 function HomeContent() {
   const { user, loading } = useAuth();
+  const { profile, loadProfile } = usePlayerStore();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user && !profile.id) {
+      loadProfile(user.id);
+    }
+  }, [user, profile.id, loadProfile]);
+
+  const isSuperAdmin = profile.role === 'SuperAdmin';
 
   const [activeGameId, setActiveGameId] = useState<string | null>(searchParams.get('gameId'));
 
@@ -77,12 +87,14 @@ function HomeContent() {
             >
               Arena
             </Link>
-            <Link
-              href="/features"
-              className="text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-white flex items-center gap-2"
-            >
-              <Package size={14} /> Features
-            </Link>
+            {isSuperAdmin && (
+              <Link
+                href="/features"
+                className="text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-white flex items-center gap-2"
+              >
+                <Package size={14} /> Beta
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
