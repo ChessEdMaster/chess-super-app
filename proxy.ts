@@ -117,11 +117,17 @@ export async function proxy(request: NextRequest) {
     // ELIMINAT: Deixem que el layout de clubs/manage faci la comprovació específica
     // perquè la comprovació ha de ser per club (owner/admin), no per rol global.
 
-    // 3. Protecció de l'Acadèmia
-    if (request.nextUrl.pathname.startsWith('/academy')) {
-        if (!hasPermission(role, 'view.academy')) {
-            // Opcional
-        }
+    // 4. Role-based Redirection (Alpha Phase)
+    const pathname = request.nextUrl.pathname;
+    
+    // Redirect Monitor to Dashboard (if not already there or in admin)
+    if (role === 'Monitor' && pathname === '/') {
+        return NextResponse.redirect(new URL('/monitor/dashboard', request.url))
+    }
+
+    // Redirect Student to Dashboard (if not already there)
+    if (role === 'Student' && pathname === '/') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
     return response
