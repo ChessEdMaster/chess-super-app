@@ -54,6 +54,8 @@ function AnalysisLayout() {
   const [activeTab, setActiveTab] = useState<'analysis' | 'explorer' | 'database'>('analysis');
   const [sessionActive, setSessionActive] = useState(false);
   const [gameId, setGameId] = useState<string | null>(null);
+  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [collectionTitle, setCollectionTitle] = useState<string | null>(null);
 
   // Interaction State
   const [sourceSquare, setSourceSquare] = useState<string | null>(null);
@@ -128,6 +130,7 @@ function AnalysisLayout() {
       if (workError) console.error('Failed to create WorkPGN:', workError);
 
       setGameId(gameData.id);
+      setCollectionId(data.collectionId);
       setSessionActive(true);
       toast.success('Sessió d\'anàlisi iniciada');
     } catch (e: any) {
@@ -242,6 +245,33 @@ function AnalysisLayout() {
       toast.success('Anàlisi desada i sessió activa!');
     } catch (e: any) {
       toast.error('Error al desar: ' + e.message);
+    }
+  };
+
+  const handleNewAnalysis = () => {
+    // Reset board and game state but keep collectionId
+    resetGame();
+    setGameId(null);
+    setSessionActive(true); // Still in the same session/collection
+    toast.info('Nova anàlisi iniciada a la mateixa col·lecció');
+  };
+
+  const handleLoadGame = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('pgn_games')
+        .select('pgn, collection_id')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      if (data) {
+        importPGN(data.pgn);
+        setGameId(id);
+        setCollectionId(data.collection_id);
+        setSessionActive(true);
+      }
+    } catch (e: any) {
+      toast.error('Error al carregar la partida: ' + e.message);
     }
   };
 
@@ -411,7 +441,12 @@ function AnalysisLayout() {
               )}
 
               {activeTab === 'database' && (
-                <DatabasePanel />
+                <DatabasePanel
+                  currentCollectionId={collectionId}
+                  activeGameId={gameId}
+                  onLoadGame={handleLoadGame}
+                  onNewAnalysis={handleNewAnalysis}
+                />
               )}
             </div>
           </GameCard>
