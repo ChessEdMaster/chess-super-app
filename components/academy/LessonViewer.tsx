@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Assumim que aquests components existeixen o els hem d'adaptar del projecte
-import { Chessboard2D } from '@/components/chess/Chessboard2D';
-import { Player } from '@/components/academy/Player'; // Component de vídeo hipotètic
+import Chessboard2D from '@/components/2d/Chessboard2D';
 import { ChevronRight, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,23 +24,44 @@ interface LessonViewerProps {
 export default function LessonViewer({ lesson }: LessonViewerProps) {
     const [currentStep, setCurrentStep] = useState(0);
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
-    const [showComment, setShowComment] = useState(true);
+
+    // Interaction State
+    const [sourceSquare, setSourceSquare] = useState<string | null>(null);
+    const [customSquareStyles, setCustomSquareStyles] = useState<Record<string, React.CSSProperties>>({});
 
     const step = lesson.steps[currentStep];
 
-    const handleMove = (move: { from: string; to: string; promotion?: string }) => {
-        const moveStr = `${move.from}${move.to}`;
-        if (moveStr === step.correctMove) {
-            setFeedback('correct');
-            setTimeout(() => {
-                if (currentStep < lesson.steps.length - 1) {
-                    setCurrentStep(prev => prev + 1);
-                    setFeedback(null);
-                }
-            }, 1500);
+    const handleSquareClick = (square: string) => {
+        if (sourceSquare === square) {
+            setSourceSquare(null);
+            setCustomSquareStyles({});
+            return;
+        }
+
+        if (sourceSquare) {
+            const moveStr = `${sourceSquare}${square}`;
+            if (moveStr === step.correctMove) {
+                setFeedback('correct');
+                setSourceSquare(null);
+                setCustomSquareStyles({});
+
+                setTimeout(() => {
+                    if (currentStep < lesson.steps.length - 1) {
+                        setCurrentStep(prev => prev + 1);
+                        setFeedback(null);
+                    }
+                }, 1500);
+            } else {
+                setFeedback('incorrect');
+                setSourceSquare(null);
+                setCustomSquareStyles({});
+                setTimeout(() => setFeedback(null), 1000);
+            }
         } else {
-            setFeedback('incorrect');
-            setTimeout(() => setFeedback(null), 1000);
+            setSourceSquare(square);
+            setCustomSquareStyles({
+                [square]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }
+            });
         }
     };
 
@@ -103,13 +123,9 @@ export default function LessonViewer({ lesson }: LessonViewerProps) {
                 <div className="w-full max-w-[600px] aspect-square relative z-10">
                     <Chessboard2D
                         fen={step.fen}
-                        onMove={handleMove}
-                        showLastMove={true}
-                        style={{
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            boxShadow: '0 0 50px rgba(0,0,0,0.5), 0 0 2px 1px rgba(245,158,11,0.2)'
-                        }}
+                        onSquareClick={handleSquareClick}
+                        customSquareStyles={customSquareStyles}
+                        orientation="white"
                     />
 
                     {/* Feedback Overlay */}
