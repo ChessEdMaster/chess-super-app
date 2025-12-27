@@ -9,7 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Sword, Package } from 'lucide-react';
 import Link from 'next/link';
 
-export default function HomePage() {
+function HomeContent() {
   const { user, loading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -117,5 +117,19 @@ export default function HomePage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <React.Suspense fallback={
+      <div className="h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-pulse text-amber-500 font-black text-xl tracking-widest uppercase">
+          Carregant Arena...
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </React.Suspense>
   );
 }
