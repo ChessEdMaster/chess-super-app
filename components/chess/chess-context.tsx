@@ -78,8 +78,8 @@ export function ChessProvider({ children, initialFen = 'rnbqkbnr/pppppppp/8/8/8/
 
     // Stockfish Hook
     const { startAnalysis, stopAnalysis, isAnalyzing } = useStockfish({
-        depth: 20,
-        multipv: 3,
+        depth: 15, // Alpha limit for better battery/performance on tablets
+        multipv: 1, // Focus on single best move
         onEval: setEngineEvaluation,
         onLines: (newLines) => {
             setLines(prev => {
