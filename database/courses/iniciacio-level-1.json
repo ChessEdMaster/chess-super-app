@@ -1,0 +1,246 @@
+{
+    "course": {
+        "title": "Nivell 1: Iniciació",
+        "slug": "nivell-1-iniciacio",
+        "description": "De zero coneixements a jugar una partida legal completa. Estètica: Descobriment del Codi Font dels escacs.",
+        "track": "academic",
+        "target_grade": "Iniciació",
+        "difficulty_level": "beginner"
+    },
+    "modules": [
+        {
+            "title": "Bloc 1: EL HARDWARE (El Tauler i les Peces)",
+            "order": 1,
+            "description": "El camp de batalla i els exèrcits.",
+            "icon": "Cpu",
+            "lessons": [
+                {
+                    "title": "Sessió 1: El Camp de Batalla",
+                    "order": 1,
+                    "description": "El Tauler, Files, Columnes i Coordenades.",
+                    "theme_metadata": {
+                        "aesthetic": "Neon Grid / Cyberpunk",
+                        "metaphor": "La Graella de Neó: un mapa hologràfic d'una ciutat de 64 caselles.",
+                        "video_script": "Benvinguts, Cadets. Sóc l'Arquitecte. Heu estat escollits per entrar al món de ChessEdMaster... Això no és un tauler. És La Graella de Neó. Un camp de batalla de 64 caselles. 32 de llum (blanques) i 32 d'ombra (negres/fosques)... Les línies horitzontals es diuen FILES (números 1-8). Les línies verticals es diuen COLUMNES (lletres a-h). Cada casella té un nom secret: Lletra + Número. Exemple: e4."
+                    },
+                    "content": {
+                        "introduction": "Benvingut al món de ChessEdMaster. Abans de lluitar, has d'entendre la graella.",
+                        "challenges": [
+                            {
+                                "id": "mission-1",
+                                "type": "click_area",
+                                "title": "Misión 1: Escaneig de Zones",
+                                "description": "S'il·luminen files i columnes. Toca 'Fila' o 'Columna' segons el que vegis.",
+                                "options": [
+                                    "Fila",
+                                    "Columna"
+                                ],
+                                "correct_option": "dynamic"
+                            },
+                            {
+                                "id": "mission-2",
+                                "type": "click_square",
+                                "title": "Misión 2: El GPS",
+                                "description": "Localitza e4 per recollir la moneda d'XP.",
+                                "target": "e4",
+                                "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+                            },
+                            {
+                                "id": "mission-3",
+                                "type": "click_multiple",
+                                "title": "Misión 3: Centre de Comandament",
+                                "description": "Marca les 4 caselles centrals (el cor de la ciutat).",
+                                "targets": [
+                                    "e4",
+                                    "d4",
+                                    "e5",
+                                    "d5"
+                                ],
+                                "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
+                            }
+                        ]
+                    },
+                    "monitor_guide": {
+                        "pedagogical_objective": "Diferenciar entre fila (número) i columna (lletra) i anomenar coordenades.",
+                        "hook": "Dibuixa una graella de 3x3. Algú ha jugat a 'Enfonsar la Flota'?",
+                        "common_errors": [
+                            {
+                                "error": "Confusió Fila/Columna",
+                                "solution": "Braços en creu = FILA. Braços enganxats = COLUMNA."
+                            },
+                            {
+                                "error": "Llegir al revés (4e)",
+                                "solution": "Regla de l'ascensor: Primer entres al portal (Lletra) i després prems el botó del pis (Número)."
+                            }
+                        ],
+                        "dynamic_activity": {
+                            "name": "El Tauler Humà",
+                            "instructions": "Assigna alumnes com a Columnes i Files. Digues una coordenada i s'han de trobar."
+                        }
+                    }
+                },
+                {
+                    "title": "Sessió 2: L'Energia Dual",
+                    "order": 2,
+                    "description": "Caselles Clares vs. Fosques i la regla 'Blanc a la Dreta'."
+                },
+                {
+                    "title": "Sessió 3: Les Torres Làser",
+                    "order": 3,
+                    "description": "Moviment de la Torre + Captura bàsica."
+                },
+                {
+                    "title": "Sessió 4: Els Franc-tiradors Diagonals",
+                    "order": 4,
+                    "description": "Moviment de l'Alfil."
+                },
+                {
+                    "title": "Sessió 5: L'Aliança de la Dama",
+                    "order": 5,
+                    "description": "Moviment de la Reina: Torre + Alfil."
+                },
+                {
+                    "title": "Sessió 6: El Rei del Sistema",
+                    "order": 6,
+                    "description": "Moviment del Rei i concepte de 'Vides infinites'."
+                },
+                {
+                    "title": "Sessió 7: Els Soldats del Neó",
+                    "order": 7,
+                    "description": "Moviment del Peó: avançar vs. capturar."
+                },
+                {
+                    "title": "Sessió 8: El Salt del Cavall",
+                    "order": 8,
+                    "description": "El moviment en 'L' i saltar obstacles."
+                },
+                {
+                    "title": "Sessió 9: Setup Inicial",
+                    "order": 9,
+                    "description": "Col·locació de les peces: 'La Dama al seu color'."
+                },
+                {
+                    "title": "Sessió 10: BOSS BATTLE 1: Captura la Bandera",
+                    "order": 10,
+                    "description": "Joc de peons i peces sense escac."
+                }
+            ]
+        },
+        {
+            "title": "Bloc 2: EL SOFTWARE (Regles i Objectius)",
+            "order": 2,
+            "description": "Les regles del programa i com guanyar la partida.",
+            "icon": "Box",
+            "lessons": [
+                {
+                    "title": "Sessió 11: El Valor de les Unitats",
+                    "order": 1,
+                    "description": "Intercanvis: Qui guanya XP?"
+                },
+                {
+                    "title": "Sessió 12: L'Atac i la Defensa",
+                    "order": 2,
+                    "description": "Amenaçar vs. Protegir."
+                },
+                {
+                    "title": "Sessió 13: L'Alerta Vermella: ESCAC",
+                    "order": 3,
+                    "description": "Què és i com escapar."
+                },
+                {
+                    "title": "Sessió 14: Les 3 Vies d'Escapament",
+                    "order": 4,
+                    "description": "Capturar, Bloquejar, Fugir."
+                },
+                {
+                    "title": "Sessió 15: SYSTEM FAILURE: ESCAC I MAT",
+                    "order": 5,
+                    "description": "El concepte final."
+                },
+                {
+                    "title": "Sessió 16: Diferència entre Escac i Mat",
+                    "order": 6,
+                    "description": "Anàlisi de patrons bàsics."
+                },
+                {
+                    "title": "Sessió 17: Moviment Especial 1: La Coronació",
+                    "order": 7,
+                    "description": "Upgrade del Peó."
+                },
+                {
+                    "title": "Sessió 18: Moviment Especial 2: L'Enroc",
+                    "order": 8,
+                    "description": "El Búnquer del Rei."
+                },
+                {
+                    "title": "Sessió 19: Moviment Especial 3: Menjada al Pas",
+                    "order": 9,
+                    "description": "El glitch del sistema."
+                },
+                {
+                    "title": "Sessió 20: BOSS BATTLE 2: Rei contra Rei",
+                    "order": 10,
+                    "description": "Moviment il·legal i oposició bàsica."
+                }
+            ]
+        },
+        {
+            "title": "Bloc 3: ESTRATÈGIA DE COMBAT (Tàctica i Finals)",
+            "order": 3,
+            "description": "Patrons avançats i el final del joc.",
+            "icon": "Target",
+            "lessons": [
+                {
+                    "title": "Sessió 21: L'Escac i Mat de l'Escala",
+                    "order": 1,
+                    "description": "Dues Torres."
+                },
+                {
+                    "title": "Sessió 22: L'Escac i Mat de la Reina",
+                    "order": 2,
+                    "description": "El Petó de la Mort."
+                },
+                {
+                    "title": "Sessió 23: Taules: L'Ofegat",
+                    "order": 3,
+                    "description": "No deixis el Rei sense aire."
+                },
+                {
+                    "title": "Sessió 24: Taules: Insuficiència de material i Repetició",
+                    "order": 4,
+                    "description": "Casos de taules."
+                },
+                {
+                    "title": "Sessió 25: Principis d'Obertura 1: Controlar el Centre",
+                    "order": 5,
+                    "description": "La Zona de Poder."
+                },
+                {
+                    "title": "Sessió 26: Principis d'Obertura 2: Desenvolupar les Peces",
+                    "order": 6,
+                    "description": "Treu l'equip al camp."
+                },
+                {
+                    "title": "Sessió 27: Principis d'Obertura 3: Seguretat del Rei",
+                    "order": 7,
+                    "description": "Enrocar ràpid."
+                },
+                {
+                    "title": "Sessió 28: Fair Play i Etiqueta",
+                    "order": 8,
+                    "description": "Donar la mà, el rellotge i el respecte."
+                },
+                {
+                    "title": "Sessió 29: Simulacre de Torneig",
+                    "order": 9,
+                    "description": "Partides ràpides amb regles estrictes."
+                },
+                {
+                    "title": "Sessió 30: EL GRAN TORNEIG NEON",
+                    "order": 10,
+                    "description": "Competició final i entrega de diplomes."
+                }
+            ]
+        }
+    ]
+}
