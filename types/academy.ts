@@ -62,10 +62,16 @@ export interface AcademyEnrollment {
 // ============================================
 
 export interface LessonStep {
+    id?: string;
+    type?: 'move' | 'click_square' | 'click_multiple' | 'click_area';
     fen: string;
     instruction: string;
-    correctMoves: string[]; // UCI notation moves that are correct
-    explanation: string; // Explanation shown after correct move
+    correctMoves?: string[]; // For 'move' type (UCI notation)
+    target?: string; // For 'click_square' type
+    targets?: string[]; // For 'click_multiple' type
+    options?: string[]; // For 'click_area' type (e.g., ["Fila", "Columna"])
+    correct_option?: string; // For 'click_area' type
+    explanation?: string; // Explanation shown after correct action
     highlightSquares?: string[]; // Optional squares to highlight
 }
 

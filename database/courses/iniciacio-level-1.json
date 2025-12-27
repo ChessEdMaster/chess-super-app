@@ -25,31 +25,30 @@
                     },
                     "content": {
                         "introduction": "Benvingut al món de ChessEdMaster. Abans de lluitar, has d'entendre la graella.",
-                        "challenges": [
+                        "steps": [
                             {
                                 "id": "mission-1",
                                 "type": "click_area",
-                                "title": "Misión 1: Escaneig de Zones",
-                                "description": "S'il·luminen files i columnes. Toca 'Fila' o 'Columna' segons el que vegis.",
+                                "instruction": "S'il·luminen files i columnes. Toca 'Fila' o 'Columna' segons el que vegis.",
                                 "options": [
                                     "Fila",
                                     "Columna"
                                 ],
-                                "correct_option": "dynamic"
+                                "correct_option": "dynamic",
+                                "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
                             },
                             {
                                 "id": "mission-2",
                                 "type": "click_square",
-                                "title": "Misión 2: El GPS",
-                                "description": "Localitza e4 per recollir la moneda d'XP.",
+                                "instruction": "Localitza e4 per recollir la moneda d'XP.",
                                 "target": "e4",
+                                "explanation": "Excel·lent! Has localitzat e4.",
                                 "fen": "8/8/8/8/8/8/8/8 w - - 0 1"
                             },
                             {
                                 "id": "mission-3",
                                 "type": "click_multiple",
-                                "title": "Misión 3: Centre de Comandament",
-                                "description": "Marca les 4 caselles centrals (el cor de la ciutat).",
+                                "instruction": "Marca les 4 caselles centrals (el cor de la ciutat).",
                                 "targets": [
                                     "e4",
                                     "d4",
