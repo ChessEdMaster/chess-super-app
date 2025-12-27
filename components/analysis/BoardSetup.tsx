@@ -7,6 +7,8 @@ import { RotateCcw, Trash2, Check, ArrowRight } from 'lucide-react';
 import { Chess } from 'chess.js';
 import { Separator } from '@/components/ui/separator';
 
+import Chessboard2D from '@/components/2d/Chessboard2D';
+
 interface BoardSetupProps {
     fen: string;
     onFenChange: (fen: string) => void;
@@ -81,34 +83,96 @@ export const BoardSetup = ({
 
     const getTurn = () => fen.split(' ')[1];
 
+    const handleSquareClick = (square: string) => {
+        if (!selectedPiece) return;
+
+        const parts = fen.split(' ');
+        const board = parts[0];
+        const rows = board.split('/');
+
+        const col = square.charCodeAt(0) - 97;
+        const row = 8 - parseInt(square[1]);
+
+        // Reconstruct board with new piece
+        const boardMatrix: (string | null)[][] = rows.map(r => {
+            const rowArr: (string | null)[] = [];
+            for (let char of r) {
+                if (char >= '1' && char <= '8') {
+                    for (let k = 0; k < parseInt(char); k++) rowArr.push(null);
+                } else {
+                    rowArr.push(char);
+                }
+            }
+            return rowArr;
+        });
+
+        if (selectedPiece === 'trash') {
+            boardMatrix[row][col] = null;
+        } else {
+            // selectedPiece is like 'wP', 'bN'
+            const pieceChar = selectedPiece[1].toLowerCase();
+            const finalChar = selectedPiece[0] === 'w' ? pieceChar.toUpperCase() : pieceChar;
+            boardMatrix[row][col] = finalChar;
+        }
+
+        // Back to FEN
+        const newBoardFen = boardMatrix.map(r => {
+            let res = '';
+            let empty = 0;
+            for (let cell of r) {
+                if (cell === null) empty++;
+                else {
+                    if (empty > 0) { res += empty; empty = 0; }
+                    res += cell;
+                }
+            }
+            if (empty > 0) res += empty;
+            return res;
+        }).join('/');
+
+        const newFen = `${newBoardFen} ${parts[1]} ${parts[2]} ${parts[3]} ${parts[4]} ${parts[5]}`;
+        onFenChange(newFen);
+    };
+
     return (
         <div className="flex flex-col h-full bg-zinc-900 text-zinc-100 font-sans">
             <div className="p-4 space-y-6">
 
+                {/* PREVIEW BOARD */}
+                <div className="aspect-square w-full max-w-[300px] mx-auto bg-zinc-800 rounded-xl overflow-hidden border-4 border-zinc-700">
+                    <Chessboard2D
+                        fen={fen}
+                        onSquareClick={handleSquareClick}
+                        customSquareStyles={selectedPiece ? {
+                            // Add a visual hint if needed
+                        } : {}}
+                    />
+                </div>
+
                 {/* PIECE PALETTE */}
                 <div>
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Peces</h3>
+                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 text-center">Tria una peça i clica al tauler</h3>
                     <div className="grid grid-cols-6 gap-2">
                         {PIECES.map((p) => (
                             <button
                                 key={p}
                                 onClick={() => onSelectPiece(selectedPiece === p ? null : p)}
                                 className={`aspect-square rounded-lg flex items-center justify-center transition-all ${selectedPiece === p
-                                    ? 'bg-indigo-600 ring-2 ring-indigo-400'
+                                    ? 'bg-indigo-600 ring-2 ring-indigo-400 scale-110 z-10'
                                     : 'bg-zinc-800 hover:bg-zinc-700'
                                     }`}
                             >
                                 <img
                                     src={`https://images.chesscomfiles.com/chess-themes/pieces/neo/150/${p}.png`}
                                     alt={p}
-                                    className="w-8 h-8 md:w-10 md:h-10"
+                                    className="w-10 h-10"
                                 />
                             </button>
                         ))}
                         <button
                             onClick={() => onSelectPiece(selectedPiece === 'trash' ? null : 'trash')}
                             className={`aspect-square rounded-lg flex items-center justify-center transition-all ${selectedPiece === 'trash'
-                                ? 'bg-rose-600 ring-2 ring-rose-400'
+                                ? 'bg-rose-600 ring-2 ring-rose-400 scale-110 z-10'
                                 : 'bg-zinc-800 hover:bg-rose-900/50 hover:text-rose-500'
                                 }`}
                         >

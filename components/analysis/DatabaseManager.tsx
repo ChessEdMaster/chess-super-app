@@ -128,16 +128,34 @@ export const DatabaseManager = ({ onLoadGame, currentPgn }: DatabaseManagerProps
     };
 
     const createCollection = async () => {
-        if (!newTitle.trim()) return;
-        const { data, error } = await supabase.from('pgn_collections').insert({
-            title: newTitle,
-            user_id: (await supabase.auth.getUser()).data.user?.id
-        }).select().single();
+        if (!newTitle.trim()) {
+            toast.error('Has d\'introduir un títol');
+            return;
+        }
 
-        if (!error && data) {
-            setCollections([data, ...collections]);
-            setNewTitle('');
-            setIsCreateOpen(false);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                toast.error('Has d\'estar loguejat per crear una col·lecció');
+                return;
+            }
+
+            const { data, error } = await supabase.from('pgn_collections').insert({
+                title: newTitle,
+                user_id: user.id
+            }).select().single();
+
+            if (error) throw error;
+
+            if (data) {
+                setCollections([data, ...collections]);
+                setNewTitle('');
+                setIsCreateOpen(false);
+                toast.success('Col·lecció creada correctament');
+            }
+        } catch (error: any) {
+            console.error('Error creating collection:', error);
+            toast.error('Error al crear la col·lecció: ' + (error.message || 'Error desconegut'));
         }
     };
 
