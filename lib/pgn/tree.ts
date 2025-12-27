@@ -86,6 +86,7 @@ export class PGNTree {
     addMove(san: string, createVariation = false): MoveNode | null {
         try {
             const currentFen = this.chess.fen();
+            const currentMoveNumber = Math.floor(this.chess.moveNumber());
             const move = this.chess.move(san);
 
             if (!move) return null;
@@ -99,7 +100,7 @@ export class PGNTree {
                 variations: [],
                 parent: this.game.currentNode,
                 mainLine: !createVariation && (this.game.currentNode?.mainLine ?? true),
-                moveNumber: Math.floor(this.chess.moveNumber()),
+                moveNumber: currentMoveNumber,
                 color: move.color,
             };
 

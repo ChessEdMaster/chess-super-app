@@ -42,19 +42,13 @@ export function MoveHistory({ mainLine, currentNode, onGoToNode }: MoveHistoryPr
             } else {
                 // Should not happen in standard games starting from white,
                 // but possible if starting from black position.
-                if (currentPair) movePairs.push(currentPair);
-                // Treat as standalone black move or start of new pair if inconsistent
-                // For simplified display we just push it as a "black only" row if needed or handle it gracefully
-                // But typically black follows white. If we start with black, moveNumber might be X...
-                // Let's just push a pair with null white if really needed, but let's stick to standard flow.
-                // If we have a lingering pair (white without black), push it.
-                if (currentPair) movePairs.push(currentPair);
-
-                // If we are here, it means we have a black move without a preceding white move in this loop logic
-                // This happens if the game starts with Black (Setup).
-                if (!currentPair && node.color === 'b') {
-                    movePairs.push({ moveNumber: node.moveNumber, white: null as any, black: node }); // hacky cast, handle rendering carefully
+                if (currentPair) {
+                    movePairs.push(currentPair);
+                    currentPair = null;
                 }
+
+                // This is a standalone black move (e.g. from setup)
+                movePairs.push({ moveNumber: node.moveNumber, white: null as any, black: node });
             }
         }
     });
