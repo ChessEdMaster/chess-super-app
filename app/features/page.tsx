@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
+import { supabase } from '@/lib/supabase';
 import { usePlayerStore } from '@/lib/store/player-store';
 import { useArenaStore } from '@/lib/store/arena-store';
 import { ChestGrid } from '@/components/lobby/chest-grid';
@@ -74,6 +75,21 @@ export default function FeaturesPage() {
                             <h1 className="text-3xl font-black italic tracking-tighter uppercase">Laboratori i Features</h1>
                             <p className="text-zinc-500 text-xs font-bold tracking-widest uppercase">Gestiona el teu progrés i col·lecció</p>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={async () => {
+                                if (confirm("Segur que vols esborrar TOTS els reptes oberts?")) {
+                                    const { error } = await supabase.from('challenges').delete().eq('status', 'open');
+                                    if (error) toast.error("Error esborrant reptes");
+                                    else toast.success("Reptes esborrats correctament");
+                                }
+                            }}
+                            className="bg-red-900/20 hover:bg-red-900/40 text-red-500 border border-red-900/50 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                        >
+                            Reset Reptes
+                        </button>
                     </div>
                 </div>
 

@@ -119,30 +119,32 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
     };
 
     return (
-        <div className="w-full flex flex-col gap-8 max-w-5xl mx-auto py-8 px-4">
+        <div className="w-full flex flex-col gap-6 max-w-5xl mx-auto py-6 px-4">
             {/* Rhythm Selector & View Toggle */}
-            <div className="flex flex-col items-center gap-6">
-                <div className="flex flex-col items-center gap-2">
-                    <h2 className="text-3xl font-black text-white italic tracking-tighter text-glow">L'ARENA DE REPTES</h2>
-                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">Elegeix el teu destí</p>
+            <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center">
+                    <h2 className="text-2xl font-black text-white italic tracking-tighter text-glow">L'ARENA DE REPTES</h2>
+                    <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Elegeix el teu destí</p>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center gap-4">
-                    <div className="glass-panel bg-white/5 border-white/10 rounded-2xl p-2 flex gap-2 backdrop-blur-2xl shadow-2xl">
+                <div className="flex flex-col md:flex-row items-center gap-3">
+                    <div className="glass-panel bg-white/5 border-white/10 rounded-xl p-1.5 flex gap-1.5 backdrop-blur-2xl shadow-2xl">
                         {leagues.map((league) => (
                             <button
                                 key={league.id}
                                 onClick={() => setSelectedLeague(league.id)}
                                 className={cn(
-                                    "px-6 py-4 rounded-xl flex flex-col items-center gap-2 transition-all min-w-[120px]",
+                                    "px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all min-w-[100px] justify-center",
                                     selectedLeague === league.id
-                                        ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)] scale-105"
+                                        ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)] scale-105 font-bold"
                                         : "text-zinc-400 hover:text-white hover:bg-white/5"
                                 )}
                             >
-                                <league.icon size={24} className={cn(selectedLeague === league.id ? "text-black" : league.color)} />
-                                <span className="text-xs font-black uppercase tracking-widest">{league.label.split(' ')[0]}</span>
-                                <span className="text-[10px] opacity-70 font-mono">{league.label.split(' ')[1]}</span>
+                                <league.icon size={18} className={cn(selectedLeague === league.id ? "text-black" : league.color)} />
+                                <div className="flex flex-col items-start leading-none">
+                                    <span className="text-[10px] font-black uppercase tracking-wider">{league.label.split(' ')[0]}</span>
+                                    <span className="text-[8px] opacity-70 font-mono">{league.label.split(' ')[1]}</span>
+                                </div>
                             </button>
                         ))}
                     </div>
@@ -150,15 +152,15 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
                     <div className="bg-zinc-900/50 p-1.5 rounded-xl border border-white/5 flex gap-1">
                         <button
                             onClick={() => setViewMode('list')}
-                            className={cn("p-3 rounded-lg transition-all", viewMode === 'list' ? "bg-zinc-800 text-amber-500 shadow-inner" : "text-zinc-500 hover:text-zinc-300")}
+                            className={cn("p-2.5 rounded-lg transition-all", viewMode === 'list' ? "bg-zinc-800 text-amber-500 shadow-inner" : "text-zinc-500 hover:text-zinc-300")}
                         >
-                            <List size={20} />
+                            <List size={18} />
                         </button>
                         <button
                             onClick={() => setViewMode('map')}
-                            className={cn("p-3 rounded-lg transition-all", viewMode === 'map' ? "bg-zinc-800 text-amber-500 shadow-inner" : "text-zinc-500 hover:text-zinc-300")}
+                            className={cn("p-2.5 rounded-lg transition-all", viewMode === 'map' ? "bg-zinc-800 text-amber-500 shadow-inner" : "text-zinc-500 hover:text-zinc-300")}
                         >
-                            <MapIcon size={20} />
+                            <MapIcon size={18} />
                         </button>
                     </div>
                 </div>
