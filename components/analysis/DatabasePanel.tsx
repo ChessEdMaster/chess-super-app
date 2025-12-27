@@ -73,8 +73,9 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
 
             if (error) throw error;
             setCollections(data || []);
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error fetching collections:', e);
+            toast.error('Error carregant BBDD: ' + e.message);
         }
     }, []);
 
@@ -88,17 +89,27 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
 
             if (error) throw error;
             setGames(data || []);
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error fetching games:', e);
+            toast.error('Error carregant partides: ' + e.message);
         }
     }, []);
 
     // --- Lifecycle & Realtime ---
 
     useEffect(() => {
+        // Initial fetch
         fetchCollections();
 
-        // Subscription for Collections
+        // Listen for auth changes to re-fetch
+        const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                fetchCollections();
+                if (selectedCollectionId) fetchGames(selectedCollectionId);
+            }
+        });
+
+        // Subscription for Collections (Realtime)
         const colChannel = supabase
             .channel('public:pgn_collections')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'pgn_collections' }, () => {
@@ -108,8 +119,9 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
 
         return () => {
             supabase.removeChannel(colChannel);
+            authListener?.unsubscribe();
         };
-    }, [fetchCollections]);
+    }, [fetchCollections, fetchGames, selectedCollectionId]);
 
     useEffect(() => {
         if (selectedCollectionId) {
@@ -144,6 +156,14 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
     useEffect(() => {
         setLoading(false);
     }, [collections, games]);
+
+    // Sync with external collection changes (e.g. from Setup)
+    useEffect(() => {
+        if (propCollectionId) {
+            setSelectedCollectionId(propCollectionId);
+            setView('games');
+        }
+    }, [propCollectionId]);
 
     // --- Actions ---
 
