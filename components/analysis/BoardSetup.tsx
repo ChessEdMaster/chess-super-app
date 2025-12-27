@@ -35,6 +35,11 @@ export const BoardSetup = ({
 }: BoardSetupProps) => {
     const [fenInput, setFenInput] = useState(fen);
 
+    // Sync internal input state with prop if prop changes externally (reset/clear/etc)
+    React.useEffect(() => {
+        setFenInput(fen);
+    }, [fen]);
+
 
     const handleFenSubmit = () => {
         try {
