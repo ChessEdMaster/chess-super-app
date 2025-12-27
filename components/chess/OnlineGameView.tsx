@@ -54,6 +54,7 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
     const [moveFrom, setMoveFrom] = useState<string | null>(null);
     const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; borderRadius?: string }>>({});
     const [serverTimeOffset, setServerTimeOffset] = useState(0); // Offset inms
+    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
 
     const { boardTheme } = useSettings();
     const theme = BOARD_THEMES[boardTheme];
@@ -101,13 +102,19 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
             setGameFromFen(startFen);
             updateStatusDisplay(new Chess(startFen), initialGame);
 
-            // Estimate server time offset
-            const startTime = Date.now();
-            const { data: timeData } = await supabase.rpc('get_server_time');
-            if (timeData) {
-                const serverTime = new Date(timeData).getTime();
-                const rtt = Date.now() - startTime;
-                setServerTimeOffset(serverTime - (Date.now() - rtt / 2));
+            // Estimate server time offset with better accuracy
+            const syncTimes = [];
+            for (let i = 0; i < 3; i++) {
+                const startTime = Date.now();
+                const { data: timeData } = await supabase.rpc('get_server_time');
+                if (timeData) {
+                    const serverTime = new Date(timeData).getTime();
+                    const rtt = Date.now() - startTime;
+                    syncTimes.push(serverTime - (Date.now() - rtt / 2));
+                }
+            }
+            if (syncTimes.length > 0) {
+                setServerTimeOffset(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length);
             }
 
             // Realtime
@@ -130,7 +137,10 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                 })
                 .subscribe((status) => {
                     console.log(`Realtime status for game ${gameId}:`, status);
-                    if (status === 'CHANNEL_ERROR') {
+                    if (status === 'SUBSCRIBED') {
+                        setConnectionStatus('connected');
+                    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        setConnectionStatus('error');
                         toast.error("Error de connexió en temps real. Prova de recarregar.");
                     }
                 });
@@ -148,20 +158,23 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
 
                 const incomeGame = new Chess(fresh.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 
-                setGameFromFen(fresh.fen);
                 setGameData(prev => {
-                    // Evitar "backwards" updates si el broadcast ha anat més ràpid
+                    // Evitar "backwards" updates
                     if (prev && prev.last_move_at && fresh.last_move_at) {
                         if (new Date(fresh.last_move_at) < new Date(prev.last_move_at)) return prev;
                     }
+
+                    // Update engine only if it's a newer or same-time state
+                    setGameFromFen(fresh.fen);
+                    setDrawOffer(fresh.draw_offer_by || null);
+                    setPlayers({
+                        white: fresh.white?.username || 'Jugador 1',
+                        black: fresh.black?.username || (fresh.black_player_id ? 'Jugador 2' : 'Esperant rival...')
+                    });
+                    updateStatusDisplay(incomeGame, fresh);
+
                     return fresh;
                 });
-                setDrawOffer(fresh.draw_offer_by || null);
-                setPlayers({
-                    white: fresh.white?.username || 'Jugador 1',
-                    black: fresh.black?.username || (fresh.black_player_id ? 'Jugador 2' : 'Esperant rival...')
-                });
-                updateStatusDisplay(incomeGame, fresh);
             };
 
             channelRef.current = channel;
@@ -322,15 +335,23 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 p-4">
             {/* Left: Board */}
             <div className="flex-1 flex flex-col gap-4">
-                <ChessClock
-                    whiteTime={gameData.white_time || 600}
-                    blackTime={gameData.black_time || 600}
-                    turn={game.turn()}
-                    isActive={gameData.status === 'active'}
-                    lastMoveAt={gameData.last_move_at}
-                    serverTimeOffset={serverTimeOffset}
-                    onTimeout={(w) => supabase.from('games').update({ status: 'finished', result: w === 'w' ? '1-0' : '0-1' }).eq('id', gameId)}
-                />
+                <div className="flex justify-between items-center mb-1">
+                    <ChessClock
+                        whiteTime={gameData.white_time || 600}
+                        blackTime={gameData.black_time || 600}
+                        turn={game.turn()}
+                        isActive={gameData.status === 'active'}
+                        lastMoveAt={gameData.last_move_at}
+                        serverTimeOffset={serverTimeOffset}
+                        onTimeout={(w) => supabase.from('games').update({ status: 'finished', result: w === 'w' ? '1-0' : '0-1' }).eq('id', gameId)}
+                    />
+                    <div className="ml-2 flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-slate-800">
+                        <div className={`w-2 h-2 rounded-full ${connectionStatus === 'connected' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : connectionStatus === 'error' ? 'bg-red-500' : 'bg-amber-500 animate-pulse'}`} />
+                        <span className="text-[10px] font-black uppercase tracking-tighter text-slate-500">
+                            {connectionStatus === 'connected' ? 'LIVE' : connectionStatus === 'error' ? 'OFFLINE' : 'SYNC'}
+                        </span>
+                    </div>
+                </div>
 
                 <div className="relative aspect-square w-full max-w-[600px] mx-auto bg-black/20 rounded-xl overflow-hidden shadow-2xl">
                     <Chessboard2D

@@ -109,7 +109,8 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
             .update({
                 white_player_id: joinAsWhite ? user.id : gameDetails.white_player_id,
                 black_player_id: joinAsWhite ? gameDetails.black_player_id : user.id,
-                status: 'active'
+                status: 'active',
+                last_move_at: new Date().toISOString()
             })
             .eq('id', challenge.id)
             .select();
