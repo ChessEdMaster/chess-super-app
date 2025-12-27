@@ -24,10 +24,12 @@ export class PGNParser {
             chess.loadPgn(pgnString);
 
             // Extract metadata
+            // Extract metadata first to get FEN or SetUp
             const metadata = this.extractMetadata(pgnString);
+            const initialFen = metadata.fen || metadata.setUp ? metadata.fen : undefined;
 
-            // Create tree
-            const tree = new PGNTree();
+            // Create tree with correct initial FEN
+            const tree = new PGNTree(initialFen);
             tree.setMetadata(metadata);
 
             // Get moves

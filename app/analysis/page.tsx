@@ -17,6 +17,7 @@ import { AdvantageBar } from '@/components/analysis/AdvantageBar';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { SetupWorkflow } from '@/components/analysis/SetupWorkflow';
+import { MoveHistory } from '@/components/chess/MoveHistory';
 
 
 const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -261,7 +262,7 @@ function AnalysisLayout() {
       setGameId(id);
       const { data, error } = await supabase
         .from('pgn_games')
-        .select('pgn, collection_id')
+        .select('id, white, black, result, date, event, created_at')
         .eq('id', id)
         .single();
       if (error) throw error;
@@ -396,6 +397,11 @@ function AnalysisLayout() {
                       <Settings size={14} /> Stockfish 16 (WASM)
                     </span>
                     <Switch checked={engineEnabled} onCheckedChange={toggleEngine} />
+                  </div>
+
+                  {/* Move History */}
+                  <div className="flex-1 min-h-[150px] bg-[var(--panel-bg)] rounded-lg border border-[var(--border)] overflow-hidden">
+                    <MoveHistory mainLine={mainLine} currentNode={currentNode} onGoToNode={goToNode} />
                   </div>
 
                   {/* Annotation Panel */}
