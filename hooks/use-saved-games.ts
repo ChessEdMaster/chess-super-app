@@ -8,7 +8,7 @@ export interface SavedGame {
     result: string;
     date: string;
     event: string;
-    pgn: string;
+    pgn?: string;
     created_at: string;
 }
 
@@ -26,7 +26,7 @@ export function useSavedGames() {
 
             const { data, error } = await supabase
                 .from('pgn_games')
-                .select('id, white, black, result, date, event, pgn, created_at')
+                .select('id, white, black, result, date, event, created_at')
                 .order('created_at', { ascending: false })
                 .limit(50); // Pagination could be added later
 

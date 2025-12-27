@@ -83,7 +83,7 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
         try {
             const { data, error } = await supabase
                 .from('pgn_games')
-                .select('*')
+                .select('id, white, black, result, date, event, created_at')
                 .eq('collection_id', colId)
                 .order('created_at', { ascending: false });
 
