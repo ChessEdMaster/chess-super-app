@@ -115,6 +115,8 @@ function AnalysisLayout() {
         collection = newCol;
       }
 
+      if (!collection) throw new Error('Failed to identify collection');
+
       const { data: gameData, error } = await supabase
         .from('pgn_games')
         .insert({
