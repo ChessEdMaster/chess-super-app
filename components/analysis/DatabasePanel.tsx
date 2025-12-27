@@ -68,7 +68,7 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
             const { data, error } = await supabase
                 .from('pgn_collections')
                 .select('*')
-                .eq('user_id', user.id)
+                .or(`user_id.eq.${user.id},is_public.eq.true`)
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;
@@ -243,38 +243,160 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
 
     // --- Renderers ---
 
-    const renderCollections = () => (
-        <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-hide">
-            <div className="grid grid-cols-1 gap-2">
-                {collections.map(col => (
-                    <div
-                        key={col.id}
-                        onClick={() => {
-                            setSelectedCollectionId(col.id);
-                            setView('games');
-                        }}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all group ${propCollectionId === col.id ? 'border-emerald-500 bg-emerald-500/5' : 'border-[var(--border)] bg-[var(--card-bg)] hover:border-indigo-500'}`}
-                    >
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3 overflow-hidden">
-                                <div className={`p-2 rounded-md ${propCollectionId === col.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
-                                    <Database size={16} />
+    // --- Renderers ---
+
+    const renderCollections = () => {
+        // Separation logic
+        // We assume 'is_public' or 'type' distinguishes them.
+        // For now, let's just group by: System (is_public=true) and Personal.
+
+        const systemCols = collections.filter(c => c.is_public);
+        const userCols = collections.filter(c => !c.is_public);
+
+        return (
+            <div className="flex-1 overflow-y-auto p-3 space-y-6 scrollbar-hide">
+                {/* System Collections */}
+                {systemCols.length > 0 && (
+                    <div className="space-y-2">
+                        <h4 className="text-[10px] uppercase font-black text-zinc-500 tracking-wider px-1">Bases de Dades del Sistema</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                            {systemCols.map(col => (
+                                <div
+                                    key={col.id}
+                                    onClick={() => {
+                                        setSelectedCollectionId(col.id);
+                                        setView('games');
+                                    }}
+                                    className={`p-3 rounded-lg border cursor-pointer transition-all group ${propCollectionId === col.id ? 'border-emerald-500 bg-emerald-500/5' : 'border-[var(--border)] bg-[var(--card-bg)] hover:border-indigo-500'}`}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <div className="p-2 rounded-md bg-amber-500/10 text-amber-500">
+                                                <Database size={16} />
+                                            </div>
+                                            <div className="flex flex-col truncate">
+                                                <span className="text-sm font-bold text-[var(--foreground)] truncate">{col.title}</span>
+                                                <span className="text-[10px] text-[var(--color-secondary)]">Public</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col truncate">
-                                    <span className="text-sm font-bold text-[var(--foreground)] truncate">{col.title}</span>
-                                    <span className="text-[10px] text-[var(--color-secondary)]">Últim canvi: {formatDistanceToNow(new Date(col.updated_at), { addSuffix: true })}</span>
-                                </div>
-                            </div>
-                            {propCollectionId === col.id && <Check size={14} className="text-emerald-500" />}
+                            ))}
                         </div>
                     </div>
-                ))}
+                )}
+
+                {/* User Collections */}
+                <div className="space-y-2">
+                    <h4 className="text-[10px] uppercase font-black text-zinc-500 tracking-wider px-1">Les meves Bases de Dades</h4>
+                    <div className="grid grid-cols-1 gap-2">
+                        {userCols.map(col => (
+                            <div
+                                key={col.id}
+                                onClick={() => {
+                                    setSelectedCollectionId(col.id);
+                                    setView('games');
+                                }}
+                                className={`p-3 rounded-lg border cursor-pointer transition-all group ${propCollectionId === col.id ? 'border-emerald-500 bg-emerald-500/5' : 'border-[var(--border)] bg-[var(--card-bg)] hover:border-indigo-500'}`}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className={`p-2 rounded-md ${propCollectionId === col.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
+                                            <Database size={16} />
+                                        </div>
+                                        <div className="flex flex-col truncate">
+                                            <span className="text-sm font-bold text-[var(--foreground)] truncate">{col.title}</span>
+                                            <span className="text-[10px] text-[var(--color-secondary)]">Últim canvi: {formatDistanceToNow(new Date(col.updated_at), { addSuffix: true })}</span>
+                                        </div>
+                                    </div>
+                                    {propCollectionId === col.id && <Check size={14} className="text-emerald-500" />}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 {collections.length === 0 && !loading && (
                     <div className="text-center py-12 text-zinc-600 italic text-xs">No tens cap base de dades</div>
                 )}
+
+                {/* Temporary Seeder Button (Dev Only) */}
+                <div className="pt-8 text-center">
+                    <button
+                        onClick={async () => {
+                            if (!confirm("Vols inicialitzar la BBDD de Finals? Això pot trigar.")) return;
+                            try {
+                                toast.info("Descarregant PGN...");
+                                const res = await fetch('/databases/endgames.pgn');
+                                const text = await res.text();
+
+                                toast.info(`Parsing ${text.length} bytes...`);
+                                // Simple split for batch insert
+                                const games = text.split(/\[Event "/).filter(g => g.trim().length > 0).map(g => '[Event "' + g);
+
+                                toast.info(`Trobades ${games.length} partides. Creant col·lecció...`);
+
+                                const { data: { user } } = await supabase.auth.getUser();
+                                if (!user) throw new Error("No user");
+
+                                // Create Collection
+                                const { data: col, error: colErr } = await supabase
+                                    .from('pgn_collections')
+                                    .insert({
+                                        title: 'Finals Essencials',
+                                        user_id: user.id,
+                                        is_public: true,
+                                        type: 'system_endgame'
+                                    })
+                                    .select()
+                                    .single();
+
+                                if (colErr) throw colErr;
+
+                                // Batch Insert
+                                toast.info("Inserint partides...");
+                                let count = 0;
+                                const batchSize = 50;
+
+                                for (let i = 0; i < games.length; i += batchSize) {
+                                    const batch = games.slice(i, i + batchSize).map(pgn => {
+                                        const getTag = (t: string) => {
+                                            const m = pgn.match(new RegExp(`\\[${t} "([^"]+)"\\]`));
+                                            return m ? m[1] : '?';
+                                        };
+                                        return {
+                                            collection_id: col.id,
+                                            pgn: pgn,
+                                            white: getTag('White'),
+                                            black: getTag('Black'),
+                                            event: getTag('Event'),
+                                            result: getTag('Result'),
+                                            date: getTag('Date') || new Date().toISOString()
+                                        };
+                                    });
+
+                                    await supabase.from('pgn_games').insert(batch);
+                                    count += batch.length;
+                                    toast.info(`Inserides ${count} / ${games.length}`);
+                                }
+
+                                toast.success("BBDD Finals Completa!");
+                                fetchCollections();
+
+                            } catch (e: any) {
+                                toast.error("Error seed: " + e.message);
+                                console.error(e);
+                            }
+                        }}
+                        className="text-[10px] text-zinc-700 hover:text-white underline"
+                    >
+                        (DEV) Inicialitzar Finals
+                    </button>
+                    {/* Add Openings Seed Button similarly if needed */}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderGames = () => (
         <div className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-hide">
@@ -296,18 +418,23 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
                             </span>
                         </div>
                         <div className="flex items-center gap-0.5 ml-2">
-                            <Button
-                                variant="ghost" size="icon" className="h-6 w-6 text-zinc-500 hover:text-indigo-400"
-                                onClick={() => { setEditingGame({ ...game }); setIsEditOpen(true); }}
-                            >
-                                <Edit size={12} />
-                            </Button>
-                            <Button
-                                variant="ghost" size="icon" className="h-6 w-6 text-zinc-500 hover:text-rose-500"
-                                onClick={() => handleDeleteGame(game.id)}
-                            >
-                                <Trash2 size={12} />
-                            </Button>
+                            {/* Only show actions if user owns it OR is superadmin (not implemented check here yet, assume public is read-only for now) */}
+                            {(!currentCollection?.is_public) && (
+                                <>
+                                    <Button
+                                        variant="ghost" size="icon" className="h-6 w-6 text-zinc-500 hover:text-indigo-400"
+                                        onClick={() => { setEditingGame({ ...game }); setIsEditOpen(true); }}
+                                    >
+                                        <Edit size={12} />
+                                    </Button>
+                                    <Button
+                                        variant="ghost" size="icon" className="h-6 w-6 text-zinc-500 hover:text-rose-500"
+                                        onClick={() => handleDeleteGame(game.id)}
+                                    >
+                                        <Trash2 size={12} />
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -365,12 +492,15 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
                             >
                                 <PlusCircle size={18} />
                             </Button>
-                            <Button
-                                variant="ghost" size="icon" className="h-8 w-8 text-indigo-400"
-                                onClick={() => setIsImportOpen(true)} title="Importar PGN"
-                            >
-                                <Import size={18} />
-                            </Button>
+                            {/* Disable Import for Public Collections if not owner/admin (simplified check) */}
+                            {(!currentCollection?.is_public) && (
+                                <Button
+                                    variant="ghost" size="icon" className="h-8 w-8 text-indigo-400"
+                                    onClick={() => setIsImportOpen(true)} title="Importar PGN"
+                                >
+                                    <Import size={18} />
+                                </Button>
+                            )}
                         </>
                     )}
                 </div>
