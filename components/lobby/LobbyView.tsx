@@ -97,25 +97,45 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
         }
 
         // Determine color and join
-        const { data: game } = await supabase.from('games').select('*').eq('id', challenge.id).single();
-        if (!game) return;
+        const { data: gameDetails, error: fetchError } = await supabase.from('games').select('*').eq('id', challenge.id).single();
+        if (fetchError || !gameDetails) {
+            toast.error("No s'ha trobat la partida");
+            return;
+        }
 
-        const joinAsWhite = game.white_player_id === null;
-        const { error } = await supabase
+        const joinAsWhite = gameDetails.white_player_id === null;
+        const { data: updatedGame, error: updateError } = await supabase
             .from('games')
             .update({
-                white_player_id: joinAsWhite ? user.id : game.white_player_id,
-                black_player_id: joinAsWhite ? game.black_player_id : user.id,
+                white_player_id: joinAsWhite ? user.id : gameDetails.white_player_id,
+                black_player_id: joinAsWhite ? gameDetails.black_player_id : user.id,
                 status: 'active'
             })
+            .eq('id', challenge.id)
+            .select();
+
+        if (updateError) {
+            console.error("Join error:", updateError);
+            toast.error("Error unint-se a la partida: " + updateError.message);
+            return;
+        }
+
+        if (!updatedGame || updatedGame.length === 0) {
+            toast.error("No s'ha pogut actualitzar la partida. Revisa els permisos.");
+            return;
+        }
+
+        // Successfully updated game, now update challenge status
+        const { error: challengeError } = await supabase
+            .from('challenges')
+            .update({ status: 'accepted' })
             .eq('id', challenge.id);
 
-        if (!error) {
-            await supabase.from('challenges').update({ status: 'accepted' }).eq('id', challenge.id);
-            onJoinGame(challenge.id);
-        } else {
-            toast.error("Error unint-se a la partida");
+        if (challengeError) {
+            console.error("Challenge update error:", challengeError);
         }
+
+        onJoinGame(challenge.id);
     };
 
     return (
