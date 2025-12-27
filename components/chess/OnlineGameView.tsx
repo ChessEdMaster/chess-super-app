@@ -36,6 +36,8 @@ interface GameData {
     rematch_status?: { white: boolean; black: boolean; next_game_id?: string | null };
     white?: { username: string; avatar_url?: string };
     black?: { username: string; avatar_url?: string };
+    last_move_at?: string;
+    created_at?: string;
 }
 
 export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
@@ -101,28 +103,19 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
             const channel = supabase
                 .channel(`game_view_${gameId}`)
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, async (payload) => {
-                    console.log("Realtime update received:", payload);
+                    console.log("Realtime (Postgres) update received:", payload);
                     const fresh = payload.new as GameData;
 
-                    if (fresh.white_player_id) {
-                        const p = await supabase.from('profiles').select('username, avatar_url').eq('id', fresh.white_player_id).single();
-                        fresh.white = p.data || undefined;
-                    }
-                    if (fresh.black_player_id) {
-                        const p = await supabase.from('profiles').select('username, avatar_url').eq('id', fresh.black_player_id).single();
-                        fresh.black = p.data || undefined;
-                    }
-
-                    const incomeGame = new Chess(fresh.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-
-                    setGameFromFen(fresh.fen);
-                    setGameData(fresh);
-                    setDrawOffer(fresh.draw_offer_by || null);
-                    setPlayers({
-                        white: fresh.white?.username || 'Jugador 1',
-                        black: fresh.black?.username || (fresh.black_player_id ? 'Jugador 2' : 'Esperant rival...')
-                    });
-                    updateStatusDisplay(incomeGame, fresh);
+                    // Only update if it's not a redundant update (already handled by broadcast)
+                    // or if it's the opponent's move.
+                    syncGame(fresh);
+                })
+                .on('broadcast', { event: 'move' }, (payload) => {
+                    console.log("Realtime (Broadcast) move received:", payload);
+                    const { fen: newFen, gameData: freshData } = payload.payload;
+                    setGameFromFen(newFen);
+                    syncGame(freshData);
+                    playSound('move');
                 })
                 .subscribe((status) => {
                     console.log(`Realtime status for game ${gameId}:`, status);
@@ -130,6 +123,35 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                         toast.error("Error de connexió en temps real. Prova de recarregar.");
                     }
                 });
+
+            // Helper to sync data
+            const syncGame = async (fresh: GameData) => {
+                if (fresh.white_player_id) {
+                    const p = await supabase.from('profiles').select('username, avatar_url').eq('id', fresh.white_player_id).single();
+                    fresh.white = p.data || undefined;
+                }
+                if (fresh.black_player_id) {
+                    const p = await supabase.from('profiles').select('username, avatar_url').eq('id', fresh.black_player_id).single();
+                    fresh.black = p.data || undefined;
+                }
+
+                const incomeGame = new Chess(fresh.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+
+                setGameFromFen(fresh.fen);
+                setGameData(prev => {
+                    // Evitar "backwards" updates si el broadcast ha anat més ràpid
+                    if (prev && prev.last_move_at && fresh.last_move_at) {
+                        if (new Date(fresh.last_move_at) < new Date(prev.last_move_at)) return prev;
+                    }
+                    return fresh;
+                });
+                setDrawOffer(fresh.draw_offer_by || null);
+                setPlayers({
+                    white: fresh.white?.username || 'Jugador 1',
+                    black: fresh.black?.username || (fresh.black_player_id ? 'Jugador 2' : 'Esperant rival...')
+                });
+                updateStatusDisplay(incomeGame, fresh);
+            };
 
             return () => { supabase.removeChannel(channel); };
         };
@@ -152,21 +174,50 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
     }
 
     const onDrop = (sourceSquare: string, targetSquare: string): boolean => {
-        if (gameData?.status !== 'active' || game.isGameOver()) return false;
+        if (!gameData || gameData.status !== 'active' || game.isGameOver()) return false;
         if (game.turn() === 'w' && orientation === 'black') return false;
         if (game.turn() === 'b' && orientation === 'white') return false;
 
+        const turn = game.turn(); // Turn before the move
         const move = makeMove({ from: sourceSquare, to: targetSquare, promotion: 'q' });
         if (!move) return false;
 
         const newFen = game.fen();
-        supabase.from('games').update({
+        const now = new Date();
+        const lastMoveAt = gameData.last_move_at ? new Date(gameData.last_move_at) : new Date(gameData.created_at || now);
+        const diffSeconds = Math.max(0, Math.floor((now.getTime() - lastMoveAt.getTime()) / 1000));
+
+        const updatedData: GameData = {
+            ...gameData,
             fen: newFen,
             pgn: game.pgn(),
-            last_move_at: new Date().toISOString()
+            last_move_at: now.toISOString(),
+            white_time: turn === 'w' ? Math.max(0, (gameData.white_time || 600) - diffSeconds) : gameData.white_time,
+            black_time: turn === 'b' ? Math.max(0, (gameData.black_time || 600) - diffSeconds) : gameData.black_time,
+        };
+
+        // 1. Update local state immediately for zero-perceived lag
+        setGameData(updatedData);
+
+        // 2. Broadcast move to opponent (Instant)
+        supabase.channel(`game_view_${gameId}`).send({
+            type: 'broadcast',
+            event: 'move',
+            payload: { move, fen: newFen, gameData: updatedData }
+        });
+
+        // 3. Persist to DB
+        supabase.from('games').update({
+            fen: updatedData.fen,
+            pgn: updatedData.pgn,
+            last_move_at: updatedData.last_move_at,
+            white_time: updatedData.white_time,
+            black_time: updatedData.black_time
         }).eq('id', gameId).then(({ error }) => {
             if (error) console.error("Error updating move:", error);
         });
+
+        playSound('move');
         return true;
     };
 
@@ -258,6 +309,7 @@ export function OnlineGameView({ gameId, user, onExit }: OnlineGameViewProps) {
                     blackTime={gameData.black_time || 600}
                     turn={game.turn()}
                     isActive={gameData.status === 'active'}
+                    lastMoveAt={gameData.last_move_at}
                     onTimeout={(w) => supabase.from('games').update({ status: 'finished', result: w === 'w' ? '1-0' : '0-1' }).eq('id', gameId)}
                 />
 

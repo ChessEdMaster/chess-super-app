@@ -9,9 +9,10 @@ interface ChessClockProps {
   turn: 'w' | 'b';
   isActive: boolean; // Si la partida està en marxa
   onTimeout: (winner: 'w' | 'b') => void;
+  lastMoveAt?: string;
 }
 
-export function ChessClock({ whiteTime, blackTime, turn, isActive, onTimeout }: ChessClockProps) {
+export function ChessClock({ whiteTime, blackTime, turn, isActive, onTimeout, lastMoveAt }: ChessClockProps) {
   const [wTime, setWTime] = useState(whiteTime);
   const [bTime, setBTime] = useState(blackTime);
 
@@ -25,29 +26,31 @@ export function ChessClock({ whiteTime, blackTime, turn, isActive, onTimeout }: 
     if (!isActive) return;
 
     const interval = setInterval(() => {
+      const now = new Date();
+      const lastMove = lastMoveAt ? new Date(lastMoveAt) : now;
+      const elapsed = Math.floor((now.getTime() - lastMove.getTime()) / 1000);
+
       if (turn === 'w') {
-        setWTime((prev) => {
-          if (prev <= 0) {
-            clearInterval(interval);
-            onTimeout('b');
-            return 0;
-          }
-          return prev - 1;
-        });
+        const currentW = Math.max(0, whiteTime - elapsed);
+        setWTime(currentW);
+        if (currentW <= 0) {
+          clearInterval(interval);
+          onTimeout('b');
+        }
+        setBTime(blackTime); // Static black time
       } else {
-        setBTime((prev) => {
-          if (prev <= 0) {
-            clearInterval(interval);
-            onTimeout('w');
-            return 0;
-          }
-          return prev - 1;
-        });
+        const currentB = Math.max(0, blackTime - elapsed);
+        setBTime(currentB);
+        if (currentB <= 0) {
+          clearInterval(interval);
+          onTimeout('w');
+        }
+        setWTime(whiteTime); // Static white time
       }
-    }, 1000);
+    }, 100); // Higher frequency for smoother display
 
     return () => clearInterval(interval);
-  }, [turn, isActive, onTimeout]);
+  }, [turn, isActive, whiteTime, blackTime, lastMoveAt, onTimeout]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
