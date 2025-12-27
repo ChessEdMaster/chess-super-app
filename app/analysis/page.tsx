@@ -258,6 +258,7 @@ function AnalysisLayout() {
 
   const handleLoadGame = async (id: string) => {
     try {
+      setGameId(id);
       const { data, error } = await supabase
         .from('pgn_games')
         .select('pgn, collection_id')
