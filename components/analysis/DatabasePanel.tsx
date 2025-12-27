@@ -316,71 +316,76 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
                     </div>
                 </div>
 
-                {collections.length === 0 && !loading && (
-                    <div className="text-center py-12 text-zinc-600 italic text-xs">No tens cap base de dades</div>
-                )}
+                {/* Endgames Seeded */}
+                <div className="pt-2 text-center text-[10px] text-zinc-700">
+                    Finals: OK
+                </div>
 
-                {/* Temporary Seeder Button (Dev Only) */}
-                <div className="pt-8 text-center">
+                {/* Openings Seeder Button (Dev Only) */}
+                <div className="pt-4 text-center">
                     <button
                         onClick={async () => {
-                            if (!confirm("Vols inicialitzar la BBDD de Finals? Això pot trigar.")) return;
+                            if (!confirm("Vols inicialitzar l'Enciclopèdia d'Obertures (ECO A-E)? Això pot trigar.")) return;
                             try {
-                                toast.info("Descarregant PGN...");
-                                const res = await fetch('/databases/endgames.pgn');
-                                const text = await res.text();
-
-                                toast.info(`Parsing ${text.length} bytes...`);
-                                // Simple split for batch insert
-                                const games = text.split(/\[Event "/).filter(g => g.trim().length > 0).map(g => '[Event "' + g);
-
-                                toast.info(`Trobades ${games.length} partides. Creant col·lecció...`);
-
                                 const { data: { user } } = await supabase.auth.getUser();
                                 if (!user) throw new Error("No user");
 
-                                // Create Collection
+                                // 1. Create Collection
+                                toast.info("Creant col·lecció...");
                                 const { data: col, error: colErr } = await supabase
                                     .from('pgn_collections')
                                     .insert({
-                                        title: 'Finals Essencials',
+                                        title: "Enciclopèdia d'Obertures",
                                         user_id: user.id,
                                         is_public: true,
-                                        type: 'system_endgame'
+                                        type: 'system_opening'
                                     })
                                     .select()
                                     .single();
 
                                 if (colErr) throw colErr;
 
-                                // Batch Insert
-                                toast.info("Inserint partides...");
-                                let count = 0;
-                                const batchSize = 50;
+                                // 2. Process Files A-E
+                                const files = ['a.tsv', 'b.tsv', 'c.tsv', 'd.tsv', 'e.tsv'];
+                                let totalCount = 0;
 
-                                for (let i = 0; i < games.length; i += batchSize) {
-                                    const batch = games.slice(i, i + batchSize).map(pgn => {
-                                        const getTag = (t: string) => {
-                                            const m = pgn.match(new RegExp(`\\[${t} "([^"]+)"\\]`));
-                                            return m ? m[1] : '?';
-                                        };
-                                        return {
+                                for (const file of files) {
+                                    toast.info(`Processant Volum ${file.toUpperCase()}...`);
+                                    const res = await fetch(`/databases/openings/${file}`);
+                                    const text = await res.text();
+                                    const lines = text.split('\n').slice(1); // Skip header
+
+                                    const batchSize = 100;
+                                    const games = [];
+
+                                    for (const line of lines) {
+                                        if (!line.trim()) continue;
+                                        const [eco, name, pgn] = line.split('\t');
+                                        if (!pgn) continue;
+
+                                        games.push({
                                             collection_id: col.id,
-                                            pgn: pgn,
-                                            white: getTag('White'),
-                                            black: getTag('Black'),
-                                            event: getTag('Event'),
-                                            result: getTag('Result'),
-                                            date: getTag('Date') || new Date().toISOString()
-                                        };
-                                    });
+                                            pgn: `[Event "${name}"]\n[Site "ChessClans Encyclopedia"]\n[Date "${new Date().getFullYear()}"]\n[White "ECO ${eco}"]\n[Black "${name}"]\n[Result "*"]\n[ECO "${eco}"]\n\n${pgn}`,
+                                            white: `ECO ${eco}`,
+                                            black: name,
+                                            event: 'Encyclopedia',
+                                            result: '*',
+                                            date: new Date().toISOString()
+                                        });
+                                    }
 
-                                    await supabase.from('pgn_games').insert(batch);
-                                    count += batch.length;
-                                    toast.info(`Inserides ${count} / ${games.length}`);
+                                    // Insert in batches
+                                    for (let i = 0; i < games.length; i += batchSize) {
+                                        const batch = games.slice(i, i + batchSize);
+                                        const { error: insErr } = await supabase.from('pgn_games').insert(batch);
+                                        if (insErr) console.error(insErr);
+                                        else totalCount += batch.length;
+
+                                        if (i % 500 === 0) toast.info(`Inserides ${totalCount} partides...`);
+                                    }
                                 }
 
-                                toast.success("BBDD Finals Completa!");
+                                toast.success(`Enciclopèdia Completa! (${totalCount} obertures)`);
                                 fetchCollections();
 
                             } catch (e: any) {
@@ -390,10 +395,11 @@ export function DatabasePanel({ currentCollectionId: propCollectionId, activeGam
                         }}
                         className="text-[10px] text-zinc-700 hover:text-white underline"
                     >
-                        (DEV) Inicialitzar Finals
+                        (DEV) Inicialitzar Obertures
                     </button>
-                    {/* Add Openings Seed Button similarly if needed */}
                 </div>
+
+
             </div>
         );
     };
