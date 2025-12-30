@@ -1,0 +1,1453 @@
+{
+  "title": "Nivel 3: Competición",
+  "slug": "level-3-competition",
+  "description": "Preparación para torneos y juego avanzado.",
+  "modules": [
+    {
+      "title": "Módulo Único (30 Clases)",
+      "order": 1,
+      "lessons": [
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 1,
+            "title": "Lección 1: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-1",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 2,
+            "title": "Lección 2: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-2",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 3,
+            "title": "Lección 3: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-3",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 4,
+            "title": "Lección 4: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-4",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 5,
+            "title": "Lección 5: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-5",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 6,
+            "title": "Lección 6: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-6",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 7,
+            "title": "Lección 7: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-7",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 8,
+            "title": "Lección 8: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-8",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 9,
+            "title": "Lección 9: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-9",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 10,
+            "title": "Lección 10: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-10",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 11,
+            "title": "Lección 11: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-11",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 12,
+            "title": "Lección 12: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-12",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 13,
+            "title": "Lección 13: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-13",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 14,
+            "title": "Lección 14: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-14",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 15,
+            "title": "Lección 15: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-15",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 16,
+            "title": "Lección 16: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-16",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 17,
+            "title": "Lección 17: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-17",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 18,
+            "title": "Lección 18: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-18",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 19,
+            "title": "Lección 19: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-19",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 20,
+            "title": "Lección 20: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-20",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 21,
+            "title": "Lección 21: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-21",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 22,
+            "title": "Lección 22: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-22",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 23,
+            "title": "Lección 23: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-23",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 24,
+            "title": "Lección 24: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-24",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 25,
+            "title": "Lección 25: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-25",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 26,
+            "title": "Lección 26: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-26",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 27,
+            "title": "Lección 27: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-27",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 28,
+            "title": "Lección 28: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-28",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 29,
+            "title": "Lección 29: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-29",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        },
+        {
+          "meta": {
+            "level": 3,
+            "lesson_number": 30,
+            "title": "Lección 30: Título pendiente",
+            "concept_summary": "Resumen pendiente."
+          },
+          "online_content": {
+            "video_script": {
+              "intro": "Intro pendiente...",
+              "key_concepts": [
+                "Concepto 1",
+                "Concepto 2"
+              ],
+              "outro": "Outro pendiente..."
+            },
+            "pgn_examples": [],
+            "pgn_exercises_interactive": [],
+            "quiz": [],
+            "gamification": {
+              "badge_name": "Medalla Nivel 3-30",
+              "badge_emoji": "🏅",
+              "badge_description": "Descripción pendiente."
+            }
+          },
+          "classroom_content": {
+            "objectives": [
+              "Objetivo 1"
+            ],
+            "age_adaptation": {
+              "infant_narrative": "Narrativa infantil...",
+              "junior_logic": "Lógica junior...",
+              "activity_game": {
+                "title": "Juego de clase",
+                "setup": "Setup...",
+                "levels": {
+                  "level_a_basic": "Nivel A",
+                  "level_b_standard": "Nivel B",
+                  "level_c_advanced": "Nivel C"
+                }
+              },
+              "printables": {
+                "worksheet_infant_desc": "Ficha infantil",
+                "worksheet_general_desc": "Ficha general"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
