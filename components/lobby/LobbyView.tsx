@@ -156,11 +156,6 @@ export function LobbyView({ user, onJoinGame }: LobbyViewProps) {
         <div className="w-full flex flex-col gap-6 max-w-5xl mx-auto py-6 px-4">
             {/* Rhythm Selector & View Toggle */}
             <div className="flex flex-col items-center gap-4">
-                <div className="flex flex-col items-center">
-                    <h2 className="text-2xl font-black text-white italic tracking-tighter text-glow">L'ARENA DE REPTES</h2>
-                    <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Elegeix el teu destí</p>
-                </div>
-
                 <div className="flex flex-col md:flex-row items-center gap-3">
                     <div className="glass-panel bg-white/5 border-white/10 rounded-xl p-1.5 flex gap-1.5 backdrop-blur-2xl shadow-2xl">
                         {leagues.map((league) => (
