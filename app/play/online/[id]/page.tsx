@@ -49,6 +49,10 @@ export default function OnlineGamePage() {
     draw_offer_by?: string | null;
     white?: { username: string; avatar_url?: string };
     black?: { username: string; avatar_url?: string };
+    is_bot?: boolean;
+    bot_difficulty?: number;
+    gatekeeper_tier?: number;
+    variant?: string;
   }
 
   const [gameData, setGameData] = useState<GameData | null>(null);
@@ -121,6 +125,12 @@ export default function OnlineGamePage() {
         // If it's a DB game, check if it's a BOT game
         if ((initialGame as any).is_bot) {
           isBotGame = true;
+          // Force active status for bot games if they are stuck
+          if (initialGame.status === 'pending') {
+            initialGame.status = 'active';
+            // Fire and forget update to DB to fix it permanently for this game
+            supabase.from('games').update({ status: 'active' }).eq('id', id).then(() => { });
+          }
           const tier = (initialGame as any).gatekeeper_tier;
           let botName = 'Bot';
           let botAvatar = null;
@@ -417,9 +427,56 @@ export default function OnlineGamePage() {
 
     // Enviar movimiento a la base de datos (async, no bloquea el return)
     if (id && !id.toString().startsWith('bot-')) {
+      // Calculate new times with increment
+      // Note: This relies on client state which might be slightly off from server, but robust enough for now.
+      // Ideally we use a server function. HERE we use optimistic update.
+      const increment = (gameData as any).increment || 0;
+      const isWhiteParams = game.turn() === 'b'; // We just moved, so turn is now OTHER. If turn is black, WHITE just moved.
+
+      // Actually game.turn() is already updated to NEXT player.
+      // So if game.turn() is 'b', then 'w' just moved.
+
+      const moverColor = game.turn() === 'b' ? 'white' : 'black';
+
+      // We need effectively the elapsed time.
+      // But we don't track elapsed time in onDrop easily without a reference to when the turn started.
+      // 'ChessClock' manages it. We can't access it easily.
+      // Workaround: We trust the server to accept the move and we don't update time in DB from client for now?
+      // User said "clock sets to 10+0".
+      // If we just SET the initial time to 3+2 (180+2), the CLOCK component will handle the countdown.
+      // BUT `ChessClock` needs to know about increment to ADD it back visually or logic-wise?
+      // `ChessClock` currently does NOT add increment.
+      // So the time will just run down.
+      // To support increment, we MUST update the `white_time`/`black_time` in DB with the ADDED seconds.
+      // AND we need to subtract the elapsed time.
+
+      // Let's implement a simple "Server Time" update for now:
+      // We send the move. The SERVER (or this client) updates the time.
+
+      // Simplified: Just add increment to the *current displayed time*? No, that's unsafe.
+      // Let's rely on `last_move_at`.
+      const now = new Date();
+      const lastMoveTime = (gameData as any).last_move_at ? new Date((gameData as any).last_move_at) : new Date((gameData as any).created_at);
+      const elapsedSeconds = Math.max(0, Math.floor((now.getTime() - lastMoveTime.getTime()) / 1000));
+
+      const currentWhiteTime = (gameData?.white_time || 600);
+      const currentBlackTime = (gameData?.black_time || 600);
+
+      let newWhiteTime = currentWhiteTime;
+      let newBlackTime = currentBlackTime;
+
+      if (moverColor === 'white') {
+        newWhiteTime = Math.max(0, currentWhiteTime - elapsedSeconds + increment);
+      } else {
+        newBlackTime = Math.max(0, currentBlackTime - elapsedSeconds + increment);
+      }
+
       supabase.from('games').update({
         fen: newFen,
         pgn: game.pgn(),
+        last_move_at: now.toISOString(),
+        white_time: newWhiteTime,
+        black_time: newBlackTime,
       }).eq('id', id).then(({ error }) => {
         if (error) {
           console.error('[Online onDrop] Error actualizando partida:', error);
@@ -429,9 +486,43 @@ export default function OnlineGamePage() {
       });
     } else {
       // BOT LOGIC
+      // Update local state for Bot Games too?
+      // Bot games logic below...
+      const increment = (gameData as any)?.increment || 0;
+      // We need to update local state `gameData` to reflect time change so `ChessClock` updates
+      // This is tricky because `ChessClock` counts down internally.
+      // If we update `gameData`, `ChessClock` will reset to the new time.
+
+      const now = new Date();
+      // ... same logic for bot game time tracking?
+      // Since it's local, we can just update `gameData` state.
+      // But we need `last_move_at` in `gameData`.
+
+      setGameData(prev => {
+        if (!prev) return null;
+        const lastMove = (prev as any).last_move_at ? new Date((prev as any).last_move_at) : new Date(); // approx
+        const elapsed = Math.floor((now.getTime() - lastMove.getTime()) / 1000);
+
+        const mover = game.turn() === 'b' ? 'white' : 'black'; // Who just moved
+
+        let wTime = prev.white_time ?? 600;
+        let bTime = prev.black_time ?? 600;
+
+        if (mover === 'white') wTime = Math.max(0, wTime - elapsed + increment);
+        else bTime = Math.max(0, bTime - elapsed + increment);
+
+        return {
+          ...prev,
+          white_time: wTime,
+          black_time: bTime,
+          last_move_at: now.toISOString() // Mock update
+        };
+      });
+
       if (!game.isGameOver()) {
         setTimeout(() => {
           // Use BotEngine
+          // ...
           // We need key Bot Difficulty.
           // const difficulty = (gameData as any).bot_difficulty || 2; 
           // 4 = Gatekeeper
@@ -868,7 +959,7 @@ export default function OnlineGamePage() {
               onSquareClick={onSquareClick}
               customSquareStyles={optionSquares}
             />
-            {gameData.status === 'pending' && (
+            {gameData.status === 'pending' && !gameData.is_bot && (
               <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                 <div className="text-center">
                   <Loader2 className="animate-spin text-amber-400 mb-4 mx-auto" size={48} />

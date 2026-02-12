@@ -112,10 +112,13 @@ export default function ArenaDashboardPage() {
                           white_player_id: user.id,
                           status: 'active',
                           is_bot: true,
-                          bot_difficulty: 2, // Medium/Hard for ranked? Let's say 2 (Medium) for now
+                          bot_difficulty: 2,
                           fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
                           variant: selectedArena,
-                          pgn: ''
+                          pgn: '',
+                          white_time: selectedArena === 'bullet' ? 60 : selectedArena === 'blitz' ? 180 : 600,
+                          black_time: selectedArena === 'bullet' ? 60 : selectedArena === 'blitz' ? 180 : 600,
+                          increment: selectedArena === 'blitz' ? 2 : 0, // 3+2 for Blitz
                         })
                         .select()
                         .single();
