@@ -134,17 +134,38 @@ function MatchmakingContent() {
 
     }, [user, status, router, mode]);
 
-    const handlePlayBot = (difficulty: number) => {
+    const handlePlayBot = async (difficulty: number) => {
         setStatus('starting');
-        // If we created a pending game, we should probably delete it or leave it as abandoned
+        // If we created a pending game, we should probably delete it
         if (gameId) {
             supabase.from('games').delete().eq('id', gameId).then(() => { });
         }
 
-        const botGameId = `bot-${difficulty}-${Math.random().toString(36).substring(7)}`;
-        setTimeout(() => {
+        try {
+            // Create a real DB game for the bot match so it's persistent
+            const { data: newGame, error } = await supabase
+                .from('games')
+                .insert({
+                    white_player_id: user?.id,
+                    status: 'active',
+                    is_bot: true,
+                    bot_difficulty: difficulty,
+                    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+                    variant: mode as any,
+                    white_time: mode === 'bullet' ? 60 : mode === 'blitz' ? 180 : 600,
+                    black_time: mode === 'bullet' ? 60 : mode === 'blitz' ? 180 : 600,
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            router.push(`/play/online/${newGame.id}`);
+        } catch (err) {
+            console.error("Error creating bot game:", err);
+            // Fallback to ephemeral ID if DB fails
+            const botGameId = `bot-${difficulty}-${Math.random().toString(36).substring(7)}`;
             router.push(`/play/online/${botGameId}`);
-        }, 1000);
+        }
     };
 
     const handleKeepSearching = () => {

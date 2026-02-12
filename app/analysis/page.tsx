@@ -58,6 +58,24 @@ function AnalysisLayout() {
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [collectionTitle, setCollectionTitle] = useState<string | null>(null);
 
+  // LOAD FROM URL OR LOCALSTORAGE
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const idFromUrl = params.get('gameId');
+    const pgnFromStorage = localStorage.getItem('analysis_pgn');
+
+    if (idFromUrl) {
+      handleLoadGame(idFromUrl);
+    } else if (pgnFromStorage) {
+      importPGN(pgnFromStorage);
+      setSessionActive(true);
+      // Optional: clear storage so it doesn't reload on next refresh?
+      // localStorage.removeItem('analysis_pgn');
+    }
+  }, []); // Run once on mount
+
   // Interaction State
   const [sourceSquare, setSourceSquare] = useState<string | null>(null);
   const [customSquareStyles, setCustomSquareStyles] = useState<Record<string, React.CSSProperties>>({});

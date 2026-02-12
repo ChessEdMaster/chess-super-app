@@ -387,7 +387,8 @@ export default function OnlineGamePage() {
         if (id && !id.toString().startsWith('bot-')) {
           await supabase.from('games').update({
             status: 'finished',
-            result: result
+            result: result,
+            pgn: chess.pgn() // Ensure final PGN is saved
           }).eq('id', id);
         }
 
@@ -510,6 +511,15 @@ export default function OnlineGamePage() {
               else if (move.captured) playSound('capture');
               else playSound('move');
 
+              // Sync bot move to DB
+              if (id && !id.toString().startsWith('bot-')) {
+                supabase.from('games').update({
+                  fen: game.fen(),
+                  pgn: game.pgn(),
+                  last_move_at: new Date().toISOString()
+                }).eq('id', id).then(() => { });
+              }
+
               // Check Game Over
               if (game.isGameOver()) {
                 handleBotGameOver(game);
@@ -539,6 +549,44 @@ export default function OnlineGamePage() {
       setStatus(`Torn de les ${turn}`);
     }
   }
+
+  // Help to sync state to DB
+  const syncMoveToDB = async (chessInstance: Chess) => {
+    if (!id || id.toString().startsWith('bot-')) return;
+
+    const increment = (gameData as any).increment || 0;
+    const moverColor = chessInstance.turn() === 'b' ? 'white' : 'black'; // Previous player moved
+
+    const now = new Date();
+    const lastMoveTime = (gameData as any).last_move_at ? new Date((gameData as any).last_move_at) : new Date((gameData as any).created_at);
+    const elapsedSeconds = Math.max(0, Math.floor((now.getTime() - lastMoveTime.getTime()) / 1000));
+
+    const currentWhiteTime = (gameData?.white_time || 600);
+    const currentBlackTime = (gameData?.black_time || 600);
+
+    let newWhiteTime = currentWhiteTime;
+    let newBlackTime = currentBlackTime;
+
+    if (moverColor === 'white') {
+      newWhiteTime = Math.max(0, currentWhiteTime - elapsedSeconds + increment);
+    } else {
+      newBlackTime = Math.max(0, currentBlackTime - elapsedSeconds + increment);
+    }
+
+    const { error } = await supabase.from('games').update({
+      fen: chessInstance.fen(),
+      pgn: chessInstance.pgn(),
+      last_move_at: now.toISOString(),
+      white_time: newWhiteTime,
+      black_time: newBlackTime,
+    }).eq('id', id);
+
+    if (error) {
+      console.error('[syncMoveToDB] Error:', error);
+    } else {
+      console.log('[syncMoveToDB] Success');
+    }
+  };
 
   // 2. Gestionar Moviment
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
@@ -578,9 +626,6 @@ export default function OnlineGamePage() {
       return false;
     }
 
-    const newFen = game.fen();
-    console.log('[Online onDrop] New FEN:', newFen);
-
     // Sons locals (optimistic)
     if (game.isCheckmate()) {
       playSound('game_end');
@@ -592,71 +637,12 @@ export default function OnlineGamePage() {
       playSound('move');
     }
 
-    // Enviar movimiento a la base de datos (async, no bloquea el return)
-    if (id && !id.toString().startsWith('bot-')) {
-      // Calculate new times with increment
-      // Note: This relies on client state which might be slightly off from server, but robust enough for now.
-      // Ideally we use a server function. HERE we use optimistic update.
-      const increment = (gameData as any).increment || 0;
-      const isWhiteParams = game.turn() === 'b'; // We just moved, so turn is now OTHER. If turn is black, WHITE just moved.
+    // Enviar movimiento a la base de datos (async)
+    syncMoveToDB(game);
 
-      // Actually game.turn() is already updated to NEXT player.
-      // So if game.turn() is 'b', then 'w' just moved.
-
-      const moverColor = game.turn() === 'b' ? 'white' : 'black';
-
-      // We need effectively the elapsed time.
-      // But we don't track elapsed time in onDrop easily without a reference to when the turn started.
-      // 'ChessClock' manages it. We can't access it easily.
-      // Workaround: We trust the server to accept the move and we don't update time in DB from client for now?
-      // User said "clock sets to 10+0".
-      // If we just SET the initial time to 3+2 (180+2), the CLOCK component will handle the countdown.
-      // BUT `ChessClock` needs to know about increment to ADD it back visually or logic-wise?
-      // `ChessClock` currently does NOT add increment.
-      // So the time will just run down.
-      // To support increment, we MUST update the `white_time`/`black_time` in DB with the ADDED seconds.
-      // AND we need to subtract the elapsed time.
-
-      // Let's implement a simple "Server Time" update for now:
-      // We send the move. The SERVER (or this client) updates the time.
-
-      // Simplified: Just add increment to the *current displayed time*? No, that's unsafe.
-      // Let's rely on `last_move_at`.
-      const now = new Date();
-      const lastMoveTime = (gameData as any).last_move_at ? new Date((gameData as any).last_move_at) : new Date((gameData as any).created_at);
-      const elapsedSeconds = Math.max(0, Math.floor((now.getTime() - lastMoveTime.getTime()) / 1000));
-
-      const currentWhiteTime = (gameData?.white_time || 600);
-      const currentBlackTime = (gameData?.black_time || 600);
-
-      let newWhiteTime = currentWhiteTime;
-      let newBlackTime = currentBlackTime;
-
-      if (moverColor === 'white') {
-        newWhiteTime = Math.max(0, currentWhiteTime - elapsedSeconds + increment);
-      } else {
-        newBlackTime = Math.max(0, currentBlackTime - elapsedSeconds + increment);
-      }
-
-      supabase.from('games').update({
-        fen: newFen,
-        pgn: game.pgn(),
-        last_move_at: now.toISOString(),
-        white_time: newWhiteTime,
-        black_time: newBlackTime,
-      }).eq('id', id).then(({ error }) => {
-        if (error) {
-          console.error('[Online onDrop] Error actualizando partida:', error);
-        } else {
-          console.log('[Online onDrop] Move saved to database successfully');
-        }
-      });
-    } else {
-      // BOT LOGIC MOVED TO useEffect
-      // Just check for game over here if user move caused it
-      if (game.isGameOver()) {
-        handleBotGameOver(game);
-      }
+    // CRITICAL FIX: Trigger local Game Over logic for Ranked Bot Games
+    if (gameData?.is_bot && game.isGameOver()) {
+      handleBotGameOver(game);
     }
 
     return true;
