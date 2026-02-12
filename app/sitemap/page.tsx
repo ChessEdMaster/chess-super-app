@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Map as MapIcon, FileText, AlertTriangle, ExternalLink } from 'lucide-react';
 import { Panel } from '@/components/ui/design-system/Panel';
