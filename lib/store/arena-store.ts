@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { ArenaProgress, ArenaVariant } from '@/types/arena';
 import { calculateNewRating, Glicko2Player, Glicko2Result } from '@/lib/game/ratings';
+import { toast } from 'sonner';
 
 interface ArenaState {
     progress: Record<ArenaVariant, ArenaProgress | null>;
@@ -155,43 +156,49 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
 
     processMatchResult: async (userId, variant, result, opponentRating) => {
         const currentProgress = get().progress[variant];
-        if (!currentProgress) return;
+        if (!currentProgress) {
+            console.error(`[ArenaStore] No progress found for ${variant}. Fetching...`);
+            await get().fetchArenaProgress(userId);
+        }
+        
+        const progress = get().progress[variant];
+        if (!progress) return;
 
         // 1. Cup Logic (Training Phase < 1000)
-        if (currentProgress.current_cups < 1000) {
+        if (progress.current_cups < 1000) {
             let cupGain = 0;
             if (result === 'win') cupGain = 25;
             else if (result === 'draw') cupGain = 10;
             
             if (cupGain > 0) {
                 await get().updateCups(userId, variant, cupGain);
+                toast.success(`🏆 +${cupGain} Copes! (${variant.toUpperCase()})`);
+            } else {
+                toast.info(`Derrota. No ganyes copes, però segueix intentant-ho! 💪`);
             }
         }
 
         // 2. Official ELO Logic (> 1000 or elo_unlocked)
-        // Note: We always calculate rating internally from the start, but we only display it prominently after 1000 cups.
-        // Actually, the user says "A partir de les 1000 copes desbloquejes l'elo oficial". 
-        // We'll calculate it if unlocked.
-        if (currentProgress.elo_unlocked) {
+        if (progress.elo_unlocked) {
             const player: Glicko2Player = {
-                rating: currentProgress.rating || 1500,
-                rd: currentProgress.rating_deviation || 350,
-                volatility: currentProgress.volatility || 0.06
+                rating: progress.rating || 1500,
+                rd: progress.rating_deviation || 350,
+                volatility: progress.volatility || 0.06
             };
 
-            // If opponent rating is not provided (e.g. still bots at high level), 
-            // we use the player's rating or a default for the bot.
             const oppRating = opponentRating || 1200; 
 
             const results: Glicko2Result[] = [{
-                opponent: { rating: oppRating, rd: 150, volatility: 0.06 }, // Typical established player RD
+                opponent: { rating: oppRating, rd: 150, volatility: 0.06 },
                 outcome: result === 'win' ? 1 : result === 'draw' ? 0.5 : 0
             }];
 
             const newRatingData = calculateNewRating(player, results);
             const ratingChange = newRatingData.rating - player.rating;
 
-            // Update State & DB
+            console.log(`[ArenaStore] ELO Update (${variant}): ${player.rating.toFixed(0)} -> ${newRatingData.rating.toFixed(0)} (${ratingChange > 0 ? '+' : ''}${ratingChange.toFixed(0)})`);
+
+            // Update State
             set(state => ({
                 progress: {
                     ...state.progress,
@@ -205,19 +212,29 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
                 }
             }));
 
+            // DB Update (Using upsert to ensure row exists/updates)
             const { error: ratingError } = await supabase
                 .from('arena_progress')
-                .update({
+                .upsert({
+                    user_id: userId,
+                    variant: variant,
                     rating: newRatingData.rating,
                     rating_deviation: newRatingData.rd,
                     volatility: newRatingData.volatility,
-                    last_rating_change: ratingChange
-                })
-                .eq('user_id', userId)
-                .eq('variant', variant);
+                    last_rating_change: ratingChange,
+                    elo_unlocked: true, // Keep it true if we are in this block
+                    current_cups: progress.current_cups,
+                    highest_cups: progress.highest_cups,
+                    chests_claimed: progress.chests_claimed,
+                    gatekeepers_defeated: progress.gatekeepers_defeated
+                }, { onConflict: 'user_id, variant' });
 
             if (ratingError) {
                 console.error('Error updating official ELO rating:', ratingError);
+                toast.error("Error al guardar l'ELO a la base de dades.");
+            } else {
+                const changeTxt = ratingChange >= 0 ? `+${ratingChange.toFixed(0)}` : `${ratingChange.toFixed(0)}`;
+                toast.success(`📊 ELO ${variant.toUpperCase()}: ${newRatingData.rating.toFixed(0)} (${changeTxt})`);
             }
         }
     },

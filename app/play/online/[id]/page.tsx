@@ -273,6 +273,11 @@ export default function OnlineGamePage() {
 
       // C. Actualitzar estat local (ara amb dades completes)
       setGameData(finalGameData as GameData);
+
+      // FETCH ARENA PROGRESS - Ensure store is ready for results
+      if (user) {
+        useArenaStore.getState().fetchArenaProgress(user.id);
+      }
       setPlayers({
         white: finalGameData.white?.username || user.user_metadata?.full_name || 'Jugador 1',
         black: finalGameData.black?.username || (finalGameData.black_player_id ? 'Jugador 2' : 'Esperant rival...')
