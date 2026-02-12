@@ -3,6 +3,9 @@
 -- Executa aquest SQL al Supabase SQL Editor
 -- ============================================
 
+-- 0. Afegir camps que falten (Error PGRST204)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{"language": "ca", "notifications": true, "theme": "light"}'::jsonb;
+
 -- 1. Activar RLS a la taula profiles (si no ho està)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 

@@ -10,6 +10,9 @@ import { AcademyLesson } from '@/types/academy';
 import { UniversalLessonViewer } from '@/components/academy/UniversalLessonViewer';
 import { AcademyLessonNewContent } from '@/types/lesson_content';
 import { Button } from '@/components/ui/button';
+import { usePlayerStore } from '@/lib/store/player-store';
+import { toast } from 'sonner';
+import { useArenaStore } from '@/lib/store/arena-store';
 
 export default function LessonPage() {
     const { moduleId, lessonId } = useParams();
@@ -86,19 +89,40 @@ export default function LessonPage() {
                     });
             }
 
-            // Check for achievements
+            // Award Achievements if any
             await checkAchievements();
+
+            // --- CROSS-PROGRESSION REWARDS (GDD MESTRE) ---
+            const { addXp, addGold } = usePlayerStore.getState();
+            addXp(50);
+            addGold(25);
+
+            // Award MANA to Kingdom
+            const { data: resData } = await supabase
+                .from('kingdom_resources')
+                .select('mana')
+                .eq('user_id', user.id)
+                .single();
+
+            if (resData) {
+                await supabase
+                    .from('kingdom_resources')
+                    .update({ mana: (resData.mana || 0) + 25 })
+                    .eq('user_id', user.id);
+                toast.success("Has guanyat 25 de Manà pel Regne! ✨");
+            }
+
+            toast.success("Lliçó completada! +50 XP");
 
             // Redirect after a delay
             setTimeout(() => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const courseId = (lesson as any).module?.course_id;
                 if (courseId) {
                     router.push(`/academy/course/${courseId}`);
                 } else {
                     router.push('/academy');
                 }
-            }, 1000);
+            }, 1500);
 
         } catch (error) {
             console.error('Error saving progress:', error);

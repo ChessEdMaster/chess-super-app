@@ -130,12 +130,12 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
         // Gatekeeper Logic: Cap cups if gatekeeper not defeated
         const defeated = currentProgress.gatekeepers_defeated || [];
 
-        // Apply caps based on gatekeepers
-        if (currentProgress.current_cups < 250 && newCups >= 250 && !defeated.includes(1)) {
+        // Apply caps strictly: If we are at or above a cap and boss not defeated, don't increase.
+        if (newCups >= 250 && !defeated.includes(1)) {
             newCups = 250;
-        } else if (currentProgress.current_cups < 500 && newCups >= 500 && !defeated.includes(2)) {
+        } else if (newCups >= 500 && !defeated.includes(2)) {
             newCups = 500;
-        } else if (currentProgress.current_cups < 750 && newCups >= 750 && !defeated.includes(3)) {
+        } else if (newCups >= 750 && !defeated.includes(3)) {
             newCups = 750;
         }
 

@@ -127,15 +127,33 @@ export function useKingdom() {
     };
 
     const collectResources = async () => {
-        // Mock implementation for Phase 1
-        if (!resources) return;
+        if (!resources || !buildings.length) {
+            toast.info('No buildings to collect from!');
+            return;
+        }
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const goldGain = 10;
-            const manaGain = 5;
+            let goldGain = 0;
+            let manaGain = 0;
+
+            buildings.forEach(building => {
+                const config = BUILDING_TYPES[building.type];
+                if (config && config.production && building.status === 'active') {
+                    if (config.production.resource === 'gold') {
+                        goldGain += config.production.rate;
+                    } else if (config.production.resource === 'mana') {
+                        manaGain += config.production.rate;
+                    }
+                }
+            });
+
+            if (goldGain === 0 && manaGain === 0) {
+                toast.info('Build resource producers first!');
+                return;
+            }
 
             const { error } = await supabase
                 .from('kingdom_resources')
@@ -146,10 +164,11 @@ export function useKingdom() {
                 .eq('user_id', user.id);
 
             if (error) throw error;
-            toast.success(`Collected ${goldGain} Gold and ${manaGain} Mana!`);
+            toast.success(`Recollit: +${goldGain} Or, +${manaGain} Manà! 🏰`);
 
         } catch (error) {
             console.error('Error collecting resources:', error);
+            toast.error('Error en la recol·lecció');
         }
     };
 

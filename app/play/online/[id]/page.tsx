@@ -422,35 +422,21 @@ export default function OnlineGamePage() {
           // GATEKEEPER VICTORY
           if ((gameData as any)?.gatekeeper_tier) {
             const tier = (gameData as any).gatekeeper_tier;
-            await usePlayerStore.getState().addXp(100); // Bonus for boss
+            await addXp(100); // Selection bonus for boss
 
-            // Update Arena Progress directly
-            const { data: progress } = await supabase
-              .from('arena_progress')
-              .select('gatekeepers_defeated')
-              .eq('user_id', user.id)
-              .eq('variant', variant)
-              .single();
+            // Use store action
+            await useArenaStore.getState().recordGatekeeperDefeat(user.id, variant, tier);
 
-            if (progress) {
-              const defeated = progress.gatekeepers_defeated || [];
-              if (!defeated.includes(tier)) {
-                await supabase.from('arena_progress').update({
-                  gatekeepers_defeated: [...defeated, tier]
-                }).eq('user_id', user.id).eq('variant', variant);
+            // Also insert into attempts history (Audit Trail)
+            await supabase.from('arena_gatekeeper_attempts').insert({
+              user_id: user.id,
+              division_id: (gameData as any).division_id || null,
+              status: 'won',
+              pgn: chess.pgn()
+            });
 
-                // Also insert into attempts history
-                await supabase.from('arena_gatekeeper_attempts').insert({
-                  user_id: user.id,
-                  division_id: (gameData as any).division_id || null,
-                  status: 'won',
-                  pgn: chess.pgn()
-                });
-
-                toast.success(`🎉 GATEKEEPER DEFEATED! You have promoted! 🎉`);
-                playSound('success');
-              }
-            }
+            toast.success(`🎉 GATEKEEPER DEFEATED! Has ascendit de divisió! 🎉`);
+            playSound('success');
           } else {
             if (Math.random() > 0.3) {
               addChest({
