@@ -22,7 +22,16 @@ interface PlayerState {
     updateChestTimers: () => void;
     openChest: (chestIndex: number) => { gold: number; gems: number; cardId: string; cardAmount: number } | null;
     addChest: (chest: Chest) => void;
+    instantUnlock: (chestIndex: number) => boolean;
 }
+
+export const CHEST_ECONOMY = {
+    WOODEN: { unlockTime: 180, instantCost: 50, goldRange: [20, 50], gemsChance: 0.2, gemsRange: [1, 2], cardsRange: [1, 2] },
+    SILVER: { unlockTime: 900, instantCost: 200, goldRange: [80, 150], gemsChance: 0.4, gemsRange: [2, 5], cardsRange: [3, 5] },
+    GOLDEN: { unlockTime: 3600, instantCost: 500, goldRange: [250, 500], gemsChance: 0.6, gemsRange: [5, 15], cardsRange: [8, 15] },
+    MAGIC: { unlockTime: 10800, instantCost: 1200, goldRange: [600, 1200], gemsChance: 0.9, gemsRange: [15, 30], cardsRange: [20, 40] },
+    LEGENDARY: { unlockTime: 28800, instantCost: 3000, goldRange: [2000, 4000], gemsChance: 1.0, gemsRange: [50, 100], cardsRange: [50, 80] },
+};
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
     profile: {
@@ -294,8 +303,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             const emptyIndex = state.chests.findIndex(c => c === null);
             if (emptyIndex === -1) return state; // No space
 
+            const economy = CHEST_ECONOMY[chest.type] || CHEST_ECONOMY.WOODEN;
+            const newChest = {
+                ...chest,
+                unlockTime: chest.unlockTime || economy.unlockTime
+            };
+
             const newChests = [...state.chests];
-            newChests[emptyIndex] = chest;
+            newChests[emptyIndex] = newChest;
             return { chests: newChests };
         });
         get().saveProfile();
@@ -355,18 +370,23 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         const chest = state.chests[chestIndex];
         if (!chest) return null;
 
-        // 1. Generate Rewards
-        const goldReward = Math.floor(Math.random() * 50) + 10;
-        const gemsReward = Math.floor(Math.random() * 5);
+        // 1. Generate Rewards based on economy
+        const economy = CHEST_ECONOMY[chest.type] || CHEST_ECONOMY.WOODEN;
+        
+        const goldReward = Math.floor(Math.random() * (economy.goldRange[1] - economy.goldRange[0] + 1)) + economy.goldRange[0];
+        
+        let gemsReward = 0;
+        if (Math.random() < economy.gemsChance) {
+            gemsReward = Math.floor(Math.random() * (economy.gemsRange[1] - economy.gemsRange[0] + 1)) + economy.gemsRange[0];
+        }
 
         // Random Card
-        // Handle case where no cards exist yet (rare but possible if concepts fail to load)
         let cardId = '';
         let cardAmount = 0;
         if (state.cards.length > 0) {
             const randomCardIndex = Math.floor(Math.random() * state.cards.length);
             cardId = state.cards[randomCardIndex].id;
-            cardAmount = Math.floor(Math.random() * 5) + 1;
+            cardAmount = Math.floor(Math.random() * (economy.cardsRange[1] - economy.cardsRange[0] + 1)) + economy.cardsRange[0];
         }
 
         // 2. Apply Rewards
@@ -400,6 +420,36 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             cardId,
             cardAmount
         };
+    },
+
+    instantUnlock: (chestIndex: number) => {
+        const state = get();
+        const chest = state.chests[chestIndex];
+        if (!chest || chest.status !== 'LOCKED') return false;
+
+        const economy = CHEST_ECONOMY[chest.type] || CHEST_ECONOMY.WOODEN;
+        const cost = economy.instantCost;
+
+        if (state.profile.currencies.gold < cost) {
+            return false;
+        }
+
+        // Subtract gold and set ready
+        set((state) => ({
+            profile: {
+                ...state.profile,
+                currencies: {
+                    ...state.profile.currencies,
+                    gold: state.profile.currencies.gold - cost
+                }
+            },
+            chests: state.chests.map((c, i) => 
+                i === chestIndex ? { ...c!, status: 'READY' as const } : c
+            )
+        }));
+
+        get().saveProfile();
+        return true;
     }
 }));
 

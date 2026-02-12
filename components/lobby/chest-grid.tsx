@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Archive, Gift } from 'lucide-react';
-import { usePlayerStore } from '@/lib/store/player-store';
+import { usePlayerStore, CHEST_ECONOMY } from '@/lib/store/player-store';
 import { Chest } from '@/types/rpg';
 
 interface ChestGridProps {
@@ -15,7 +15,7 @@ interface ChestGridProps {
 import { toast } from 'sonner';
 
 export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: ChestGridProps = {}) {
-    const { chests: storeChests, startUnlockChest, openChest, updateChestTimers } = usePlayerStore();
+    const { chests: storeChests, startUnlockChest, openChest, updateChestTimers, instantUnlock, profile } = usePlayerStore();
     const chests = propChests || storeChests;
     // Local state to force re-render for timer visuals without hitting the store every second for everything
     const [, setTick] = useState(0);
@@ -36,6 +36,14 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
         if (!chest) return;
 
         if (chest.status === 'LOCKED') {
+            const economy = CHEST_ECONOMY[chest.type];
+            const canAfford = profile.currencies.gold >= economy.instantCost;
+
+            // Simple choice: Start or Instant?
+            // For now, let's keep it simple: if clicking a LOCKED chest, we show a toast or just start it.
+            // Actually, a better UX is to allow BOTH. 
+            // Let's modify the UI to have a sub-button for Instant Unlock.
+
             const isAnyUnlocking = chests.some(c => c && c.status === 'UNLOCKING');
             if (isAnyUnlocking) {
                 toast.error("Ja estàs desbloquejant un cofre. Espera que acabi.");
@@ -44,12 +52,30 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
             startUnlockChest(index);
             toast.success("Desbloqueig iniciat!");
         } else if (chest.status === 'READY') {
-            const rewards = openChest(index);
-            if (rewards) {
-                toast.success(`Cofre obert! Guanyat: ${rewards.gold} Or, ${rewards.gems} Gemmes`);
+            if (onOpenChest) {
+                onOpenChest(index);
+            } else {
+                const rewards = openChest(index);
+                if (rewards) {
+                    toast.success(`Cofre obert! Guanyat: ${rewards.gold} Or, ${rewards.gems} Gemmes`);
+                }
             }
-        } else if (chest.status === 'UNLOCKING') {
-            toast.info("Aquest cofre s'està desbloquejant...");
+        }
+    };
+
+    const handleInstantUnlock = (e: React.MouseEvent, index: number) => {
+        e.stopPropagation();
+        const chest = chests[index];
+        if (!chest || chest.status !== 'LOCKED') return;
+
+        const economy = CHEST_ECONOMY[chest.type];
+        if (profile.currencies.gold < economy.instantCost) {
+            toast.error("No tens prou or!");
+            return;
+        }
+
+        if (instantUnlock(index)) {
+            toast.success("Cofre desbloquejat a l'instant!");
         }
     };
 
@@ -81,10 +107,17 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
                                     {chest.status === 'READY' && 'READY'}
                                 </span>
 
-                                {chest.status === 'UNLOCKING' && chest.unlockStartedAt && (
-                                    <span className="text-[8px] text-amber-200">
-                                        {Math.max(0, Math.ceil(chest.unlockTime - ((Date.now() - chest.unlockStartedAt) / 1000)))}s
-                                    </span>
+                                <span className="text-[10px] text-amber-200">
+                                    {Math.floor(Math.max(0, Math.ceil(chest.unlockTime - ((Date.now() - (chest.unlockStartedAt || 0)) / 1000))) / 60)}m
+                                </span>
+
+                                {chest.status === 'LOCKED' && (
+                                    <button
+                                        onClick={(e) => handleInstantUnlock(e, i)}
+                                        className="mt-1 px-1.5 py-0.5 bg-yellow-500/20 hover:bg-yellow-500/40 border border-yellow-500/30 rounded text-[7px] text-yellow-500 font-black transition-colors"
+                                    >
+                                        {CHEST_ECONOMY[chest.type].instantCost} 🪙
+                                    </button>
                                 )}
                             </>
                         ) : <span className="text-[var(--color-muted)] text-[8px]">EMPTY</span>}

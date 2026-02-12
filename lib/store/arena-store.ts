@@ -1,8 +1,29 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
-import { ArenaProgress, ArenaVariant } from '@/types/arena';
+import { ArenaProgress, ArenaVariant, generateArenaPath } from '@/types/arena';
 import { calculateNewRating, Glicko2Player, Glicko2Result } from '@/lib/game/ratings';
 import { toast } from 'sonner';
+import { usePlayerStore } from './player-store';
+
+const generateChestFromResult = (result: 'win' | 'draw' | 'loss'): 'WOODEN' | 'SILVER' | 'GOLDEN' | 'MAGIC' | 'LEGENDARY' => {
+    const rand = Math.random() * 100;
+
+    if (result === 'win') {
+        if (rand < 1) return 'LEGENDARY';   // 1%
+        if (rand < 5) return 'MAGIC';       // 4%
+        if (rand < 15) return 'GOLDEN';      // 10%
+        if (rand < 40) return 'SILVER';      // 25%
+        return 'WOODEN';                     // 60%
+    } else if (result === 'draw') {
+        if (rand < 1) return 'MAGIC';        // 1%
+        if (rand < 5) return 'GOLDEN';       // 4%
+        if (rand < 20) return 'SILVER';      // 15%
+        return 'WOODEN';                     // 80%
+    } else {
+        if (rand < 5) return 'SILVER';       // 5%
+        return 'WOODEN';                     // 95%
+    }
+};
 
 interface ArenaState {
     progress: Record<ArenaVariant, ArenaProgress | null>;
@@ -235,6 +256,16 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
             } else {
                 const changeTxt = ratingChange >= 0 ? `+${ratingChange.toFixed(0)}` : `${ratingChange.toFixed(0)}`;
                 toast.success(`📊 ELO ${variant.toUpperCase()}: ${newRatingData.rating.toFixed(0)} (${changeTxt})`);
+                
+                // --- Chest Drop Logic for Pro Arena ---
+                const chestType = generateChestFromResult(result);
+                usePlayerStore.getState().addChest({
+                    id: Math.random().toString(36).substring(7),
+                    type: chestType,
+                    status: 'LOCKED',
+                    unlockTime: 0 // Handled by player-store economy
+                });
+                toast.info(`📦 Has rebut un cofre de ${chestType}!`);
             }
         }
     },
@@ -267,7 +298,22 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
                 chests_claimed: newClaimed
             }, { onConflict: 'user_id, variant' });
 
-        if (error) console.error('Error claiming chest:', error);
+        if (error) {
+            console.error('Error claiming chest:', error);
+        } else {
+            // Award the chest in the player store
+            const nodes = generateArenaPath();
+            const node = nodes.find(n => n.chestId === chestId);
+            const chestType = node?.chestType || 'WOODEN';
+
+            usePlayerStore.getState().addChest({
+                id: Math.random().toString(36).substring(7),
+                type: chestType as any,
+                status: 'LOCKED',
+                unlockTime: 0
+            });
+            toast.success("Has reclamat un cofre del camí!");
+        }
     },
 
     recordGatekeeperDefeat: async (userId, variant, tier) => {
