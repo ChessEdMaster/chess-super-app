@@ -486,111 +486,9 @@ export default function OnlineGamePage() {
         }
       });
     } else {
-      // BOT LOGIC
-      // Update local state for Bot Games too?
-      // Bot games logic below...
-      const increment = (gameData as any)?.increment || 0;
-      // We need to update local state `gameData` to reflect time change so `ChessClock` updates
-      // This is tricky because `ChessClock` counts down internally.
-      // If we update `gameData`, `ChessClock` will reset to the new time.
-
-      const now = new Date();
-      // ... same logic for bot game time tracking?
-      // Since it's local, we can just update `gameData` state.
-      // But we need `last_move_at` in `gameData`.
-
-      setGameData(prev => {
-        if (!prev) return null;
-        const lastMove = (prev as any).last_move_at ? new Date((prev as any).last_move_at) : new Date(); // approx
-        const elapsed = Math.floor((now.getTime() - lastMove.getTime()) / 1000);
-
-        const mover = game.turn() === 'b' ? 'white' : 'black'; // Who just moved
-
-        let wTime = prev.white_time ?? 600;
-        let bTime = prev.black_time ?? 600;
-
-        if (mover === 'white') wTime = Math.max(0, wTime - elapsed + increment);
-        else bTime = Math.max(0, bTime - elapsed + increment);
-
-        return {
-          ...prev,
-          white_time: wTime,
-          black_time: bTime,
-          last_move_at: now.toISOString() // Mock update
-        };
-      });
-
-      if (!game.isGameOver()) {
-        setTimeout(() => {
-          // Use BotEngine
-          // ...
-          // We need key Bot Difficulty.
-          // const difficulty = (gameData as any).bot_difficulty || 2; 
-          // 4 = Gatekeeper
-          // Map to Enum
-          // Let's instantiate BotEngine
-          /*
-          import { BotEngine, BotDifficulty } from '@/lib/game/bot-engine';
-          */
-          // Since we can't import inside here easily without top-level, 
-          // we assume we will add the import at top.
-          // For now, let's implement the logic briefly here or use the class if imported.
-
-          // Fallback simple logic if class not imported yet (I will add import in next step)
-          // Actually I should just write the logic compatible with the class
-
-          const currentFen = game.fen();
-          // Simplified "Smart" Move
-          const moves = game.moves({ verbose: true });
-          if (moves.length === 0) return;
-
-          let selectedMove = moves[Math.floor(Math.random() * moves.length)];
-          const difficulty = (gameData as any)?.bot_difficulty || 2;
-
-          // Simple Heuristic for now until fully replaced with BotEngine class
-          if (difficulty >= 3) {
-            const captures = moves.filter(m => m.captured);
-            if (captures.length > 0) selectedMove = captures[Math.floor(Math.random() * captures.length)];
-
-            // Checkmate opportunity?
-            for (const m of moves) {
-              const g = new Chess(currentFen);
-              g.move(m);
-              if (g.isCheckmate()) {
-                selectedMove = m;
-                break;
-              }
-            }
-          }
-
-          const botMove = makeMove({
-            from: selectedMove.from,
-            to: selectedMove.to,
-            promotion: selectedMove.promotion
-          });
-
-          if (botMove) {
-            playSound(botMove.captured ? 'capture' : 'move');
-            if (game.isCheckmate()) playSound('game_end');
-            else if (game.isCheck()) playSound('check');
-
-            // Check for game over after bot move
-            if (game.isGameOver()) {
-              handleBotGameOver(game);
-            }
-
-            // Update DB for persistence
-            if (id && !id.toString().startsWith('bot-')) {
-              supabase.from('games').update({
-                fen: game.fen(),
-                pgn: game.pgn(),
-              }).eq('id', id).then(() => { });
-            }
-          }
-
-        }, 800); // Slight delay for "Thinking"
-      } else {
-        // Check for game over after user move (if user checkmated bot)
+      // BOT LOGIC MOVED TO useEffect
+      // Just check for game over here if user move caused it
+      if (game.isGameOver()) {
         handleBotGameOver(game);
       }
     }
@@ -933,6 +831,56 @@ export default function OnlineGamePage() {
       }
     }
   };
+
+  // BOT AUTO-MOVE EFFECT
+  useEffect(() => {
+    // Only run for active bot games
+    if (!gameData?.is_bot || gameData.status !== 'active') return;
+    if (game.isGameOver()) return;
+
+    // Determine turns
+    const userIsWhite = gameData.white_player_id === user?.id;
+    const botColor = userIsWhite ? 'b' : 'w';
+
+    // Debug
+    // console.log('[Bot Effect] Turn:', game.turn(), 'BotColor:', botColor);
+
+    if (game.turn() === botColor) {
+      // Schedule move
+      const timer = setTimeout(() => {
+        // Difficulty Mapping
+        const difficultyMap: Record<number, BotDifficulty> = {
+          1: 'EASY', 2: 'MEDIUM', 3: 'HARD', 4: 'GATEKEEPER'
+        };
+        const diffLevel = (gameData as any).bot_difficulty || 2;
+        const difficulty = difficultyMap[diffLevel] || 'MEDIUM';
+
+        // console.log('[Bot Effect] Bot Thinking...', difficulty);
+
+        const engine = new BotEngine(game.fen(), difficulty);
+        const move = engine.makeMove();
+
+        if (move) {
+          // Apply move locally
+          const result = makeMove({ from: move.from, to: move.to, promotion: move.promotion });
+
+          if (result) {
+            // Sounds
+            if (game.isCheckmate()) playSound('game_end');
+            else if (game.isCheck()) playSound('check');
+            else if (move.captured) playSound('capture');
+            else playSound('move');
+
+            // Check Game Over
+            if (game.isGameOver()) {
+              handleBotGameOver(game);
+            }
+          }
+        }
+      }, 1000); // 1s delay
+      return () => clearTimeout(timer);
+    }
+  }, [fen, gameData, user, makeMove, game, id]);
 
   return (
     <div className="h-dvh w-full bg-slate-950 flex flex-col items-center overflow-hidden">
