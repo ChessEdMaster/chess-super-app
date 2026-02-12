@@ -206,7 +206,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
         if (error) {
             console.error('❌ Error saving profile to Supabase:', error);
-            toast.error("Error en desar el perfil. Revisa la connexió.");
+            toast.error(`Error en desar el perfil: ${error.message} (${error.code})`);
+        } else {
+            console.log('✅ Perfil desat correctament');
         }
     },
 
