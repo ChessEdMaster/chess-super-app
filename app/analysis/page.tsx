@@ -406,7 +406,7 @@ function AnalysisLayout() {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 relative bg-[var(--background)]/50 p-2 overflow-y-auto">
+            <div className="flex-1 min-h-0 relative bg-[var(--background)]/50 p-2 overflow-y-auto h-[calc(100vh-140px)]">
               {activeTab === 'analysis' && (
                 <div className="flex flex-col gap-4 h-full">
                   {/* Engine Settings */}

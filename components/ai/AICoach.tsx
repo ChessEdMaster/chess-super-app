@@ -25,18 +25,22 @@ export function AICoach({ fen, onSuggestMove }: AICoachProps) {
         const move = engine.makeMove();
 
         if (move) {
-            const moveStr = `${move.from}  ${move.to}`;
+            const moveStr = move.san || `${move.from}${move.to}`;
 
-            // Pedagogical explanations based on random themes (Mocked for MVP)
-            const themes = [
-                "Aquest moviment controla el centre i limita les opcions de l'oponent.",
-                "Estem millorant la posició d'una peça poc activa per preparar un atac.",
-                "Aquesta jugada posa pressió sobre una debilitat en l'estructura de peons rival.",
-                "Defensem una peça clau mentre mantenim la tensió al flanc de dama.",
-                "És una jugada profilàctica que evita el contrajoc que l'oponent estava planejant."
-            ];
+            // Strategic categorization
+            let explanation = "Busquem millorar la posició i mantenir el control central.";
 
-            const explanation = themes[Math.floor(Math.random() * themes.length)];
+            if (move.captured) {
+                explanation = "Aquesta jugada guanya material o força un intercanvi que simplifica la posició al teu favor.";
+            } else if (move.san?.includes('+')) {
+                explanation = "Posem a prova la seguretat del rei rival per forçar concessions en la seva estructura.";
+            } else if (['N', 'B', 'R', 'Q'].includes(move.piece.toUpperCase()) && (move.from.startsWith('1') || move.from.startsWith('8'))) {
+                explanation = "Prioritzem el desenvolupament de peces menors per dominar el tauler en el mig joc.";
+            } else if (move.piece === 'p') {
+                explanation = "L'estructura de peons és l'ànima dels escacs. Aquest moviment reforça el teu centre.";
+            } else if (move.san === 'O-O' || move.san === 'O-O-O') {
+                explanation = "Posa el rei en seguretat i connecta les torres. Un pas clau en la fase d'obertura.";
+            }
 
             setHint({ move: moveStr, explanation });
         }

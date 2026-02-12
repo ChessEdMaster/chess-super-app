@@ -50,7 +50,7 @@ export function AIExplorer() {
     };
 
     return (
-        <div className="flex flex-col h-full gap-4">
+        <div className="flex flex-col h-full max-h-[calc(100vh-280px)] gap-4 overflow-hidden">
             {/* Opening Identification Header */}
             <Panel className="bg-indigo-950/30 border-indigo-500/20 p-4">
                 <div className="flex items-center gap-3">
@@ -135,6 +135,9 @@ export function AIExplorer() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
+                            {!loading && moves.length === 0 && (
+                                <tr><td colSpan={3} className="p-8 text-center text-zinc-600">No hi ha dades disponibles per aquesta posició.</td></tr>
+                            )}
                             {loading ? (
                                 <tr><td colSpan={3} className="p-8 text-center text-zinc-600 animate-pulse">Consultant Big Data...</td></tr>
                             ) : moves.map((move: ExplorerMove) => {
