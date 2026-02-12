@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { PlayerProfile, ConceptCard, Chest } from '@/types/rpg';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface PlayerState {
     profile: PlayerProfile;
@@ -133,8 +134,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             };
 
             if (roleName === 'SuperAdmin') {
-                if (currencies.gold < 100000) currencies.gold = 100000;
-                if (currencies.gems < 1000) currencies.gems = 1000;
+                // Only provide safety net if currencies are dangerously low
+                if (currencies.gold < 1000) currencies.gold = 100000;
+                if (currencies.gems < 100) currencies.gems = 1000;
             }
 
             set({
@@ -202,7 +204,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             })
             .eq('id', state.profile.id);
 
-        if (error) console.error('Error saving profile:', error);
+        if (error) {
+            console.error('❌ Error saving profile to Supabase:', error);
+            toast.error("Error en desar el perfil. Revisa la connexió.");
+        }
     },
 
     addGold: (amount) => {
