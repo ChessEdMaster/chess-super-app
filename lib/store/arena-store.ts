@@ -205,7 +205,7 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
                 }
             }));
 
-            await supabase
+            const { error: ratingError } = await supabase
                 .from('arena_progress')
                 .update({
                     rating: newRatingData.rating,
@@ -215,6 +215,10 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
                 })
                 .eq('user_id', userId)
                 .eq('variant', variant);
+
+            if (ratingError) {
+                console.error('Error updating official ELO rating:', ratingError);
+            }
         }
     },
 
