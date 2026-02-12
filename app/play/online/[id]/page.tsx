@@ -23,6 +23,7 @@ import { useChessEngine } from '@/hooks/use-chess-engine';
 // ... imports
 
 import { usePlayerStore } from '@/lib/store/player-store';
+import { BotEngine, BotDifficulty } from '@/lib/game/bot-engine';
 
 export default function OnlineGamePage() {
   const { id } = useParams();
