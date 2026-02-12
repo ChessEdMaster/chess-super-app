@@ -18,6 +18,13 @@ export default function ModulePage() {
     const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
     const [userModuleProgress, setUserModuleProgress] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [studentId, setStudentId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        setStudentId(params.get('studentId'));
+    }, []);
+
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -54,23 +61,34 @@ export default function ModulePage() {
             setLessons(lessonsData || []);
 
             // Load user progress
-            const { data: progressData } = await supabase
+            let progressQuery = supabase
                 .from('user_lesson_progress')
                 .select('lesson_id')
-                .eq('user_id', user!.id)
-                .eq('completed', true)
-                .in('lesson_id', (lessonsData || []).map(l => l.id));
+                .eq('completed', true);
+
+            if (studentId) {
+                progressQuery = progressQuery.eq('student_id', studentId);
+            } else {
+                progressQuery = progressQuery.eq('user_id', user!.id);
+            }
+
+            const { data: progressData } = await progressQuery.in('lesson_id', (lessonsData || []).map(l => l.id));
 
             const completed = new Set(progressData?.map(p => p.lesson_id) || []);
+
             setCompletedLessons(completed);
 
             // Load module overall progress (SA self-evaluation)
-            const { data: moduleProgressData } = await supabase
-                .from('user_module_progress')
-                .select('*')
-                .eq('user_id', user!.id)
-                .eq('module_id', moduleId)
-                .single();
+            let modProgressQuery = supabase.from('user_module_progress').select('*').eq('module_id', moduleId);
+
+            if (studentId) {
+                modProgressQuery = modProgressQuery.eq('student_id', studentId);
+            } else {
+                modProgressQuery = modProgressQuery.eq('user_id', user!.id);
+            }
+
+            const { data: moduleProgressData } = await modProgressQuery.maybeSingle();
+
 
             setUserModuleProgress(moduleProgressData);
 
@@ -110,12 +128,13 @@ export default function ModulePage() {
         return (
             <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
                 <Link
-                    href="/academy"
+                    href={`/academy${studentId ? `?studentId=${studentId}` : ''}`}
                     className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
                 >
                     <ArrowLeft size={20} />
                     Tornar a l'acadèmia
                 </Link>
+
 
                 <LearningSituationDashboard
                     module={module}
@@ -134,12 +153,13 @@ export default function ModulePage() {
             <div className="max-w-4xl mx-auto space-y-6">
 
                 <Link
-                    href="/academy"
+                    href={`/academy${studentId ? `?studentId=${studentId}` : ''}`}
                     className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition"
                 >
                     <ArrowLeft size={20} />
                     Tornar a l'acadèmia
                 </Link>
+
 
                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 backdrop-blur-sm">
                     <div className="flex items-start justify-between mb-4">
@@ -190,7 +210,8 @@ export default function ModulePage() {
                         return (
                             <Link
                                 key={lesson.id}
-                                href={isLocked ? '#' : `/academy/${moduleId}/${lesson.id}`}
+                                href={isLocked ? '#' : `/academy/${moduleId}/${lesson.id}${studentId ? `?studentId=${studentId}` : ''}`}
+
                                 className={`block group ${isLocked ? 'cursor-not-allowed' : ''}`}
                                 onClick={(e) => isLocked && e.preventDefault()}
                             >
@@ -228,8 +249,8 @@ export default function ModulePage() {
                                                 <div
                                                     key={i}
                                                     className={`w-1.5 h-6 rounded-full transform skew-x-12 ${i < lesson.difficulty
-                                                            ? (isLocked ? 'bg-zinc-700' : 'bg-indigo-500')
-                                                            : 'bg-zinc-800'
+                                                        ? (isLocked ? 'bg-zinc-700' : 'bg-indigo-500')
+                                                        : 'bg-zinc-800'
                                                         }`}
                                                 />
                                             ))}

@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Plus, UserPlus, Trash2, Edit } from "lucide-react";
+import { Loader2, Plus, UserPlus, Trash2, Edit, GraduationCap, Play } from "lucide-react";
+
 import { supabase } from "@/lib/supabase"; // Correct import
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -17,7 +18,9 @@ interface StudentManagerProps {
 
 export function StudentManager({ clubId }: StudentManagerProps) {
     const [students, setStudents] = useState<ClubStudent[]>([]);
+    const [progressMap, setProgressMap] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
+
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [newStudent, setNewStudent] = useState({ firstName: "", lastName: "", group: "" });
@@ -32,7 +35,26 @@ export function StudentManager({ clubId }: StudentManagerProps) {
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
-            setStudents((data as unknown as ClubStudent[]) || []);
+            const loadedStudents = (data as unknown as ClubStudent[]) || [];
+            setStudents(loadedStudents);
+
+            // Fetch progress counts
+            if (loadedStudents.length > 0) {
+                const studentIds = loadedStudents.map(s => s.id);
+                const { data: progressData } = await supabase
+                    .from("user_lesson_progress")
+                    .select("student_id")
+                    .in("student_id", studentIds)
+                    .eq("completed", true);
+
+                if (progressData) {
+                    const counts: Record<string, number> = {};
+                    progressData.forEach((p: any) => {
+                        counts[p.student_id] = (counts[p.student_id] || 0) + 1;
+                    });
+                    setProgressMap(counts);
+                }
+            }
         } catch (err) {
             console.error("Error fetching students:", err);
             toast.error("Failed to load students");
@@ -40,6 +62,7 @@ export function StudentManager({ clubId }: StudentManagerProps) {
             setLoading(false);
         }
     }, [clubId]);
+
 
     useEffect(() => {
         fetchStudents();
@@ -145,8 +168,10 @@ export function StudentManager({ clubId }: StudentManagerProps) {
                         <TableRow className="hover:bg-slate-800 border-slate-700">
                             <TableHead className="text-slate-300">Name</TableHead>
                             <TableHead className="text-slate-300">Group</TableHead>
+                            <TableHead className="text-slate-300">Progress</TableHead>
                             <TableHead className="text-slate-300">ELO</TableHead>
                             <TableHead className="text-slate-300 text-right">Actions</TableHead>
+
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -169,8 +194,24 @@ export function StudentManager({ clubId }: StudentManagerProps) {
                                         {student.first_name} {student.last_name}
                                     </TableCell>
                                     <TableCell className="text-slate-400">{student.group_identifier || "-"}</TableCell>
+                                    <TableCell className="text-slate-300">
+                                        <div className="flex items-center gap-2">
+                                            <GraduationCap className="h-4 w-4 text-indigo-400" />
+                                            <span className="font-mono">{progressMap[student.id] || 0}</span>
+                                            <span className="text-xs text-slate-500">lessons</span>
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="text-amber-400 font-mono">{student.elo}</TableCell>
-                                    <TableCell className="text-right">
+
+                                    <TableCell className="text-right flex items-center justify-end gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20 px-3"
+                                            onClick={() => window.location.href = `/academy?studentId=${student.id}`}
+                                        >
+                                            <Play className="h-4 w-4 mr-2" /> Play
+                                        </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -180,6 +221,7 @@ export function StudentManager({ clubId }: StudentManagerProps) {
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </TableCell>
+
                                 </TableRow>
                             ))
                         )}

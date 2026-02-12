@@ -12,9 +12,12 @@ interface LearningSituationDashboardProps {
     completedLessons: Set<string>;
     userId?: string;
     userModuleProgress?: any; // The record from user_module_progress table
+    studentId?: string | null;
 }
 
-export function LearningSituationDashboard({ module, lessons, completedLessons, userId, userModuleProgress }: LearningSituationDashboardProps) {
+export function LearningSituationDashboard({ module, lessons, completedLessons, userId, userModuleProgress, studentId }: LearningSituationDashboardProps) {
+
+
     // Calculate progress
     const completedCount = lessons.filter(l => completedLessons.has(l.id)).length;
     const progressPercentage = lessons.length > 0 ? (completedCount / lessons.length) * 100 : 0;
@@ -32,7 +35,9 @@ export function LearningSituationDashboard({ module, lessons, completedLessons, 
                         moduleId={module.id}
                         lessons={lessons}
                         completedLessons={completedLessons}
+                        studentId={studentId}
                     />
+
                 </div>
 
                 {/* Sidebar (Right) */}

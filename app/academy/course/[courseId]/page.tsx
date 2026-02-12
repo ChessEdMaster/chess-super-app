@@ -28,6 +28,13 @@ export default function CoursePage() {
     const [moduleProgress, setModuleProgress] = useState<Record<string, ModuleProgress>>({});
     const [isEntitled, setIsEntitled] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [studentId, setStudentId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        setStudentId(params.get('studentId'));
+    }, []);
+
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -81,18 +88,25 @@ export default function CoursePage() {
                         .eq('module_id', courseModule.id);
 
                     // Count completed
-                    const { data: completedLessons } = await supabase
+                    let completedQuery = supabase
                         .from('user_lesson_progress')
                         .select('lesson_id')
-                        .eq('user_id', user!.id)
-                        .eq('completed', true)
-                        .in('lesson_id',
-                            (await supabase
-                                .from('academy_lessons')
-                                .select('id')
-                                .eq('module_id', courseModule.id)
-                            ).data?.map(l => l.id) || []
-                        );
+                        .eq('completed', true);
+
+                    if (studentId) {
+                        completedQuery = completedQuery.eq('student_id', studentId);
+                    } else {
+                        completedQuery = completedQuery.eq('user_id', user!.id);
+                    }
+
+                    const { data: completedLessons } = await completedQuery.in('lesson_id',
+                        (await supabase
+                            .from('academy_lessons')
+                            .select('id')
+                            .eq('module_id', courseModule.id)
+                        ).data?.map(l => l.id) || []
+                    );
+
 
                     const completed = completedLessons?.length || 0;
                     const total = totalLessons || 0;
@@ -129,11 +143,12 @@ export default function CoursePage() {
             <div className="max-w-5xl mx-auto flex flex-col gap-8">
 
                 {/* Back Button */}
-                <Link href="/academy">
+                <Link href={`/academy${studentId ? `?studentId=${studentId}` : ''}`}>
                     <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-white/5 gap-2 pl-0">
                         <ArrowLeft size={20} /> <span className="uppercase font-bold tracking-wider text-xs">Back to Curriculum</span>
                     </Button>
                 </Link>
+
 
                 {/* HERO SECTION */}
                 <Panel className="relative rounded-3xl overflow-hidden bg-zinc-900 border-zinc-700 min-h-[300px] flex flex-col justify-end">
@@ -205,10 +220,11 @@ export default function CoursePage() {
 
                 {/* Conditional View Rendering */}
                 {isGamifiedGrade(course.target_grade) ? (
-                    <GamifiedCourseView modules={modules} progressMap={moduleProgress} isEntitled={isEntitled} />
+                    <GamifiedCourseView modules={modules} progressMap={moduleProgress} isEntitled={isEntitled} studentId={studentId} />
                 ) : (
-                    <AcademicCourseView modules={modules} progressMap={moduleProgress} isEntitled={isEntitled} />
+                    <AcademicCourseView modules={modules} progressMap={moduleProgress} isEntitled={isEntitled} studentId={studentId} />
                 )}
+
 
                 {modules.length === 0 && (
                     <div className="text-center py-24 bg-zinc-900/30 rounded-3xl border border-zinc-800 border-dashed animate-in fade-in zoom-in">

@@ -20,9 +20,11 @@ interface AcademicCourseViewProps {
     modules: AcademyModule[];
     progressMap: Record<string, ModuleProgress>;
     isEntitled?: boolean;
+    studentId?: string | null;
 }
 
-export function AcademicCourseView({ modules, progressMap, isEntitled = false }: AcademicCourseViewProps) {
+export function AcademicCourseView({ modules, progressMap, isEntitled = false, studentId }: AcademicCourseViewProps) {
+
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             {/* Header / Syllabus Info */}
@@ -69,7 +71,8 @@ export function AcademicCourseView({ modules, progressMap, isEntitled = false }:
                         `} />
 
                         <Link
-                            href={isLocked ? '#' : `/academy/${module.id}`}
+                            href={isLocked ? '#' : `/academy/${module.id}${studentId ? `?studentId=${studentId}` : ''}`}
+
                             className={`block ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                             onClick={(e) => isLocked && e.preventDefault()}
                         >

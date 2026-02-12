@@ -20,6 +20,13 @@ export default function LessonPage() {
     const router = useRouter();
     const [lesson, setLesson] = useState<AcademyLesson | null>(null);
     const [loading, setLoading] = useState(true);
+    const [studentId, setStudentId] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Check for studentId in URL (e.g. ?studentId=uuid)
+        const params = new URLSearchParams(window.location.search);
+        setStudentId(params.get('studentId'));
+    }, []);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -55,12 +62,18 @@ export default function LessonPage() {
 
         try {
             // Check if progress exists
-            const { data: existing } = await supabase
+            let query = supabase
                 .from('user_lesson_progress')
                 .select('*')
-                .eq('user_id', user.id)
-                .eq('lesson_id', lesson.id)
-                .single();
+                .eq('lesson_id', lesson.id);
+
+            if (studentId) {
+                query = query.eq('student_id', studentId);
+            } else {
+                query = query.eq('user_id', user.id);
+            }
+
+            const { data: existing } = await query.single();
 
             if (existing) {
                 // Update existing progress
@@ -69,7 +82,7 @@ export default function LessonPage() {
                     .update({
                         completed: true,
                         score: 100, // Implies full completion in GDD Universal Viewer
-                        attempts: existing.attempts + 1,
+                        attempts: (existing.attempts || 0) + 1,
                         last_attempt_at: new Date().toISOString(),
                         completed_at: new Date().toISOString()
                     })
@@ -79,7 +92,8 @@ export default function LessonPage() {
                 await supabase
                     .from('user_lesson_progress')
                     .insert({
-                        user_id: user.id,
+                        user_id: studentId ? null : user.id,
+                        student_id: studentId || null,
                         lesson_id: lesson.id,
                         completed: true,
                         score: 100,

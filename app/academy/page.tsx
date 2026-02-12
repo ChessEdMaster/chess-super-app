@@ -55,6 +55,23 @@ export default function AcademyPage() {
     });
     const [loading, setLoading] = useState(true);
     const [selectedSubject, setSelectedSubject] = useState('chess');
+    const [studentId, setStudentId] = useState<string | null>(null);
+    const [studentName, setStudentName] = useState<string | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const sId = params.get('studentId');
+        if (sId) {
+            setStudentId(sId);
+            fetchStudentName(sId);
+        }
+    }, []);
+
+    const fetchStudentName = async (id: string) => {
+        const { data } = await supabase.from('club_students').select('first_name').eq('id', id).single();
+        if (data) setStudentName(data.first_name);
+    };
+
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -120,9 +137,24 @@ export default function AcademyPage() {
             }
 
             // Stats
-            const { data: lessonsProgress } = await supabase.from('user_lesson_progress').select('*').eq('user_id', user!.id).eq('completed', true);
-            const { data: exercisesProgress } = await supabase.from('user_exercise_progress').select('*').eq('user_id', user!.id).eq('solved', true);
-            const { data: userAchievementsData } = await supabase.from('user_achievements').select('*').eq('user_id', user!.id);
+            let lessonsQuery = supabase.from('user_lesson_progress').select('*').eq('completed', true);
+            let exercisesQuery = supabase.from('user_exercise_progress').select('*').eq('solved', true);
+            let achievementsQuery = supabase.from('user_achievements').select('*');
+
+            if (studentId) {
+                lessonsQuery = lessonsQuery.eq('student_id', studentId);
+                exercisesQuery = exercisesQuery.eq('student_id', studentId);
+                // Currently student_id is not in user_achievements, but could be added if needed
+                achievementsQuery = achievementsQuery.eq('user_id', '00000000-0000-0000-0000-000000000000'); // Mock empty for shadow
+            } else {
+                lessonsQuery = lessonsQuery.eq('user_id', user!.id);
+                exercisesQuery = exercisesQuery.eq('user_id', user!.id);
+                achievementsQuery = achievementsQuery.eq('user_id', user!.id);
+            }
+
+            const { data: lessonsProgress } = await lessonsQuery;
+            const { data: exercisesProgress } = await exercisesQuery;
+            const { data: userAchievementsData } = await achievementsQuery;
 
             setStats({
                 totalLessonsCompleted: lessonsProgress?.length || 0,
@@ -133,6 +165,7 @@ export default function AcademyPage() {
                 averageScore: 0,
                 achievementsUnlocked: userAchievementsData?.length || 0
             });
+
 
             setLoading(false);
 
@@ -168,12 +201,13 @@ export default function AcademyPage() {
                     </div>
                     <div>
                         <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-500 tracking-tight font-display drop-shadow-sm text-stroke">
-                            Acadèmia
+                            Acadèmia {studentName ? `de ${studentName}` : ''}
                         </h1>
                         <p className="text-[var(--color-secondary)] text-xs font-bold uppercase tracking-widest mt-1">
-                            Mestratge i Sabiduria
+                            {studentName ? 'Sessió d\'aprenentatge gestionat' : 'Mestratge i Sabiduria'}
                         </p>
                     </div>
+
                 </div>
 
                 <div className="flex items-center gap-3 mt-4 md:mt-0">
@@ -236,9 +270,10 @@ export default function AcademyPage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {trackCourses.map(course => (
-                                            <CourseCard key={course.id} course={course} />
+                                            <CourseCard key={course.id} course={course} studentId={studentId} />
                                         ))}
                                     </div>
+
                                 </section>
                             );
                         })
@@ -255,9 +290,10 @@ export default function AcademyPage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {visibleCourses.map(course => (
-                                    <CourseCard key={course.id} course={course} />
+                                    <CourseCard key={course.id} course={course} studentId={studentId} />
                                 ))}
                             </div>
+
                         </section>
                     )}
                 </div>
@@ -303,7 +339,7 @@ function SubjectSelector({ selected, onSelect }: { selected: string, onSelect: (
 }
 
 
-function CourseCard({ course }: { course: AcademyCourse }) {
+function CourseCard({ course, studentId }: { course: AcademyCourse, studentId?: string | null }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -311,8 +347,9 @@ function CourseCard({ course }: { course: AcademyCourse }) {
             whileHover={{ y: -5 }}
             transition={{ duration: 0.2 }}
         >
-            <Link href={`/academy/course/${course.id}`} className="block h-full cursor-pointer">
+            <Link href={`/academy/course/${course.id}${studentId ? `?studentId=${studentId}` : ''}`} className="block h-full cursor-pointer">
                 <GameCard variant="default" className="h-full flex flex-col p-0 overflow-hidden group hover:border-emerald-500/50 transition-colors bg-[var(--card-bg)]">
+
                     {/* Cover Image */}
                     <div className="h-40 bg-[var(--background)] relative overflow-hidden border-b border-[var(--border)]">
                         {course.image_url ? (

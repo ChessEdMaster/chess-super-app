@@ -7,7 +7,10 @@ interface SATimelineProps {
     moduleId: string;
     lessons: AcademyLesson[];
     completedLessons: Set<string>;
+    studentId?: string | null;
 }
+
+
 
 const PHASE_CONFIG: Record<LessonPhase, { label: string; icon: any; color: string; bg: string }> = {
     motivation: {
@@ -30,7 +33,8 @@ const PHASE_CONFIG: Record<LessonPhase, { label: string; icon: any; color: strin
     }
 };
 
-export function SATimeline({ moduleId, lessons, completedLessons }: SATimelineProps) {
+export function SATimeline({ moduleId, lessons, completedLessons, studentId }: SATimelineProps) {
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
@@ -71,7 +75,8 @@ export function SATimeline({ moduleId, lessons, completedLessons }: SATimelinePr
                             </div>
 
                             <Link
-                                href={isLocked ? '#' : `/academy/${moduleId}/${lesson.id}`}
+                                href={isLocked ? '#' : `/academy/${moduleId}/${lesson.id}${studentId ? `?studentId=${studentId}` : ''}`}
+
                                 onClick={(e) => isLocked && e.preventDefault()}
                                 className={`block transition-transform duration-300 ${isLocked ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-1'}`}
                             >

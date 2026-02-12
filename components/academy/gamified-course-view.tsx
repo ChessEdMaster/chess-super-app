@@ -10,9 +10,11 @@ interface GamifiedCourseViewProps {
     modules: AcademyModule[];
     progressMap: Record<string, ModuleProgress>;
     isEntitled?: boolean;
+    studentId?: string | null;
 }
 
-export function GamifiedCourseView({ modules, progressMap, isEntitled = false }: GamifiedCourseViewProps) {
+export function GamifiedCourseView({ modules, progressMap, isEntitled = false, studentId }: GamifiedCourseViewProps) {
+
     return (
         <div className="relative max-w-2xl mx-auto py-12">
 
@@ -40,7 +42,8 @@ export function GamifiedCourseView({ modules, progressMap, isEntitled = false }:
                             {/* The Node/Circle */}
                             <div className="relative z-10 group">
                                 <Link
-                                    href={isLocked ? '#' : `/academy/${module.id}`}
+                                    href={isLocked ? '#' : `/academy/${module.id}${studentId ? `?studentId=${studentId}` : ''}`}
+
                                     className={`
                                         w-24 h-24 rounded-3xl flex items-center justify-center border-b-8 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all transform hover:scale-105 active:scale-95 active:border-b-0 active:translate-y-2
                                         ${isCompleted
