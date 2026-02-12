@@ -108,7 +108,12 @@ export function ChestGrid({ chests: propChests, slots, onOpenChest, compact }: C
                                 </span>
 
                                 <span className="text-[10px] text-amber-200">
-                                    {Math.floor(Math.max(0, Math.ceil(chest.unlockTime - ((Date.now() - (chest.unlockStartedAt || 0)) / 1000))) / 60)}m
+                                    {(() => {
+                                        const totalSeconds = Math.max(0, Math.ceil(chest.unlockTime - ((Date.now() - (chest.unlockStartedAt || 0)) / 1000)));
+                                        const mins = Math.floor(totalSeconds / 60);
+                                        const secs = totalSeconds % 60;
+                                        return mins > 0 ? `${mins}m` : `${secs}s`;
+                                    })()}
                                 </span>
 
                                 {chest.status === 'LOCKED' && (

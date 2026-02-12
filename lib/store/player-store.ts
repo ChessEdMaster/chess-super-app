@@ -111,6 +111,17 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             const roleName = profileData.app_roles && !Array.isArray(profileData.app_roles) ? profileData.app_roles.name : undefined;
 
             let loadedChests = (profileData.chests && Array.isArray(profileData.chests)) ? profileData.chests : [null, null, null, null];
+            
+            // Patch existing chests with economy values if missing
+            loadedChests = loadedChests.map((chest: Chest | null) => {
+                if (!chest) return null;
+                const economy = CHEST_ECONOMY[chest.type as keyof typeof CHEST_ECONOMY] || CHEST_ECONOMY.WOODEN;
+                return {
+                    ...chest,
+                    unlockTime: chest.unlockTime || economy.unlockTime
+                };
+            });
+
             if (loadedChests.length < 4) {
                 loadedChests = [...loadedChests, ...Array(4 - loadedChests.length).fill(null)];
             }
@@ -343,12 +354,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         set((state) => {
             let hasChanges = false;
             const newChests = state.chests.map(chest => {
-                if (!chest || chest.status !== 'UNLOCKING' || !chest.unlockStartedAt) return chest;
-
-                const elapsed = (Date.now() - chest.unlockStartedAt) / 1000;
-                if (elapsed >= chest.unlockTime) {
-                    hasChanges = true;
-                    return { ...chest, status: 'READY' as const };
+                if (!chest) return chest;
+                
+                if (chest.status === 'UNLOCKING') {
+                    if (!chest.unlockStartedAt) {
+                        hasChanges = true;
+                        return { ...chest, status: 'LOCKED' as const };
+                    }
+                    
+                    const elapsed = (Date.now() - chest.unlockStartedAt) / 1000;
+                    if (elapsed >= chest.unlockTime) {
+                        hasChanges = true;
+                        return { ...chest, status: 'READY' as const };
+                    }
                 }
                 return chest;
             });
@@ -394,21 +412,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         state.addGems(gemsReward);
         if (cardId) state.addCardCopy(cardId, cardAmount);
 
-        // 3. Remove Chest & Handle SuperAdmin Infinite Chests
+        // 3. Remove Chest
         set((currentState) => {
             const newChests = [...currentState.chests];
-
-            if (currentState.profile.role === 'SuperAdmin') {
-                newChests[chestIndex] = {
-                    id: Math.random().toString(36).substring(7),
-                    type: Math.random() > 0.8 ? 'GOLDEN' : Math.random() > 0.5 ? 'SILVER' : 'WOODEN',
-                    unlockTime: 10,
-                    status: 'LOCKED'
-                };
-            } else {
-                newChests[chestIndex] = null;
-            }
-
+            newChests[chestIndex] = null;
             return { chests: newChests };
         });
 
