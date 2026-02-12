@@ -948,8 +948,8 @@ export default function OnlineGamePage() {
                   <button onClick={goToAnalysis} className="w-full glass-panel hover:bg-zinc-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border-zinc-700 text-sm font-display uppercase tracking-wide">
                     <Search size={18} /> Analysis Board
                   </button>
-                  <button onClick={() => router.push('/lobby')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
-                    Return to Lobby
+                  <button onClick={() => router.push('/play')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
+                    Tornar a l'Arena
                   </button>
                 </div>
               </div>

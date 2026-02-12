@@ -4,25 +4,34 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { useArenaStore } from '@/lib/store/arena-store';
+import { usePlayerStore } from '@/lib/store/player-store';
 import { ArenaPath } from '@/components/arena/arena-path';
+import { ChestGrid } from '@/components/lobby/chest-grid';
+import { ChestOpeningModal } from '@/components/cards/chest-opening-modal';
 import { ArenaVariant } from '@/types/arena';
 import { GameCard } from '@/components/ui/design-system/GameCard';
 import { Panel } from '@/components/ui/design-system/Panel';
 import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
-import { Trophy, Swords, Loader2, Zap, Brain, Rocket } from 'lucide-react';
+import { Trophy, Swords, Loader2, Zap, Brain, Rocket, Archive } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export default function ArenaDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { progress, fetchArenaProgress, claimChest } = useArenaStore();
+  const { chests, profile, loadProfile, openChest, startUnlockChest } = usePlayerStore();
+  const router = useRouter();
+
   const [selectedArena, setSelectedArena] = useState<ArenaVariant>('blitz');
+  const [openingRewards, setOpeningRewards] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
       fetchArenaProgress(user.id);
+      loadProfile(user.id);
     }
-  }, [user, fetchArenaProgress]);
+  }, [user, fetchArenaProgress, loadProfile]);
 
   if (authLoading || !user) {
     return (
@@ -33,6 +42,22 @@ export default function ArenaDashboardPage() {
   }
 
   const currentProgress = progress[selectedArena];
+
+  const handleOpenChest = (index: number) => {
+    const chest = chests[index];
+    if (!chest) return;
+
+    if (chest.status === 'READY') {
+      const rewards = openChest(index);
+      if (rewards) setOpeningRewards(rewards);
+    } else if (chest.status === 'LOCKED') {
+      if (startUnlockChest(index)) {
+        toast.success("Desbloqueig iniciat!");
+      } else {
+        toast.error("Ja hi ha un cofre en procés.");
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-4 md:p-6 pb-24">
@@ -237,29 +262,60 @@ export default function ArenaDashboardPage() {
               </div>
             </Panel>
 
-            {/* Recent Activity / Chests */}
-            <Panel className="bg-zinc-900/50 p-6">
-              <h3 className="text-sm font-black uppercase text-zinc-400 tracking-wider mb-4">
-                Recompenses
+            {/* Statistics Panel */}
+            <Panel className="bg-zinc-900/50 p-6 space-y-4">
+              <h3 className="text-sm font-black uppercase text-zinc-400 tracking-wider flex items-center gap-2">
+                <Trophy size={16} className="text-amber-500" />
+                Estadístiques de Carrera
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="aspect-square rounded-xl bg-black/20 border border-white/5 flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer group">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Trophy size={18} className="text-amber-500" />
-                  </div>
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Daily</span>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Nivell</span>
+                  <span className="font-black text-amber-500 text-sm">LVL {profile.level || 1}</span>
                 </div>
-                <div className="aspect-square rounded-xl bg-black/20 border border-white/5 flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer group">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Zap size={18} className="text-purple-500" />
-                  </div>
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Quests</span>
+                <div className="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Gold</span>
+                  <span className="font-black text-yellow-500 text-sm">{profile.currencies?.gold || 0}</span>
+                </div>
+                <div className="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Màxim de Copes</span>
+                  <span className="font-black text-white text-sm">{currentProgress?.highest_cups || 0}</span>
+                </div>
+                <div className="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Gatekeepers</span>
+                  <span className="font-black text-blue-400 text-sm">{currentProgress?.gatekeepers_defeated?.length || 0} / 4</span>
                 </div>
               </div>
             </Panel>
+
+            {/* Functional Chests Panel */}
+            <Panel className="bg-zinc-900/50 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Archive size={18} className="text-amber-500" />
+                <h3 className="text-sm font-black uppercase text-zinc-400 tracking-wider">
+                  Els teus Cofres
+                </h3>
+              </div>
+
+              <ChestGrid
+                chests={chests}
+                slots={4}
+                onOpenChest={handleOpenChest}
+                compact
+              />
+
+              <p className="text-[9px] text-zinc-500 mt-4 text-center font-bold uppercase tracking-widest leading-tight">
+                Guanys més cofres guanyant partides a l'Arena
+              </p>
+            </Panel>
           </div>
         </div>
-      </div >
-    </div >
+      </div>
+
+      <ChestOpeningModal
+        rewards={openingRewards}
+        onClose={() => setOpeningRewards(null)}
+      />
+    </div>
   );
 }
