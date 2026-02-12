@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
+import { supabase } from '@/lib/supabase';
 import { useArenaStore } from '@/lib/store/arena-store';
 import { ArenaPath } from '@/components/arena/arena-path';
 import { ArenaVariant } from '@/types/arena';
