@@ -811,184 +811,182 @@ export default function OnlineGamePage() {
       toast.error("Error processant el final de partida.");
     }
   };
-}
-  };
 
-// BOT AUTO-MOVE EFFECT
-useEffect(() => {
-  // Only run for active bot games
-  if (!gameData?.is_bot || gameData.status !== 'active') return;
-  if (game.isGameOver()) return;
+  // BOT AUTO-MOVE EFFECT
+  useEffect(() => {
+    // Only run for active bot games
+    if (!gameData?.is_bot || gameData.status !== 'active') return;
+    if (game.isGameOver()) return;
 
-  // Determine turns
-  const userIsWhite = gameData.white_player_id === user?.id;
-  const botColor = userIsWhite ? 'b' : 'w';
+    // Determine turns
+    const userIsWhite = gameData.white_player_id === user?.id;
+    const botColor = userIsWhite ? 'b' : 'w';
 
-  // Debug
-  // console.log('[Bot Effect] Turn:', game.turn(), 'BotColor:', botColor);
+    // Debug
+    // console.log('[Bot Effect] Turn:', game.turn(), 'BotColor:', botColor);
 
-  if (game.turn() === botColor) {
-    // Schedule move
-    const timer = setTimeout(() => {
-      // Difficulty Mapping
-      const difficultyMap: Record<number, BotDifficulty> = {
-        1: 'EASY', 2: 'MEDIUM', 3: 'HARD', 4: 'GATEKEEPER'
-      };
-      const diffLevel = (gameData as any).bot_difficulty || 2;
-      const difficulty = difficultyMap[diffLevel] || 'MEDIUM';
+    if (game.turn() === botColor) {
+      // Schedule move
+      const timer = setTimeout(() => {
+        // Difficulty Mapping
+        const difficultyMap: Record<number, BotDifficulty> = {
+          1: 'EASY', 2: 'MEDIUM', 3: 'HARD', 4: 'GATEKEEPER'
+        };
+        const diffLevel = (gameData as any).bot_difficulty || 2;
+        const difficulty = difficultyMap[diffLevel] || 'MEDIUM';
 
-      // console.log('[Bot Effect] Bot Thinking...', difficulty);
+        // console.log('[Bot Effect] Bot Thinking...', difficulty);
 
-      const engine = new BotEngine(game.fen(), difficulty);
-      const move = engine.makeMove();
+        const engine = new BotEngine(game.fen(), difficulty);
+        const move = engine.makeMove();
 
-      if (move) {
-        // Apply move locally
-        const result = makeMove({ from: move.from, to: move.to, promotion: move.promotion });
+        if (move) {
+          // Apply move locally
+          const result = makeMove({ from: move.from, to: move.to, promotion: move.promotion });
 
-        if (result) {
-          // Sounds
-          if (game.isCheckmate()) playSound('game_end');
-          else if (game.isCheck()) playSound('check');
-          else if (move.captured) playSound('capture');
-          else playSound('move');
+          if (result) {
+            // Sounds
+            if (game.isCheckmate()) playSound('game_end');
+            else if (game.isCheck()) playSound('check');
+            else if (move.captured) playSound('capture');
+            else playSound('move');
 
-          // Check Game Over
-          if (game.isGameOver()) {
-            handleBotGameOver(game);
+            // Check Game Over
+            if (game.isGameOver()) {
+              handleBotGameOver(game);
+            }
           }
         }
-      }
-    }, 1000); // 1s delay
-    return () => clearTimeout(timer);
-  }
-}, [fen, gameData, user, makeMove, game, id]);
+      }, 1000); // 1s delay
+      return () => clearTimeout(timer);
+    }
+  }, [fen, gameData, user, makeMove, game, id]);
 
-return (
-  <div className="h-dvh w-full bg-slate-950 flex flex-col items-center overflow-hidden">
-
+  return (
+    <div className="h-dvh w-full bg-slate-950 flex flex-col items-center overflow-hidden">
 
 
-    <div className="flex-1 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-4 p-2 lg:p-4 overflow-hidden">
 
-      {/* COLUMNA ESQUERRA: Tauler i Rellotges */}
-      <div className="flex flex-col gap-4 w-full max-w-[600px] h-full justify-center shrink-0 z-10">
+      <div className="flex-1 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-4 p-2 lg:p-4 overflow-hidden">
 
-        <ChessClock
-          whiteTime={gameData.white_time || 600}
-          blackTime={gameData.black_time || 600}
-          turn={game.turn()}
-          isActive={gameData.status === 'active'}
-          onTimeout={handleTimeout}
-        />
+        {/* COLUMNA ESQUERRA: Tauler i Rellotges */}
+        <div className="flex flex-col gap-4 w-full max-w-[600px] h-full justify-center shrink-0 z-10">
 
-        {/* Board Container - Responsive Height */}
-        <div className="relative w-full aspect-square max-h-[60vh] lg:max-h-[70vh] shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20">
-          <Chessboard2D
-            fen={fen}
-            orientation={orientation}
-            onSquareClick={onSquareClick}
-            customSquareStyles={optionSquares}
+          <ChessClock
+            whiteTime={gameData.white_time || 600}
+            blackTime={gameData.black_time || 600}
+            turn={game.turn()}
+            isActive={gameData.status === 'active'}
+            onTimeout={handleTimeout}
           />
-          {gameData.status === 'pending' && !gameData.is_bot && (
-            <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div className="text-center">
-                <Loader2 className="animate-spin text-amber-400 mb-4 mx-auto" size={48} />
-                <h3 className="text-xl font-bold text-white font-display uppercase tracking-wider">Waiting for Opponent...</h3>
-                <p className="text-sm text-zinc-400 mt-2">Compartir enllaç o esperar al Lobby.</p>
+
+          {/* Board Container - Responsive Height */}
+          <div className="relative w-full aspect-square max-h-[60vh] lg:max-h-[70vh] shadow-2xl rounded-xl overflow-hidden glass-panel mx-auto bg-black/20">
+            <Chessboard2D
+              fen={fen}
+              orientation={orientation}
+              onSquareClick={onSquareClick}
+              customSquareStyles={optionSquares}
+            />
+            {gameData.status === 'pending' && !gameData.is_bot && (
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div className="text-center">
+                  <Loader2 className="animate-spin text-amber-400 mb-4 mx-auto" size={48} />
+                  <h3 className="text-xl font-bold text-white font-display uppercase tracking-wider">Waiting for Opponent...</h3>
+                  <p className="text-sm text-zinc-400 mt-2">Compartir enllaç o esperar al Lobby.</p>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Controls */}
-        <div className="grid grid-cols-2 gap-3 mt-2">
-          <button onClick={handleResign} disabled={gameData.status !== 'active'} className="glass-panel hover:bg-red-900/30 text-zinc-300 hover:text-red-400 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition border-zinc-700/50 hover:border-red-500/50 disabled:opacity-50 text-xs font-display uppercase tracking-wider">
-            <Flag size={14} /> Resign
-          </button>
-
-          {/* Botó Taules Dinàmic */}
-          {drawOffer && drawOffer !== orientation ? (
-            <div className="flex gap-2">
-              <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs font-display uppercase">
-                <Handshake size={14} /> Accept
-              </button>
-              <button onClick={handleDeclineDraw} className="w-12 glass-panel hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-lg flex items-center justify-center transition border-zinc-700/50">
-                <X size={16} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleOfferDraw}
-              disabled={gameData.status !== 'active' || drawOffer === orientation}
-              className={`glass-panel hover:bg-zinc-800 text-zinc-300 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition border-zinc-700/50 disabled:opacity-50 text-xs font-display uppercase tracking-wider ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
-            >
-              <Handshake size={14} /> {drawOffer === orientation ? 'Offer Sent...' : 'Offer Draw'}
+          {/* Controls */}
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <button onClick={handleResign} disabled={gameData.status !== 'active'} className="glass-panel hover:bg-red-900/30 text-zinc-300 hover:text-red-400 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition border-zinc-700/50 hover:border-red-500/50 disabled:opacity-50 text-xs font-display uppercase tracking-wider">
+              <Flag size={14} /> Resign
             </button>
+
+            {/* Botó Taules Dinàmic */}
+            {drawOffer && drawOffer !== orientation ? (
+              <div className="flex gap-2">
+                <button onClick={handleAcceptDraw} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition animate-pulse text-xs font-display uppercase">
+                  <Handshake size={14} /> Accept
+                </button>
+                <button onClick={handleDeclineDraw} className="w-12 glass-panel hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-lg flex items-center justify-center transition border-zinc-700/50">
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleOfferDraw}
+                disabled={gameData.status !== 'active' || drawOffer === orientation}
+                className={`glass-panel hover:bg-zinc-800 text-zinc-300 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition border-zinc-700/50 disabled:opacity-50 text-xs font-display uppercase tracking-wider ${drawOffer === orientation ? 'opacity-50 cursor-wait' : ''}`}
+              >
+                <Handshake size={14} /> {drawOffer === orientation ? 'Offer Sent...' : 'Offer Draw'}
+              </button>
+            )}
+          </div>
+
+          {/* MODAL GAME OVER */}
+          {gameData.status === 'finished' && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+              <div className="glass-panel p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center transform scale-100 animate-in zoom-in duration-300 border-amber-500/20">
+                <h2 className="text-3xl font-black text-white mb-2 font-display uppercase italic tracking-wider">Game Over</h2>
+                <p className="text-lg text-amber-400 font-bold mb-8">{status.replace('Partida Finalitzada: ', '')}</p>
+
+                <div className="flex flex-col gap-3">
+                  <button onClick={handleRematch} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/40 text-sm font-display uppercase tracking-wide">
+                    <RotateCw size={18} /> Rematch
+                  </button>
+                  <button onClick={goToAnalysis} className="w-full glass-panel hover:bg-zinc-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border-zinc-700 text-sm font-display uppercase tracking-wide">
+                    <Search size={18} /> Analysis Board
+                  </button>
+                  <button onClick={() => router.push('/lobby')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
+                    Return to Lobby
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* MODAL GAME OVER */}
-        {gameData.status === 'finished' && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="glass-panel p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center transform scale-100 animate-in zoom-in duration-300 border-amber-500/20">
-              <h2 className="text-3xl font-black text-white mb-2 font-display uppercase italic tracking-wider">Game Over</h2>
-              <p className="text-lg text-amber-400 font-bold mb-8">{status.replace('Partida Finalitzada: ', '')}</p>
+        {/* COLUMNA DRETA: Info, Xat, Historial */}
+        <div className="w-full lg:w-80 flex flex-col gap-3 h-full lg:h-auto lg:max-h-[80vh] overflow-hidden z-10 glass-panel p-3 rounded-xl bg-zinc-950/40">
 
-              <div className="flex flex-col gap-3">
-                <button onClick={handleRematch} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-900/40 text-sm font-display uppercase tracking-wide">
-                  <RotateCw size={18} /> Rematch
-                </button>
-                <button onClick={goToAnalysis} className="w-full glass-panel hover:bg-zinc-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border-zinc-700 text-sm font-display uppercase tracking-wide">
-                  <Search size={18} /> Analysis Board
-                </button>
-                <button onClick={() => router.push('/lobby')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
-                  Return to Lobby
-                </button>
-              </div>
+          {/* Oponent */}
+          <div className="bg-zinc-900/60 p-3 rounded-lg flex items-center gap-3 border border-white/5 shrink-0">
+            <div className={`w-10 h-10 rounded flex items-center justify-center text-white font-bold shadow-inner text-sm ${orientation === 'white' ? 'bg-zinc-800' : 'bg-zinc-100 text-black'}`}>
+              {orientation === 'white' ? 'B' : 'W'}
+            </div>
+            <div>
+              <p className="font-bold text-white text-sm font-display tracking-wide">{orientation === 'white' ? players.black : players.white}</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Opponent</p>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* COLUMNA DRETA: Info, Xat, Historial */}
-      <div className="w-full lg:w-80 flex flex-col gap-3 h-full lg:h-auto lg:max-h-[80vh] overflow-hidden z-10 glass-panel p-3 rounded-xl bg-zinc-950/40">
-
-        {/* Oponent */}
-        <div className="bg-zinc-900/60 p-3 rounded-lg flex items-center gap-3 border border-white/5 shrink-0">
-          <div className={`w-10 h-10 rounded flex items-center justify-center text-white font-bold shadow-inner text-sm ${orientation === 'white' ? 'bg-zinc-800' : 'bg-zinc-100 text-black'}`}>
-            {orientation === 'white' ? 'B' : 'W'}
+          {/* Historial */}
+          <div className="flex-1 min-h-0 bg-zinc-900/30 rounded-lg overflow-hidden border border-white/5">
+            <MoveHistory history={game.history()} />
           </div>
-          <div>
-            <p className="font-bold text-white text-sm font-display tracking-wide">{orientation === 'white' ? players.black : players.white}</p>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Opponent</p>
+
+          {/* Xat */}
+          <div className="h-32 lg:h-48 shrink-0">
+            <ChatBox gameId={id as string} userId={user.id} />
           </div>
-        </div>
 
-        {/* Historial */}
-        <div className="flex-1 min-h-0 bg-zinc-900/30 rounded-lg overflow-hidden border border-white/5">
-          <MoveHistory history={game.history()} />
-        </div>
-
-        {/* Xat */}
-        <div className="h-32 lg:h-48 shrink-0">
-          <ChatBox gameId={id as string} userId={user.id} />
-        </div>
-
-        {/* Tu */}
-        <div className="bg-zinc-900/60 p-3 rounded-lg flex items-center gap-3 border border-amber-500/30 shadow-lg shadow-amber-900/10 shrink-0">
-          <div className={`w-10 h-10 rounded flex items-center justify-center text-white font-bold shadow-inner text-sm ${orientation === 'white' ? 'bg-zinc-100 text-black' : 'bg-zinc-800'}`}>
-            {orientation === 'white' ? 'W' : 'B'}
+          {/* Tu */}
+          <div className="bg-zinc-900/60 p-3 rounded-lg flex items-center gap-3 border border-amber-500/30 shadow-lg shadow-amber-900/10 shrink-0">
+            <div className={`w-10 h-10 rounded flex items-center justify-center text-white font-bold shadow-inner text-sm ${orientation === 'white' ? 'bg-zinc-100 text-black' : 'bg-zinc-800'}`}>
+              {orientation === 'white' ? 'W' : 'B'}
+            </div>
+            <div>
+              <p className="font-bold text-white text-sm font-display tracking-wide">{orientation === 'white' ? players.white : players.black}</p>
+              <p className="text-[10px] text-amber-500 uppercase tracking-widest font-bold">You</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-white text-sm font-display tracking-wide">{orientation === 'white' ? players.white : players.black}</p>
-            <p className="text-[10px] text-amber-500 uppercase tracking-widest font-bold">You</p>
-          </div>
-        </div>
 
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
 
