@@ -10,7 +10,13 @@ const intlMiddleware = createMiddleware({
 
 export default async function middleware(request: NextRequest) {
   // 1. Run Intl Middleware to handle locale redirects/rewrites
-  const response = intlMiddleware(request);
+  // TEMPORARILY DISABLED: App structure is flat (no [locale] folder), causing 404 loops.
+  // const response = intlMiddleware(request);
+  const response = NextResponse.next({
+      request: {
+          headers: request.headers,
+      },
+  });
 
   // 2. Initialize Supabase for Auth checks
   // We pass the response from intlMiddleware so we can append cookies to it
