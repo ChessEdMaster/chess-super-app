@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { ShoppingBag, Layers, Swords, User, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, BookOpen, Menu, X, Bot, Users, Trophy } from 'lucide-react';
+import { ShoppingBag, Layers, Swords, User, GraduationCap, Settings, LogOut, Shield, Sparkles, Search, BookOpen, Menu, X, Bot, Users, Trophy, Map as MapIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -103,6 +103,10 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                             <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-[var(--color-muted)] hover:text-red-300 transition-all">
                                 <Shield size={18} />
                                 Admin
+                            </Link>
+                            <Link href="/sitemap" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-indigo-400 hover:bg-[var(--color-muted)] hover:text-indigo-300 transition-all">
+                                <MapIcon size={18} />
+                                Site Index
                             </Link>
                         </div>
                     )}
