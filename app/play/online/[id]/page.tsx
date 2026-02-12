@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
+import { useArenaStore } from '@/lib/store/arena-store';
 import { Chess } from 'chess.js';
 import { Copy, Loader2, Flag, Handshake, X, RotateCw, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -747,6 +748,28 @@ export default function OnlineGamePage() {
         const gold = 25;
         addXp(xp);
         addGold(gold);
+
+        // RANKED BOT LOGIC
+        // If it's a Ranked Bot game (determined by ID prefix or search param, or simply if it's a bot game in Arena context)
+        // We'll trust the caller to have set it up, or checks:
+        // Use `updateCups` from store.
+        // We need to access store state or actions. Since we are inside a function component, we can access the hook values if we lifted them.
+        // But `addXp` comes from `usePlayerStore`. We need `useArenaStore`.
+
+        // Dynamic import or usage of store state if available.
+        // Better: Import useArenaStore at top level and use it here. 
+        // We need to add `const { updateCups } = useArenaStore()` to the component body first.
+
+        // For now, let's assume we will add the hook call below.
+        // updateCups(user.id, (gameData as any).variant || 'blitz', 25);
+
+        // Let's implement this via a direct call to the store's getState() if possible to avoid closure staleness, 
+        // OR add `updateCups` to the component destructuring.
+
+        // Refactoring to use `useArenaStore.getState().updateCups(...)` pattern for simplicity in this callback.
+        const variant = (gameData as any).variant || 'blitz';
+        useArenaStore.getState().updateCups(user.id, variant, 25);
+        toast.success(`🏆 +25 Copes! Keep climbing!`);
 
         // GATEKEEPER VICTORY
         if ((gameData as any)?.gatekeeper_tier) {

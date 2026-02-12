@@ -94,12 +94,45 @@ export default function ArenaDashboardPage() {
                 </div>
               </div>
 
-              <Link href={`/play/online?mode=${selectedArena}`}>
-                <ShinyButton variant="primary" className="px-8 py-4 text-sm">
-                  <Swords className="mr-2 h-4 w-4" />
-                  JUGAR {selectedArena.toUpperCase()}
+              <div className="flex flex-col gap-2">
+                <Link href={`/play/online?mode=${selectedArena}`}>
+                  <ShinyButton variant="primary" className="px-8 py-4 text-sm">
+                    <Swords className="mr-2 h-4 w-4" />
+                    JUGAR {selectedArena.toUpperCase()}
+                  </ShinyButton>
+                </Link>
+
+                <ShinyButton
+                  onClick={async () => {
+                    toast.loading("Cercant rival (Bot)...", { id: 'bot-start' });
+                    try {
+                      const { data: game, error } = await supabase
+                        .from('games')
+                        .insert({
+                          white_player_id: user.id,
+                          status: 'active',
+                          is_bot: true,
+                          bot_difficulty: 2, // Medium/Hard for ranked? Let's say 2 (Medium) for now
+                          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+                          variant: selectedArena,
+                          pgn: ''
+                        })
+                        .select()
+                        .single();
+
+                      if (error) throw error;
+                      window.location.href = `/play/online/${game.id}?ranked=true`;
+                    } catch (err: any) {
+                      toast.error("Error: " + err.message, { id: 'bot-start' });
+                    }
+                  }}
+                  variant="secondary"
+                  className="px-4 py-4 text-xs bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
+                >
+                  <Brain className="mr-2 h-4 w-4" />
+                  ENTRENAR (RANKED)
                 </ShinyButton>
-              </Link>
+              </div>
             </Panel>
 
             {/* Path Container */}
@@ -194,7 +227,7 @@ export default function ArenaDashboardPage() {
             </Panel>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
