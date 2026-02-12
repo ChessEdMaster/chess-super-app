@@ -12,6 +12,11 @@ export interface ArenaProgress {
     current_division_id?: string;
     weekly_cups_gained?: number;
     weekly_games_played?: number;
+    rating?: number;
+    rating_deviation?: number;
+    volatility?: number;
+    elo_unlocked?: boolean;
+    last_rating_change?: number;
     created_at?: string;
     updated_at?: string;
 }

@@ -56,9 +56,9 @@ export default function ArenaDashboardPage() {
 
           <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-white/5">
             {[
-              { id: 'bullet', icon: Rocket, label: 'Bullet' },
-              { id: 'blitz', icon: Zap, label: 'Blitz' },
-              { id: 'rapid', icon: Brain, label: 'Rapid' }
+              { id: 'bullet', icon: Rocket, label: 'Bullet', elo: Math.round(progress.bullet?.rating || 1500) },
+              { id: 'blitz', icon: Zap, label: 'Blitz', elo: Math.round(progress.blitz?.rating || 1500) },
+              { id: 'rapid', icon: Brain, label: 'Rapid', elo: Math.round(progress.rapid?.rating || 1500) }
             ].map((mode) => (
               <button
                 key={mode.id}
@@ -71,7 +71,12 @@ export default function ArenaDashboardPage() {
                                 `}
               >
                 <mode.icon size={14} />
-                {mode.label}
+                <div className="flex flex-col items-start leading-none">
+                  <span>{mode.label}</span>
+                  {progress[mode.id as ArenaVariant]?.elo_unlocked && (
+                    <span className="text-[8px] opacity-70">{mode.elo}</span>
+                  )}
+                </div>
               </button>
             ))}
           </div>
@@ -83,14 +88,38 @@ export default function ArenaDashboardPage() {
             {/* Stats Banner */}
             <Panel className="bg-zinc-900/50 border-blue-500/20 p-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Trophy className="text-yellow-500" size={32} />
+                {currentProgress?.elo_unlocked ? (
+                  <div className="p-3 bg-yellow-500/20 rounded-xl border border-yellow-500/30">
+                    <Trophy size={32} className="text-yellow-500" />
+                  </div>
+                ) : (
+                  <div className="p-3 bg-blue-600/20 rounded-xl border border-blue-500/30">
+                    <Trophy size={32} className="text-blue-500" />
+                  </div>
+                )}
+
                 <div>
-                  <div className="text-3xl font-black text-white font-display">
-                    {currentProgress?.current_cups || 0}
+                  <div className="text-3xl font-black text-white font-display flex items-baseline gap-2">
+                    {currentProgress?.elo_unlocked ? (
+                      <>
+                        {Math.round(currentProgress.rating || 1500)}
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">ELO OFFICIALL</span>
+                      </>
+                    ) : (
+                      <>
+                        {currentProgress?.current_cups || 0}
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Copes</span>
+                      </>
+                    )}
                   </div>
-                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                    Copes Actuals
-                  </div>
+                  {!currentProgress?.elo_unlocked && (
+                    <div className="w-48 h-1.5 bg-zinc-800 rounded-full mt-2 overflow-hidden border border-white/5">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-1000"
+                        style={{ width: `${Math.min(100, ((currentProgress?.current_cups || 0) / 1000) * 100)}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 

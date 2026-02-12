@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useRBAC } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { usePlayerStore } from '@/lib/store/player-store';
-import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield, Zap, ShieldCheck, Brain, Activity, Settings, Edit2, Save, X, Globe, Bell } from 'lucide-react';
+import { Trophy, Calendar, User, Swords, Loader2, LogOut, Shield, Zap, ShieldCheck, Brain, Activity, Settings, Edit2, Save, X, Globe, Bell, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSocial } from '@/hooks/useSocial';
 import { Feed } from '@/components/social/feed';
@@ -102,6 +102,7 @@ export function UserProfile() {
 
     const [games, setGames] = useState<GameRecord[]>([]);
     const [loadingGames, setLoadingGames] = useState(true);
+    const [arenaProgress, setArenaProgress] = useState<any[]>([]);
 
     useEffect(() => {
         if (profile.username) {
@@ -130,6 +131,15 @@ export function UserProfile() {
             } else {
                 setGames(data || []);
             }
+
+            // Fetch Arena Progress
+            const { data: arenaData } = await supabase
+                .from('arena_progress')
+                .select('*')
+                .eq('user_id', user.id);
+
+            if (arenaData) setArenaProgress(arenaData);
+
             setLoadingGames(false);
         }
 
@@ -226,6 +236,35 @@ export function UserProfile() {
                             </div>
                             <div className="absolute bottom-1 right-1 bg-[var(--card-bg)] rounded-full p-2 border-2 border-amber-500 text-amber-500 shadow-lg z-20">
                                 <Trophy size={16} fill="currentColor" />
+                            </div>
+                        </div>
+
+                        {/* Arena Ratings Section */}
+                        <div className="w-full px-6 pb-6 space-y-4">
+                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest text-center border-t border-[var(--border)] pt-4">
+                                Rànquings Arena
+                            </h3>
+                            <div className="grid grid-cols-1 gap-2">
+                                {['bullet', 'blitz', 'rapid'].map(v => {
+                                    const p = arenaProgress.find(ap => ap.variant === v);
+                                    const icon = v === 'bullet' ? <Rocket size={14} /> : v === 'blitz' ? <Zap size={14} /> : <Brain size={14} />;
+                                    return (
+                                        <div key={v} className="flex items-center justify-between p-2 rounded-lg bg-[var(--panel-bg)] border border-[var(--border)]">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[var(--color-secondary)]">{icon}</span>
+                                                <span className="text-[10px] font-black uppercase text-foreground">{v}</span>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-sm font-black text-foreground">
+                                                    {p?.elo_unlocked ? Math.round(p.rating || 1500) : `${p?.current_cups || 0} 🏆`}
+                                                </span>
+                                                {p?.elo_unlocked && (
+                                                    <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">ELO OFFICIALL</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 

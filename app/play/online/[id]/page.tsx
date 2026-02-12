@@ -409,10 +409,9 @@ export default function OnlineGamePage() {
           const variant = (gameData as any).variant || 'blitz';
 
           try {
-            useArenaStore.getState().updateCups(user.id, variant, 25);
-            toast.success(`🏆 +25 Copes! Keep climbing!`);
+            await useArenaStore.getState().processMatchResult(user.id, variant, 'win');
           } catch (e) {
-            console.error("Error updating cups:", e);
+            console.error("Error processing match result:", e);
           }
 
           // GATEKEEPER VICTORY
@@ -464,9 +463,25 @@ export default function OnlineGamePage() {
         } else if (isDraw) {
           addXp(15);
           addGold(5);
-          toast.info("Taules! +15 XP, +5 Or.");
+
+          const variant = (gameData as any).variant || 'blitz';
+          try {
+            await useArenaStore.getState().processMatchResult(user.id, variant, 'draw');
+            toast.info("Taules! +15 XP i +5 Or.");
+          } catch (e) {
+            console.error("Error processing match result:", e);
+            toast.info("Taules! +15 XP i +5 Or.");
+          }
         } else {
           addXp(5);
+
+          const variant = (gameData as any).variant || 'blitz';
+          try {
+            await useArenaStore.getState().processMatchResult(user.id, variant, 'loss');
+          } catch (e) {
+            console.error("Error processing match result:", e);
+          }
+
           toast.info("Has perdut. +5 XP per l'esforç.");
         }
       }
