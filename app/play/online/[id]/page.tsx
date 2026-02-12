@@ -21,6 +21,7 @@ import Chessboard2D from '@/components/2d/Chessboard2D';
 import { useChessEngine } from '@/hooks/use-chess-engine';
 
 // ... imports
+import { AICoach } from '@/components/ai/AICoach';
 
 import { usePlayerStore } from '@/lib/store/player-store';
 import { BotEngine, BotDifficulty } from '@/lib/game/bot-engine';
@@ -54,6 +55,7 @@ export default function OnlineGamePage() {
     bot_difficulty?: number;
     gatekeeper_tier?: number;
     variant?: string;
+    increment?: number;
   }
 
   const [gameData, setGameData] = useState<GameData | null>(null);
@@ -961,6 +963,13 @@ export default function OnlineGamePage() {
           <div className="flex-1 min-h-0 bg-zinc-900/30 rounded-lg overflow-hidden border border-white/5">
             <MoveHistory history={game.history()} />
           </div>
+
+          {/* AI COACH (Only for Bots/Training) */}
+          {gameData.is_bot && (
+            <div className="shrink-0">
+              <AICoach fen={fen} />
+            </div>
+          )}
 
           {/* Xat */}
           <div className="h-32 lg:h-48 shrink-0">

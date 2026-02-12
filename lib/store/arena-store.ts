@@ -35,6 +35,16 @@ interface ArenaState {
     processMatchResult: (userId: string, variant: ArenaVariant, result: 'win' | 'draw' | 'loss', opponentRating?: number) => Promise<void>;
     claimChest: (userId: string, variant: ArenaVariant, chestId: string) => Promise<void>;
     recordGatekeeperDefeat: (userId: string, variant: ArenaVariant, tier: number) => Promise<void>;
+    fetchLeaderboard: (variant: ArenaVariant) => Promise<LeaderboardEntry[]>;
+}
+
+export interface LeaderboardEntry {
+    user_id: string;
+    username: string;
+    avatar_url: string | null;
+    current_cups: number;
+    rating: number;
+    rank?: number;
 }
 
 export const useArenaStore = create<ArenaState>((set, get) => ({
@@ -345,5 +355,39 @@ export const useArenaStore = create<ArenaState>((set, get) => ({
             }, { onConflict: 'user_id, variant' });
 
         if (error) console.error('Error recording gatekeeper defeat:', error);
+    },
+
+    fetchLeaderboard: async (variant) => {
+        try {
+            const { data, error } = await supabase
+                .from('arena_progress')
+                .select(`
+                    user_id,
+                    current_cups,
+                    rating,
+                    profiles:user_id (
+                        username,
+                        avatar_url
+                    )
+                `)
+                .eq('variant', variant)
+                .order('rating', { ascending: false })
+                .order('current_cups', { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+
+            return (data as any[]).map((entry, index) => ({
+                user_id: entry.user_id,
+                username: entry.profiles?.username || 'Anònim',
+                avatar_url: entry.profiles?.avatar_url || null,
+                current_cups: entry.current_cups,
+                rating: entry.rating || 1200,
+                rank: index + 1
+            }));
+        } catch (error) {
+            console.error('Error fetching leaderboard:', error);
+            return [];
+        }
     }
 }));

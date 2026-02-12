@@ -9,6 +9,7 @@ import { ArenaPath } from '@/components/arena/arena-path';
 import { ChestGrid } from '@/components/lobby/chest-grid';
 import { ChestOpeningModal } from '@/components/cards/chest-opening-modal';
 import { ArenaVariant } from '@/types/arena';
+import { Leaderboard } from '@/components/arena/Leaderboard';
 import { GameCard } from '@/components/ui/design-system/GameCard';
 import { Panel } from '@/components/ui/design-system/Panel';
 import { ShinyButton } from '@/components/ui/design-system/ShinyButton';
@@ -237,30 +238,12 @@ export default function ArenaDashboardPage() {
 
           {/* Sidebar (Right) */}
           <div className="lg:col-span-4 space-y-6">
-            {/* Weekly Leaderboard Preview */}
-            <Panel className="bg-zinc-900/50 p-6 space-y-4">
-              <h3 className="text-sm font-black uppercase text-zinc-400 tracking-wider">
-                Classificació Setmanal
-              </h3>
-              <div className="space-y-2">
-                {[1, 2, 3].map((pos) => (
-                  <div key={pos} className="flex items-center gap-3 p-2 rounded-lg bg-black/20 border border-white/5">
-                    <span className={`
-                                            font-black w-6 text-center
-                                            ${pos === 1 ? 'text-yellow-500' : pos === 2 ? 'text-zinc-300' : 'text-amber-700'}
-                                        `}>{pos}</span>
-                    <div className="w-8 h-8 rounded-full bg-zinc-800" />
-                    <span className="text-xs font-bold text-zinc-300">Player_{pos}</span>
-                    <span className="ml-auto text-xs font-mono text-blue-400">2,450</span>
-                  </div>
-                ))}
-              </div>
-              <div className="pt-2 text-center">
-                <Link href="/play/leaderboard" className="text-[10px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest">
-                  Veure Tot
-                </Link>
-              </div>
-            </Panel>
+            {/* Leaderboard (Right) */}
+            <div className="lg:sticky lg:top-6">
+              <Leaderboard variant={selectedArena} />
+            </div>
+
+            {/* Statistics Panel */}
 
             {/* Statistics Panel */}
             <Panel className="bg-zinc-900/50 p-6 space-y-4">
