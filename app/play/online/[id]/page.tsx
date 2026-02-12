@@ -7,7 +7,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { useArenaStore } from '@/lib/store/arena-store';
 import { Chess } from 'chess.js';
-import { Copy, Loader2, Flag, Handshake, X, RotateCw, Search } from 'lucide-react';
+import { Copy, Loader2, Flag, Handshake, X, RotateCw, Search, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChessClock } from '@/components/chess/chess-clock';
 import { ChatBox } from '@/components/chat-box';
@@ -56,6 +56,7 @@ export default function OnlineGamePage() {
     gatekeeper_tier?: number;
     variant?: string;
     increment?: number;
+    tournament_id?: string;
   }
 
   const [gameData, setGameData] = useState<GameData | null>(null);
@@ -355,6 +356,11 @@ export default function OnlineGamePage() {
               black: updatedGame.black?.username || (updatedGame.black_player_id ? 'Jugador 2' : 'Esperant rival...')
             });
             updateStatus(incomeGame, updatedGame);
+
+            // Handle Tournament Score if game just finished
+            if (updatedGame.status === 'finished' && payload.old?.status === 'active') {
+              handleTournamentResult(updatedGame.result || '');
+            }
           })
           .subscribe();
 
@@ -365,6 +371,36 @@ export default function OnlineGamePage() {
     fetchAndSubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user, router, setGameFromFen]);
+
+  // TOURNAMENT SCORE LOGIC
+  const handleTournamentResult = async (resultText: string) => {
+    if (!user || !gameData?.tournament_id) return;
+
+    const userIsWhite = orientation === 'white';
+    const userWon = (userIsWhite && resultText === '1-0') || (!userIsWhite && resultText === '0-1');
+    const isDraw = resultText === '1/2-1/2';
+
+    let pointsToAdd = 0;
+    if (userWon) pointsToAdd = 2;
+    else if (isDraw) pointsToAdd = 1;
+
+    if (pointsToAdd > 0) {
+      const { data } = await supabase
+        .from('tournament_players')
+        .select('score')
+        .match({ tournament_id: gameData.tournament_id, user_id: user.id })
+        .single();
+
+      const newScore = (data?.score || 0) + pointsToAdd;
+
+      await supabase
+        .from('tournament_players')
+        .update({ score: newScore })
+        .match({ tournament_id: gameData.tournament_id, user_id: user.id });
+
+      toast.success(`+${pointsToAdd} punts de Torneig! 🏆`);
+    }
+  };
 
   // Helper to handle game over locally for bots
   const handleBotGameOver = async (chess: Chess) => {
@@ -936,9 +972,15 @@ export default function OnlineGamePage() {
                   <button onClick={goToAnalysis} className="w-full glass-panel hover:bg-zinc-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition border-zinc-700 text-sm font-display uppercase tracking-wide">
                     <Search size={18} /> Analysis Board
                   </button>
-                  <button onClick={() => router.push('/play')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
-                    Tornar a l'Arena
-                  </button>
+                  {gameData.tournament_id ? (
+                    <button onClick={() => router.push(`/play/tournaments/${gameData.tournament_id}`)} className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-amber-900/40 text-sm font-display uppercase tracking-wide">
+                      <Trophy size={18} /> Tornar al Torneig
+                    </button>
+                  ) : (
+                    <button onClick={() => router.push('/play')} className="w-full text-zinc-500 hover:text-zinc-300 py-2 text-xs transition uppercase tracking-widest mt-2">
+                      Tornar a l'Arena
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

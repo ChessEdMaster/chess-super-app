@@ -81,6 +81,12 @@ export default function ArenaDashboardPage() {
           </div>
 
           <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-white/5">
+            <Link href="/play/tournaments">
+              <button className="flex items-center gap-2 px-4 py-2 border border-amber-500/30 bg-amber-500/10 text-amber-500 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-amber-500/20 transition-all">
+                <Trophy size={14} />
+                Tornejos
+              </button>
+            </Link>
             {[
               { id: 'bullet', icon: Rocket, label: 'Bullet', elo: Math.round(progress.bullet?.rating || 1500) },
               { id: 'blitz', icon: Zap, label: 'Blitz', elo: Math.round(progress.blitz?.rating || 1500) },

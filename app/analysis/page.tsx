@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import Chessboard2D from '@/components/2d/Chessboard2D';
 import ChessScene from '@/components/3d/ChessScene';
-import { ExplorerPanel } from '@/components/analysis/ExplorerPanel';
+import { AIExplorer } from '@/components/ai/AIExplorer';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GitBranch, LayoutGrid, Database, Settings, Save, FilePlus } from 'lucide-react';
 import { EngineLinesPanel } from '@/components/analysis/EngineLinesPanel';
 import { DatabasePanel } from '@/components/analysis/DatabasePanel';
@@ -462,7 +462,7 @@ function AnalysisLayout() {
               )}
 
               {activeTab === 'explorer' && (
-                <ExplorerPanel />
+                <AIExplorer />
               )}
 
               {activeTab === 'database' && (
