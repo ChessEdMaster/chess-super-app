@@ -357,7 +357,173 @@ export default function OnlineGamePage() {
 
     fetchAndSubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user, router, setGameFromFen]); // Added setGameFromFen
+  }, [id, user, router, setGameFromFen]);
+
+  // Helper to handle game over locally for bots
+  const handleBotGameOver = async (chess: Chess) => {
+    if (!user) return;
+    try {
+      let result = '';
+      if (chess.isCheckmate()) {
+        result = chess.turn() === 'w' ? '0-1' : '1-0'; // If white turn and checkmate, black wins
+      } else if (chess.isDraw()) {
+        result = '1/2-1/2';
+      }
+
+      if (result) {
+        setGameData(prev => prev ? ({
+          ...prev,
+          status: 'finished',
+          result: result
+        }) : null);
+
+        const statusText = result === '1/2-1/2' ? "Partida Finalitzada: Taules" :
+          result === '1-0' ? "Partida Finalitzada: Guanyen Blanques" :
+            "Partida Finalitzada: Guanyen Negres";
+        setStatus(statusText);
+        playSound('game_end');
+
+        // Update DB Status
+        if (id && !id.toString().startsWith('bot-')) {
+          await supabase.from('games').update({
+            status: 'finished',
+            result: result
+          }).eq('id', id);
+        }
+
+        // REWARDS LOGIC
+        // Check if user won
+        const userIsWhite = orientation === 'white';
+        const userWon = (userIsWhite && result === '1-0') || (!userIsWhite && result === '0-1');
+        const isDraw = result === '1/2-1/2';
+
+        if (userWon) {
+          // Award XP and Gold
+          const xp = 50;
+          const gold = 25;
+          addXp(xp);
+          addGold(gold);
+
+          // RANKED BOT LOGIC
+          const variant = (gameData as any).variant || 'blitz';
+
+          try {
+            useArenaStore.getState().updateCups(user.id, variant, 25);
+            toast.success(`🏆 +25 Copes! Keep climbing!`);
+          } catch (e) {
+            console.error("Error updating cups:", e);
+          }
+
+          // GATEKEEPER VICTORY
+          if ((gameData as any)?.gatekeeper_tier) {
+            const tier = (gameData as any).gatekeeper_tier;
+            await usePlayerStore.getState().addXp(100); // Bonus for boss
+
+            // Update Arena Progress directly
+            const { data: progress } = await supabase
+              .from('arena_progress')
+              .select('gatekeepers_defeated')
+              .eq('user_id', user.id)
+              .eq('variant', variant)
+              .single();
+
+            if (progress) {
+              const defeated = progress.gatekeepers_defeated || [];
+              if (!defeated.includes(tier)) {
+                await supabase.from('arena_progress').update({
+                  gatekeepers_defeated: [...defeated, tier]
+                }).eq('user_id', user.id).eq('variant', variant);
+
+                // Also insert into attempts history
+                await supabase.from('arena_gatekeeper_attempts').insert({
+                  user_id: user.id,
+                  division_id: (gameData as any).division_id || null,
+                  status: 'won',
+                  pgn: chess.pgn()
+                });
+
+                toast.success(`🎉 GATEKEEPER DEFEATED! You have promoted! 🎉`);
+                playSound('success');
+              }
+            }
+          } else {
+            if (Math.random() > 0.3) {
+              addChest({
+                id: Math.random().toString(36).substring(7),
+                type: 'WOODEN',
+                status: 'LOCKED',
+                unlockTime: 60,
+              });
+              toast.success(`Victòria! +${xp} XP, +${gold} Or i un Cofre! 🏆`);
+            } else {
+              toast.success(`Victòria! +${xp} XP i +${gold} Or! 🏆`);
+            }
+          }
+
+        } else if (isDraw) {
+          addXp(15);
+          addGold(5);
+          toast.info("Taules! +15 XP, +5 Or.");
+        } else {
+          addXp(5);
+          toast.info("Has perdut. +5 XP per l'esforç.");
+        }
+      }
+    } catch (e) {
+      console.error("Error handling bot game over:", e);
+      toast.error("Error processant el final de partida.");
+    }
+  };
+
+  // BOT AUTO-MOVE EFFECT
+  useEffect(() => {
+    // Only run for active bot games
+    if (!gameData?.is_bot || gameData.status !== 'active') return;
+    if (game.isGameOver()) return;
+
+    // Determine turns
+    const userIsWhite = gameData.white_player_id === user?.id;
+    const botColor = userIsWhite ? 'b' : 'w';
+
+    if (game.turn() === botColor) {
+      // Schedule move
+      const timer = setTimeout(() => {
+        try {
+          // Difficulty Mapping
+          const difficultyMap: Record<number, BotDifficulty> = {
+            1: 'EASY', 2: 'MEDIUM', 3: 'HARD', 4: 'GATEKEEPER'
+          };
+          const diffLevel = (gameData as any).bot_difficulty || 2;
+          const difficulty = difficultyMap[diffLevel] || 'MEDIUM';
+
+          const engine = new BotEngine(game.fen(), difficulty);
+          const move = engine.makeMove();
+
+          if (move) {
+            // Apply move locally
+            const result = makeMove({ from: move.from, to: move.to, promotion: move.promotion });
+
+            if (result) {
+              // Sounds
+              if (game.isCheckmate()) playSound('game_end');
+              else if (game.isCheck()) playSound('check');
+              else if (move.captured) playSound('capture');
+              else playSound('move');
+
+              // Check Game Over
+              if (game.isGameOver()) {
+                handleBotGameOver(game);
+              }
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [fen, gameData, user, makeMove, game, id]);
+
 
   // Helper per l'estat
   function updateStatus(chessInstance: Chess, dbData: any) {
@@ -696,171 +862,7 @@ export default function OnlineGamePage() {
     );
   }
 
-  // Helper to handle game over locally for bots
-  const handleBotGameOver = async (chess: Chess) => {
-    try {
-      let result = '';
-      if (chess.isCheckmate()) {
-        result = chess.turn() === 'w' ? '0-1' : '1-0'; // If white turn and checkmate, black wins
-      } else if (chess.isDraw()) {
-        result = '1/2-1/2';
-      }
 
-      if (result) {
-        setGameData(prev => prev ? ({
-          ...prev,
-          status: 'finished',
-          result: result
-        }) : null);
-
-        const statusText = result === '1/2-1/2' ? "Partida Finalitzada: Taules" :
-          result === '1-0' ? "Partida Finalitzada: Guanyen Blanques" :
-            "Partida Finalitzada: Guanyen Negres";
-        setStatus(statusText);
-        playSound('game_end');
-
-        // Update DB Status
-        if (id && !id.toString().startsWith('bot-')) {
-          await supabase.from('games').update({
-            status: 'finished',
-            result: result
-          }).eq('id', id);
-        }
-
-        // REWARDS LOGIC
-        // Check if user won
-        const userIsWhite = orientation === 'white';
-        const userWon = (userIsWhite && result === '1-0') || (!userIsWhite && result === '0-1');
-        const isDraw = result === '1/2-1/2';
-
-        if (userWon) {
-          // Award XP and Gold
-          const xp = 50;
-          const gold = 25;
-          addXp(xp);
-          addGold(gold);
-
-          // RANKED BOT LOGIC
-          const variant = (gameData as any).variant || 'blitz';
-
-          try {
-            useArenaStore.getState().updateCups(user.id, variant, 25);
-            toast.success(`🏆 +25 Copes! Keep climbing!`);
-          } catch (e) {
-            console.error("Error updating cups:", e);
-          }
-
-          // GATEKEEPER VICTORY
-          if ((gameData as any)?.gatekeeper_tier) {
-            const tier = (gameData as any).gatekeeper_tier;
-            await usePlayerStore.getState().addXp(100); // Bonus for boss
-
-            // Update Arena Progress directly
-            // ... (rest of logic) ...
-            const { data: progress } = await supabase
-              .from('arena_progress')
-              .select('gatekeepers_defeated')
-              .eq('user_id', user.id)
-              .eq('variant', variant)
-              .single();
-
-            if (progress) {
-              const defeated = progress.gatekeepers_defeated || [];
-              if (!defeated.includes(tier)) {
-                await supabase.from('arena_progress').update({
-                  gatekeepers_defeated: [...defeated, tier]
-                }).eq('user_id', user.id).eq('variant', variant);
-
-                // Also insert into attempts history
-                await supabase.from('arena_gatekeeper_attempts').insert({
-                  user_id: user.id,
-                  division_id: (gameData as any).division_id || null,
-                  status: 'won',
-                  pgn: chess.pgn()
-                });
-
-                toast.success(`🎉 GATEKEEPER DEFEATED! You have promoted! 🎉`);
-                playSound('success');
-              }
-            }
-          } else {
-            if (Math.random() > 0.3) {
-              addChest({
-                id: Math.random().toString(36).substring(7),
-                type: 'WOODEN',
-                status: 'LOCKED',
-                unlockTime: 60,
-              });
-              toast.success(`Victòria! +${xp} XP, +${gold} Or i un Cofre! 🏆`);
-            } else {
-              toast.success(`Victòria! +${xp} XP i +${gold} Or! 🏆`);
-            }
-          }
-
-        } else if (isDraw) {
-          addXp(15);
-          addGold(5);
-          toast.info("Taules! +15 XP, +5 Or.");
-        } else {
-          addXp(5);
-          toast.info("Has perdut. +5 XP per l'esforç.");
-        }
-      }
-    } catch (e) {
-      console.error("Error handling bot game over:", e);
-      toast.error("Error processant el final de partida.");
-    }
-  };
-
-  // BOT AUTO-MOVE EFFECT
-  useEffect(() => {
-    // Only run for active bot games
-    if (!gameData?.is_bot || gameData.status !== 'active') return;
-    if (game.isGameOver()) return;
-
-    // Determine turns
-    const userIsWhite = gameData.white_player_id === user?.id;
-    const botColor = userIsWhite ? 'b' : 'w';
-
-    // Debug
-    // console.log('[Bot Effect] Turn:', game.turn(), 'BotColor:', botColor);
-
-    if (game.turn() === botColor) {
-      // Schedule move
-      const timer = setTimeout(() => {
-        // Difficulty Mapping
-        const difficultyMap: Record<number, BotDifficulty> = {
-          1: 'EASY', 2: 'MEDIUM', 3: 'HARD', 4: 'GATEKEEPER'
-        };
-        const diffLevel = (gameData as any).bot_difficulty || 2;
-        const difficulty = difficultyMap[diffLevel] || 'MEDIUM';
-
-        // console.log('[Bot Effect] Bot Thinking...', difficulty);
-
-        const engine = new BotEngine(game.fen(), difficulty);
-        const move = engine.makeMove();
-
-        if (move) {
-          // Apply move locally
-          const result = makeMove({ from: move.from, to: move.to, promotion: move.promotion });
-
-          if (result) {
-            // Sounds
-            if (game.isCheckmate()) playSound('game_end');
-            else if (game.isCheck()) playSound('check');
-            else if (move.captured) playSound('capture');
-            else playSound('move');
-
-            // Check Game Over
-            if (game.isGameOver()) {
-              handleBotGameOver(game);
-            }
-          }
-        }
-      }, 1000); // 1s delay
-      return () => clearTimeout(timer);
-    }
-  }, [fen, gameData, user, makeMove, game, id]);
 
   return (
     <div className="h-dvh w-full bg-slate-950 flex flex-col items-center overflow-hidden">
