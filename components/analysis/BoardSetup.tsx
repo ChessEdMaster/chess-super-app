@@ -101,7 +101,7 @@ export const BoardSetup = ({
         // Reconstruct board with new piece
         const boardMatrix: (string | null)[][] = rows.map(r => {
             const rowArr: (string | null)[] = [];
-            for (let char of r) {
+            for (const char of r) {
                 if (char >= '1' && char <= '8') {
                     for (let k = 0; k < parseInt(char); k++) rowArr.push(null);
                 } else {
@@ -124,7 +124,7 @@ export const BoardSetup = ({
         const newBoardFen = boardMatrix.map(r => {
             let res = '';
             let empty = 0;
-            for (let cell of r) {
+            for (const cell of r) {
                 if (cell === null) empty++;
                 else {
                     if (empty > 0) { res += empty; empty = 0; }

@@ -32,7 +32,7 @@ export function PuzzleMiner({ puzzleId, onSuccess, onClose }: PuzzleMinerProps) 
             const tag = puzzleId;
 
             // We specifically look for exercises containing this tag
-            let query = supabase
+            const query = supabase
                 .from('academy_exercises')
                 .select('*')
                 .contains('tags', [tag]);

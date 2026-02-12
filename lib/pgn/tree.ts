@@ -435,7 +435,7 @@ export class PGNTree {
 
     private renderVariations(moves: MoveNode[]): string {
         let result = '';
-        let moveNumber = 1; // Track locally, though nodes have it
+        const moveNumber = 1; // Track locally, though nodes have it
 
         for (let i = 0; i < moves.length; i++) {
             const node = moves[i];
@@ -532,7 +532,7 @@ export class PGNTree {
 
         // Set current node to end of main line
         if (tree.game.mainLine.length > 0) {
-            let current = tree.game.mainLine[tree.game.mainLine.length - 1];
+            const current = tree.game.mainLine[tree.game.mainLine.length - 1];
             // Optional: Go deeper if standard behavior
             tree.game.currentNode = current;
             // Update internal chess instance to match

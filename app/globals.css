@@ -1,23 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Geist+Mono&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* --- PROFESSIONAL LIGHT (DEFAULT) --- */
+  /* --- PROFESSIONAL LIGHT (DEFAULT) --- GDD §6.1 */
 
   /* Backgrounds */
   --background: #f8fafc;
-  /* Slate-50 */
   --foreground: #0f172a;
-  /* Slate-900 */
 
   /* Panel / Surface */
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(148, 163, 184, 0.2);
   --border: #e2e8f0;
-  /* Slate-200 */
-  /* Slate-400 alpha */
-
-  /* Slate-400 alpha */
 
   --header-bg: rgba(255, 255, 255, 0.9);
   --nav-bg: #ffffff;
@@ -26,25 +20,16 @@
   --overlay-mid: rgba(248, 250, 252, 0.7);
   --overlay-end: rgba(248, 250, 252, 0.9);
 
-  --overlay-mid: rgba(248, 250, 252, 0.7);
-  --overlay-end: rgba(248, 250, 252, 0.9);
-
   --card-bg: #ffffff;
   --card-border: #e2e8f0;
-  /* Slate-200 */
   --muted-bg: #f1f5f9;
-  /* Slate-100 */
   --color-primary: #0f172a;
-  /* Slate-900 (Main text/actions) */
   --color-secondary: #475569;
-  /* Slate-600 */
   --neutral-bg: #94a3b8;
 
-  /* Accents (Use sparingly) */
+  /* Accents — GDD: Ambar/Or + Blau/Porpra */
   --color-accent: #2563eb;
-  /* Blue-600 */
   --color-gold: #d97706;
-  /* Amber-600 (Darker for light mode contrast) */
 
   /* Specific UI Elements */
   --board-border: #94a3b8;
@@ -58,53 +43,86 @@
 
   /* Status */
   --color-success: #16a34a;
-  /* Green-600 */
   --color-danger: #dc2626;
-  /* Red-600 */
 
-  /* Shadows (Softer for Professional Look) */
+  /* Shadows */
   --shadow-comic: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
   --shadow-comic-hover: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
   --text-stroke-width: 0px;
-  /* No text stroke in pro mode */
   --card-border-width: 1px;
 }
 
-/* --- CLASH ROYALE THEME (OVERRIDE) --- */
+/* --- DARK PREMIUM THEME (GDD §6.1) --- */
+.theme-dark-premium {
+  --background: #020617;
+  --foreground: #f8fafc;
+
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --border: #1e293b;
+
+  --header-bg: rgba(15, 23, 42, 0.9);
+  --nav-bg: #0f172a;
+
+  --overlay-start: rgba(2, 6, 23, 0.9);
+  --overlay-mid: rgba(15, 23, 42, 0.7);
+  --overlay-end: rgba(2, 6, 23, 0.9);
+
+  --card-bg: #0f172a;
+  --card-border: #1e293b;
+  --muted-bg: #1e293b;
+  --color-primary: #f8fafc;
+  --color-secondary: #94a3b8;
+  --neutral-bg: #334155;
+
+  /* GDD: Ambar/Or + Blau/Porpra tech */
+  --color-accent: #6366f1;
+  --color-gold: #fbbf24;
+
+  --board-border: #334155;
+  --board-bg: #0f172a;
+
+  --panel-bg: rgba(15, 23, 42, 0.9);
+  --panel-border: #1e293b;
+
+  --input-bg: #1e293b;
+  --input-border: #334155;
+
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+
+  --shadow-comic: 0px 4px 16px 0px rgba(0, 0, 0, 0.4);
+  --shadow-comic-hover: 0px 2px 8px 0px rgba(0, 0, 0, 0.4);
+  --text-stroke-width: 0px;
+  --card-border-width: 1px;
+}
+
+/* --- CLASH ROYALE THEME (Gaming) --- */
 .theme-clash {
   --background: #1e1b2e;
-  /* Deep purple */
   --foreground: #ffffff;
 
   --glass-bg: rgba(30, 27, 46, 0.7);
   --glass-border: rgba(255, 255, 255, 0.2);
   --border: #27272a;
-  /* Zinc-800 */
 
   --header-bg: rgba(30, 58, 138, 0.9);
-  /* Blue-900 */
   --nav-bg: #18181b;
-  /* Zinc-900 */
 
   --overlay-start: rgba(2, 6, 23, 0.8);
   --overlay-mid: rgba(30, 27, 75, 0.5);
   --overlay-end: rgba(2, 6, 23, 0.9);
 
   --card-bg: #18181b;
-  /* Zinc-900 */
   --card-border: #27272a;
-  /* Zinc-800 */
   --muted-bg: #27272a;
-  /* Zinc-800 */
   --color-secondary: #94a3b8;
   --neutral-bg: #3f3f46;
 
   --color-accent: #00e5ff;
   --color-gold: #ffd700;
 
-  /* Specific UI Elements */
   --board-border: #4a044e;
-  /* Deep purple/magenta border */
   --board-bg: #18181b;
 
   --panel-bg: rgba(24, 24, 27, 0.8);
@@ -146,25 +164,24 @@
   --color-success: var(--color-success);
   --color-danger: var(--color-danger);
 
-  --font-sans: 'Exo 2', sans-serif;
-  --font-mono: var(--font-geist-mono);
-  --font-display: 'Exo 2', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --font-display: 'Inter', sans-serif;
 }
 
 html,
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Exo 2', sans-serif;
-  font-size: 13px;
-  /* Reduced base size */
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Gaming Display Font */
+/* Display Font */
 .font-display {
-  font-family: 'Exo 2', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -176,7 +193,6 @@ body {
   border: var(--card-border-width) solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
   border-radius: 1.5rem;
-  /* rounded-3xl */
 }
 
 .text-stroke {
@@ -185,19 +201,19 @@ body {
 }
 
 .text-gold-gradient {
-  background: linear-gradient(to bottom, #ffd700, #ff8c00);
+  background: linear-gradient(to bottom, #fbbf24, #d97706);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
 }
 
 .text-blue-gradient {
-  background: linear-gradient(to bottom, #448aff, #2962ff);
+  background: linear-gradient(to bottom, #818cf8, #6366f1);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
 }
 
 /* === SCROLLBAR UTILITIES === */

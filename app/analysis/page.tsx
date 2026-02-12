@@ -187,7 +187,7 @@ function AnalysisLayout() {
       const workData = tree.toJSON();
 
       // Look for any collection first to offer a default, or create "My Analyses"
-      let { data: collections, error: colsError } = await supabase
+      const { data: collections, error: colsError } = await supabase
         .from('pgn_collections')
         .select('id, title')
         .eq('user_id', user.id)

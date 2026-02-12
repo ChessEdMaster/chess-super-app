@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePlayerStore } from '@/lib/store/player-store';
 
-type Theme = 'light' | 'clash';
+export type Theme = 'light' | 'dark-premium' | 'clash';
 
 interface ThemeContextType {
     theme: Theme;
@@ -12,36 +12,36 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const THEME_CLASSES: Record<Theme, string> = {
+    'light': 'theme-light',
+    'dark-premium': 'theme-dark-premium',
+    'clash': 'theme-clash',
+};
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const { profile, saveProfile } = usePlayerStore();
 
     // Default to light (Professional Light) if no setting exists
-    const [theme, setThemeState] = useState<Theme>(profile?.settings?.theme || 'light');
+    const [theme, setThemeState] = useState<Theme>(
+        (profile?.settings?.theme as Theme) || 'light'
+    );
 
     // Sync with store updates (e.g. when profile loads)
     useEffect(() => {
         if (profile?.settings?.theme) {
-            setThemeState(profile.settings.theme);
+            setThemeState(profile.settings.theme as Theme);
         }
     }, [profile?.settings?.theme]);
 
-    // Apply theme class to body
+    // Apply theme class to document root
     useEffect(() => {
         const root = window.document.documentElement;
 
-        // Remove all theme classes first
-        root.classList.remove('theme-clash', 'theme-light');
+        // Remove all theme classes
+        Object.values(THEME_CLASSES).forEach(cls => root.classList.remove(cls));
 
         // Add current theme class
-        // 'light' is default, so we might not strictly need a class if root vars are light by default,
-        // but explicit is better for switching.
-        // 'clash' will trigger the overrides.
-        if (theme === 'clash') {
-            root.classList.add('theme-clash');
-        } else {
-            root.classList.add('theme-light');
-        }
-
+        root.classList.add(THEME_CLASSES[theme]);
     }, [theme]);
 
     const setTheme = (newTheme: Theme) => {

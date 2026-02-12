@@ -257,7 +257,7 @@ export default function OnlineGamePage() {
 
             // Check if we need to fetch profiles (e.g. opponent joined)
             // We can just optimistically fetch profiles if IDs exist and we don't have them, or just rely on IDs
-            let updatedGame = freshGame as GameData;
+            const updatedGame = freshGame as GameData;
 
             // Fetch profiles if they are missing from our current state but exist in fresh data
             // Or simplistically, just fetch them if player IDs are present.

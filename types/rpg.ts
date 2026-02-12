@@ -12,11 +12,11 @@ export interface PlayerProfile {
         gems: number;   // Hard currency (cosmetics/speedups)
     };
     attributes: Record<ChessAttribute, number>; // e.g., { AGGRESSION: 15 }
-    role?: 'SuperAdmin' | 'ClubMember' | 'Guest' | 'NewUser';
+    role?: 'SuperAdmin' | 'Governor' | 'Mentor' | 'Hero' | 'Gladiator' | 'Steward' | 'Guest';
     settings?: {
         language: 'ca' | 'es' | 'en';
         notifications: boolean;
-        theme?: 'light' | 'clash'; // 'light' is the new default (Professional Light)
+        theme?: 'light' | 'dark-premium' | 'clash';
     };
     elo_bullet?: number;
     elo_blitz?: number;

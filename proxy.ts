@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { hasPermission } from '@/lib/rbac'
+import { hasPermission, type AppRole } from '@/lib/rbac'
 
 export async function proxy(request: NextRequest) {
     let response = NextResponse.next({
@@ -28,106 +28,46 @@ export async function proxy(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Debug logging
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        console.log('[Middleware Debug] Request to /admin');
-        console.log('[Middleware Debug] User found:', !!user);
-        console.log('[Middleware Debug] User ID:', user?.id);
-        console.log('[Middleware Debug] App Metadata:', user?.app_metadata);
-        console.log('[Middleware Debug] Role from metadata:', user?.app_metadata?.app_role);
-    }
+    // Resolve role from JWT metadata or DB fallback
+    let role: AppRole | string | undefined = user?.app_metadata?.app_role;
 
-    // Obtenir el rol de les metadades de l'usuari (injectat pel trigger SQL)
-    let role = user?.app_metadata?.app_role as any;
-
-    // 1. Protecció de Rutes d'Administració (només SuperAdmin)
+    // --- Admin Route Protection ---
     if (request.nextUrl.pathname.startsWith('/admin')) {
-        // Fallback: Si no trobem el rol a les metadades, el busquem a la base de dades
-        // Això és més segur i robust contra problemes de sincronització de JWT
+        // Fallback: fetch role from DB if not in JWT metadata
         if (!role && user) {
-            console.log('[Middleware] Role not in metadata, fetching from DB...');
             try {
-                const { data: profile, error: profileError } = await supabase
+                const { data: profile } = await supabase
                     .from('profiles')
-                    .select(`
-                        role_id,
-                        app_roles!inner(name)
-                    `)
+                    .select('role_id, app_roles!inner(name)')
                     .eq('id', user.id)
                     .single();
 
-                if (profileError) {
-                    console.error('[Middleware] Error fetching profile:', profileError);
-                } else {
-                    // @ts-ignore - app_roles és un array amb un objecte
-                    role = profile?.app_roles?.name;
-                    console.log('[Middleware] Role fetched from DB:', role);
+                if (profile) {
+                    const appRoles = profile.app_roles as unknown as { name: string } | null;
+                    role = appRoles?.name;
                 }
-            } catch (error) {
-                console.error('[Middleware] Exception fetching role from DB:', error);
+            } catch {
+                // Silently fail — role stays undefined, access denied
             }
         }
 
-        // Si encara no tenim rol, intentem una consulta alternativa
-        if (!role && user) {
-            console.log('[Middleware] Trying alternative role fetch...');
-            try {
-                const { data: roleData, error: roleError } = await supabase
-                    .from('profiles')
-                    .select('role_id')
-                    .eq('id', user.id)
-                    .single();
-
-                if (!roleError && roleData?.role_id) {
-                    const { data: roleName, error: nameError } = await supabase
-                        .from('app_roles')
-                        .select('name')
-                        .eq('id', roleData.role_id)
-                        .single();
-
-                    if (!nameError && roleName) {
-                        role = roleName.name;
-                        console.log('[Middleware] Role fetched via alternative method:', role);
-                    }
-                }
-            } catch (error) {
-                console.error('[Middleware] Exception in alternative role fetch:', error);
-            }
-        }
-
-        // CRÍTICO: Comprovar que el rol té permís d'admin
-        const allowed = hasPermission(role, 'admin.all');
-
-        console.log('[Middleware] Final check:', {
-            role,
-            allowed,
-            hasPermission: hasPermission(role, 'admin.all'),
-            roleType: typeof role
-        });
-
-        if (!allowed) {
-            console.log('[Middleware] ❌ Accés denegat a /admin. Rol:', role, 'User ID:', user?.id);
+        if (!hasPermission(role, 'admin.all')) {
             return NextResponse.redirect(new URL('/', request.url))
-        } else {
-            console.log('[Middleware] ✅ Accés permès a /admin. Rol:', role);
         }
     }
 
-    // 2. Protecció de Rutes de Clubs (Gestió)
-    // ELIMINAT: Deixem que el layout de clubs/manage faci la comprovació específica
-    // perquè la comprovació ha de ser per club (owner/admin), no per rol global.
-
-    // 4. Role-based Redirection (Alpha Phase)
+    // --- Role-based Landing Page Redirects ---
     const pathname = request.nextUrl.pathname;
-    
-    // Redirect Monitor to Dashboard (if not already there or in admin)
-    if (role === 'Monitor' && pathname === '/') {
-        return NextResponse.redirect(new URL('/monitor/dashboard', request.url))
-    }
 
-    // Redirect Student to Dashboard (if not already there)
-    if (role === 'Student' && pathname === '/') {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (pathname === '/' && role) {
+        // Mentor → Mentor dashboard
+        if (role === 'Mentor' || role === 'Monitor') {
+            return NextResponse.redirect(new URL('/mentor/dashboard', request.url))
+        }
+        // Hero (student) → Academy
+        if (role === 'Hero' || role === 'Student') {
+            return NextResponse.redirect(new URL('/academy', request.url))
+        }
     }
 
     return response

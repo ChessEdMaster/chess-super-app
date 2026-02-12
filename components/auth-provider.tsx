@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import { AppRole, Permission, hasPermission } from '@/lib/rbac';
+import { AppRole, Permission, hasPermission, resolveRole } from '@/lib/rbac';
 
 interface AuthContextType {
   user: User | null;
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(currentUser);
 
     // Extreure el rol de les metadades (injectat pel trigger SQL)
-    const appRole = currentUser?.app_metadata?.app_role as AppRole | undefined;
+    const appRole = resolveRole(currentUser?.app_metadata?.app_role);
     setRole(appRole ?? 'Guest');
 
     setLoading(false);

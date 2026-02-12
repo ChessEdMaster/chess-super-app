@@ -6,10 +6,10 @@ import { ResponsiveLayout } from "@/components/layout/responsive-layout";
 import { PlayerStoreSync } from "@/components/player-store-sync";
 import { PresenceSync } from "@/components/presence/presence-sync";
 import { GlobalBackground } from "@/components/global-background";
-import Image from "next/image";
 import { Toaster } from '@/components/ui/sonner';
 import { AssistantWidget } from "@/components/ai/assistant-widget";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 export const metadata: Metadata = {
   title: "CHESS CLANS",
@@ -35,9 +35,11 @@ export default function RootLayout({
             <PlayerStoreSync>
               <PresenceSync />
               <ThemeProvider>
-                <ResponsiveLayout>
-                  {children}
-                </ResponsiveLayout>
+                <ErrorBoundary>
+                  <ResponsiveLayout>
+                    {children}
+                  </ResponsiveLayout>
+                </ErrorBoundary>
                 <AssistantWidget />
                 <Toaster position="top-center" richColors />
               </ThemeProvider>

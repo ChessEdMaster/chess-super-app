@@ -293,7 +293,7 @@ const Pieces = ({ fen }: { fen: string }) => {
                 const row: any[] = [];
                 let colIdx = 0;
                 const fenRow = rows[i] || '8';
-                for (let char of fenRow) {
+                for (const char of fenRow) {
                     if (char >= '1' && char <= '8') {
                         const emptyCount = parseInt(char);
                         for (let k = 0; k < emptyCount; k++) {

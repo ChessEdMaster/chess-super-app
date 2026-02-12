@@ -255,7 +255,7 @@ const Pieces2D = ({ fen, orientation, onCapture }: { fen: string, orientation: s
                 const row: any[] = [];
                 let colIdx = 0;
                 const fenRow = rows[i] || '8'; // fallback empty
-                for (let char of fenRow) {
+                for (const char of fenRow) {
                     if (char >= '1' && char <= '8') {
                         const emptyCount = parseInt(char);
                         for (let k = 0; k < emptyCount; k++) {

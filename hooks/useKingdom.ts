@@ -14,11 +14,12 @@ export function useKingdom() {
             if (!user) return;
 
             // Fetch Resources
-            let { data: resData, error: resError } = await supabase
+            const { data: resDataRaw, error: resError } = await supabase
                 .from('kingdom_resources')
                 .select('*')
                 .eq('user_id', user.id)
                 .single();
+            let resData = resDataRaw;
 
             if (resError && resError.code === 'PGRST116') {
                 // Create if not exists

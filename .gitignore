@@ -40,6 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Ignorar grans bases de dades
+# Large data files
 *.zst
 *.csv
+*.exe
+
+# Build artifacts & reports
+build_log*.txt
+schema_dump.sql
+all_lint_errors.txt
+lint-report.txt
+eslint-report.json

@@ -71,7 +71,7 @@ export default function AcademyPage() {
     const loadAcademyData = async () => {
         try {
             let accessibleCourseIds: string[] = [];
-            let isSuperAdmin = role === 'SuperAdmin' || user?.email === 'marc@marc.com';
+            const isSuperAdmin = role === 'SuperAdmin' || user?.email === 'marc@marc.com';
 
             if (isSuperAdmin) {
                 const { data: allCourses } = await supabase
