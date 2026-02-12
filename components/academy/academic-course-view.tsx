@@ -19,9 +19,10 @@ import { Panel } from '@/components/ui/design-system/Panel';
 interface AcademicCourseViewProps {
     modules: AcademyModule[];
     progressMap: Record<string, ModuleProgress>;
+    isEntitled?: boolean;
 }
 
-export function AcademicCourseView({ modules, progressMap }: AcademicCourseViewProps) {
+export function AcademicCourseView({ modules, progressMap, isEntitled = false }: AcademicCourseViewProps) {
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             {/* Header / Syllabus Info */}
@@ -38,7 +39,17 @@ export function AcademicCourseView({ modules, progressMap }: AcademicCourseViewP
                 const progress = progressMap[module.id];
                 const isCompleted = progress?.progressPercentage === 100;
                 const isStarted = progress?.completedLessons > 0;
-                const isLocked = index > 0 && !(progressMap[modules[index - 1].id]?.progressPercentage === 100);
+
+                // If not entitled, only the first module is "previewable" (or none), or we rely on lesson-level locks.
+                // For visual clarity: If !isEntitled, show lock on everything except maybe first? Or show lock but allow click to see "Locked" message?
+                // Let's assume: If !isEntitled, ALL are technically "locked" from a completion standpoint, but we might allow browsing.
+                // GDD: "Activate code to unlock".
+                // We'll show a special "Premium Lock" if !isEntitled.
+
+                const isSequenceLocked = index > 0 && !(progressMap[modules[index - 1].id]?.progressPercentage === 100);
+                const isEntitlementLocked = !isEntitled && index > 0; // Allow first module as preview?
+
+                const isLocked = isSequenceLocked || isEntitlementLocked;
 
                 return (
                     <div key={module.id} className="group relative pl-8 pb-8 last:pb-0">

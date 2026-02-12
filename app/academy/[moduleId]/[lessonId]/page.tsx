@@ -7,7 +7,8 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { AcademyLesson } from '@/types/academy';
-import { LessonViewer } from '@/components/lesson-viewer';
+import { UniversalLessonViewer } from '@/components/academy/UniversalLessonViewer';
+import { AcademyLessonNewContent } from '@/types/lesson_content';
 import { Button } from '@/components/ui/button';
 
 export default function LessonPage() {
@@ -38,7 +39,6 @@ export default function LessonPage() {
                 .single();
 
             if (error) throw error;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setLesson(data as any);
         } catch (error) {
             console.error('Error loading lesson:', error);
@@ -47,7 +47,7 @@ export default function LessonPage() {
         }
     };
 
-    const handleComplete = async (score: number) => {
+    const handleComplete = async () => {
         if (!user || !lesson) return;
 
         try {
@@ -65,7 +65,7 @@ export default function LessonPage() {
                     .from('user_lesson_progress')
                     .update({
                         completed: true,
-                        score,
+                        score: 100, // Implies full completion in GDD Universal Viewer
                         attempts: existing.attempts + 1,
                         last_attempt_at: new Date().toISOString(),
                         completed_at: new Date().toISOString()
@@ -79,7 +79,7 @@ export default function LessonPage() {
                         user_id: user.id,
                         lesson_id: lesson.id,
                         completed: true,
-                        score,
+                        score: 100,
                         attempts: 1,
                         last_attempt_at: new Date().toISOString(),
                         completed_at: new Date().toISOString()
@@ -98,7 +98,7 @@ export default function LessonPage() {
                 } else {
                     router.push('/academy');
                 }
-            }, 3000);
+            }, 1000);
 
         } catch (error) {
             console.error('Error saving progress:', error);
@@ -135,26 +135,6 @@ export default function LessonPage() {
                         });
                 }
             }
-
-            const { data: achievements } = await supabase
-                .from('academy_achievements')
-                .select('*')
-                .eq('requirement->type', 'lessons_completed');
-
-            for (const achievement of achievements || []) {
-                const requiredCount = achievement.requirement.count;
-                if (count && count >= requiredCount) {
-                    await supabase
-                        .from('user_achievements')
-                        .upsert({
-                            user_id: user.id,
-                            achievement_id: achievement.id
-                        }, {
-                            onConflict: 'user_id,achievement_id',
-                            ignoreDuplicates: true
-                        });
-                }
-            }
         } catch (error) {
             console.error('Error checking achievements:', error);
         }
@@ -172,41 +152,58 @@ export default function LessonPage() {
         return (
             <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Lesson not found</h1>
+                    <h1 className="text-2xl font-bold mb-4">Lliçó no trobada</h1>
                     <Link href="/academy" className="text-amber-500 hover:underline">
-                        Return to Academy
+                        Tornar a l'Acadèmia
                     </Link>
                 </div>
             </div>
         );
     }
 
+    // Cast content to our new type, handling potential legacy structure
+    let contentTyped: AcademyLessonNewContent;
+
+    // Legacy fallback: if content has 'steps' but not 'sections', convert it on the fly
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawContent = lesson.content as any;
+
+    if (rawContent && rawContent.sections) {
+        contentTyped = rawContent as AcademyLessonNewContent;
+    } else if (rawContent && rawContent.steps) {
+        // Fallback for old content: Convert 'steps' to 'ChessboardSection'
+        contentTyped = {
+            sections: rawContent.steps.map((step: any, idx: number) => ({
+                id: `legacy-step-${idx}`,
+                type: 'chessboard',
+                title: `Exercici ${idx + 1}`,
+                fen: step.fen,
+                interactive: true,
+                solution: [step.correctMove], // Assumes single move solution
+                hints: [step.comment || 'Troba el millor moviment.']
+            }))
+        };
+    } else {
+        // Empty or unknown
+        contentTyped = { sections: [] };
+    }
+
     return (
         <div className="min-h-screen bg-zinc-950 font-sans text-white flex flex-col">
-            <header className="h-16 border-b border-zinc-800 flex items-center px-4 bg-zinc-900/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto w-full flex items-center">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Link href={`/academy/course/${(lesson as any).module?.course_id}`} passHref>
-                        <Button variant="ghost" className="text-zinc-400 hover:text-white gap-2 pl-0">
-                            <ArrowLeft size={20} /> <span className="uppercase font-bold tracking-wider text-xs hidden md:inline">Back to Course</span>
-                        </Button>
-                    </Link>
-                    <div className="ml-4 h-6 w-px bg-zinc-800 hidden md:block" />
-                    <h1 className="ml-4 text-sm font-bold uppercase tracking-wide truncate max-w-[200px] md:max-w-none text-zinc-300">
-                        {lesson.title}
-                    </h1>
-                </div>
-            </header>
-
-            <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8">
-                <LessonViewer
-                    content={lesson.content}
-                    lessonTitle={lesson.title}
-                    onComplete={handleComplete}
-                    userId={user.id}
-                    lessonId={lesson.id}
-                />
-            </main>
+            <UniversalLessonViewer
+                content={contentTyped}
+                lessonTitle={lesson.title}
+                onCompleteLesson={handleComplete}
+                onExit={() => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const courseId = (lesson as any).module?.course_id;
+                    if (courseId) {
+                        router.push(`/academy/course/${courseId}`);
+                    } else {
+                        router.push('/academy');
+                    }
+                }}
+            />
         </div>
     );
 }

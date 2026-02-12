@@ -7,7 +7,8 @@ import Image from 'next/image';
 import {
     BookOpen,
     ArrowLeft,
-    Loader2
+    Loader2,
+    Lock
 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
@@ -25,6 +26,7 @@ export default function CoursePage() {
     const [course, setCourse] = useState<AcademyCourse | null>(null);
     const [modules, setModules] = useState<AcademyModule[]>([]);
     const [moduleProgress, setModuleProgress] = useState<Record<string, ModuleProgress>>({});
+    const [isEntitled, setIsEntitled] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -47,6 +49,16 @@ export default function CoursePage() {
 
                 if (courseError) throw courseError;
                 setCourse(courseData);
+
+                // Check entitlements
+                const { data: entitlement } = await supabase
+                    .from('user_entitlements')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('resource_id', courseId)
+                    .maybeSingle();
+
+                setIsEntitled(!!entitlement);
 
                 // Load modules for this course
                 const { data: modulesData, error: modulesError } = await supabase
@@ -159,6 +171,28 @@ export default function CoursePage() {
                     </div>
                 </Panel>
 
+                {/* ENTITLEMENT BANNER */}
+                {!isEntitled && (
+                    <Panel className="bg-indigo-900/20 border-indigo-500/30 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-indigo-500/20 rounded-full text-indigo-400">
+                                <Lock size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white uppercase tracking-wide">Course Locked</h3>
+                                <p className="text-sm text-indigo-300">
+                                    Activate your Digital Twin code to unlock full access to this course.
+                                </p>
+                            </div>
+                        </div>
+                        <Link href="/activate">
+                            <Button className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wide px-8">
+                                Unlock with Code
+                            </Button>
+                        </Link>
+                    </Panel>
+                )}
+
                 {/* MODULES LIST / MAP */}
                 <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
@@ -171,9 +205,9 @@ export default function CoursePage() {
 
                 {/* Conditional View Rendering */}
                 {isGamifiedGrade(course.target_grade) ? (
-                    <GamifiedCourseView modules={modules} progressMap={moduleProgress} />
+                    <GamifiedCourseView modules={modules} progressMap={moduleProgress} isEntitled={isEntitled} />
                 ) : (
-                    <AcademicCourseView modules={modules} progressMap={moduleProgress} />
+                    <AcademicCourseView modules={modules} progressMap={moduleProgress} isEntitled={isEntitled} />
                 )}
 
                 {modules.length === 0 && (

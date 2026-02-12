@@ -9,9 +9,10 @@ import { AcademyModule, ModuleProgress } from '@/types/academy';
 interface GamifiedCourseViewProps {
     modules: AcademyModule[];
     progressMap: Record<string, ModuleProgress>;
+    isEntitled?: boolean;
 }
 
-export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewProps) {
+export function GamifiedCourseView({ modules, progressMap, isEntitled = false }: GamifiedCourseViewProps) {
     return (
         <div className="relative max-w-2xl mx-auto py-12">
 
@@ -23,7 +24,11 @@ export function GamifiedCourseView({ modules, progressMap }: GamifiedCourseViewP
                 {modules.map((module, index) => {
                     const progress = progressMap[module.id];
                     const isCompleted = progress?.progressPercentage === 100;
-                    const isLocked = index > 0 && !(progressMap[modules[index - 1].id]?.progressPercentage === 100);
+
+                    const isSequenceLocked = index > 0 && !(progressMap[modules[index - 1].id]?.progressPercentage === 100);
+                    const isEntitlementLocked = !isEntitled && index > 0; // Allow preview of module 1
+
+                    const isLocked = isSequenceLocked || isEntitlementLocked;
                     const isCurrent = !isCompleted && !isLocked;
 
                     // Alternate left/right alignment for visual interest
