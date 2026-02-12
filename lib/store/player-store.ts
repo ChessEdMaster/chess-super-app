@@ -205,25 +205,42 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         get().saveProfile();
     },
 
-    addXp: (amount) => {
-        set((state) => {
-            const newXp = state.profile.xp + amount;
-            const xpToNextLevel = state.profile.level * 1000;
-            let newLevel = state.profile.level;
+    addXp: async (amount) => {
+        try {
+            // Optimistic update
+            set((state) => {
+                const newXp = state.profile.xp + amount;
+                const xpToNextLevel = state.profile.level * 1000;
+                let newLevel = state.profile.level;
+                if (newXp >= xpToNextLevel) newLevel++;
+                
+                return {
+                    profile: { ...state.profile, xp: newXp, level: newLevel }
+                };
+            });
 
-            if (newXp >= xpToNextLevel) {
-                newLevel++;
-            }
+            // Server update
+            const { data, error } = await supabase.rpc('add_xp', {
+                p_amount: amount,
+                p_source: 'client_action', // Generic source for manual calls
+                p_metadata: {}
+            });
 
-            return {
-                profile: {
-                    ...state.profile,
-                    xp: newXp,
-                    level: newLevel,
+            if (error) {
+                console.error('Error adding XP:', error);
+                // Revert optimistic update if needed, or re-fetch profile
+                get().loadProfile(get().profile.id);
+            } else {
+                // Confirm server state
+                if (data && data.new_level) {
+                     set((state) => ({
+                        profile: { ...state.profile, xp: data.new_xp, level: data.new_level }
+                    }));
                 }
-            };
-        });
-        get().saveProfile();
+            }
+        } catch (err) {
+            console.error('Failed to add XP:', err);
+        }
     },
 
     addCardCopy: (cardId, amount = 1) => {

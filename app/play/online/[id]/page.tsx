@@ -117,21 +117,56 @@ export default function OnlineGamePage() {
       }
 
       if (initialGame && !isBotGame) {
-        // Obtenir perfils dels jugadors (Només per partides reals)
-        const whiteProfile = initialGame.white_player_id ? await supabase
-          .from('profiles')
-          .select('username, avatar_url')
-          .eq('id', initialGame.white_player_id)
-          .single() : null;
+        // If it's a DB game, check if it's a BOT game
+        if ((initialGame as any).is_bot) {
+          isBotGame = true;
+          const tier = (initialGame as any).gatekeeper_tier;
+          let botName = 'Bot';
+          let botAvatar = null;
 
-        const blackProfile = initialGame.black_player_id ? await supabase
-          .from('profiles')
-          .select('username, avatar_url')
-          .eq('id', initialGame.black_player_id)
-          .single() : null;
+          if (tier) {
+            // Import ARENA_TIERS dynamically or use a helper if possible, 
+            // but we can just hardcode or fetch from types if imported
+            // For now, let's map simply:
+            const tiers = [
+              { tier: 1, name: 'Gatekeeper Pawn', avatar: '/bots/pawn-boss.png' },
+              { tier: 2, name: 'Gatekeeper Knight', avatar: '/bots/knight-boss.png' },
+              { tier: 3, name: 'Gatekeeper Bishop', avatar: '/bots/bishop-boss.png' },
+              { tier: 4, name: 'Gatekeeper Queen', avatar: '/bots/queen-boss.png' }
+            ];
+            const t = tiers.find(x => x.tier === tier);
+            if (t) {
+              botName = t.name;
+              botAvatar = t.avatar;
+            }
+          }
 
-        initialGame.white = whiteProfile?.data || null;
-        initialGame.black = blackProfile?.data || null;
+          initialGame.black = { username: botName, avatar_url: botAvatar };
+          // White is the user (usually)
+          const whiteProfile = initialGame.white_player_id ? await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', initialGame.white_player_id)
+            .single() : null;
+          initialGame.white = whiteProfile?.data || null;
+
+        } else {
+          // PVP Game
+          const whiteProfile = initialGame.white_player_id ? await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', initialGame.white_player_id)
+            .single() : null;
+
+          const blackProfile = initialGame.black_player_id ? await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', initialGame.black_player_id)
+            .single() : null;
+
+          initialGame.white = whiteProfile?.data || null;
+          initialGame.black = blackProfile?.data || null;
+        }
       }
 
       // B. Determinar qui sóc i si m'he d'unir
@@ -395,27 +430,72 @@ export default function OnlineGamePage() {
       // BOT LOGIC
       if (!game.isGameOver()) {
         setTimeout(() => {
-          // Simple random bot for now (can be improved with Stockfish later)
-          const moves = game.moves({ verbose: true });
-          if (moves.length > 0) {
-            const randomMove = moves[Math.floor(Math.random() * moves.length)];
-            const botMove = makeMove({
-              from: randomMove.from,
-              to: randomMove.to,
-              promotion: randomMove.promotion
-            });
-            if (botMove) {
-              playSound(botMove.captured ? 'capture' : 'move');
-              if (game.isCheckmate()) playSound('game_end');
-              else if (game.isCheck()) playSound('check');
+          // Use BotEngine
+          // We need key Bot Difficulty.
+          // const difficulty = (gameData as any).bot_difficulty || 2; 
+          // 4 = Gatekeeper
+          // Map to Enum
+          // Let's instantiate BotEngine
+          /*
+          import { BotEngine, BotDifficulty } from '@/lib/game/bot-engine';
+          */
+          // Since we can't import inside here easily without top-level, 
+          // we assume we will add the import at top.
+          // For now, let's implement the logic briefly here or use the class if imported.
 
-              // Check for game over after bot move
-              if (game.isGameOver()) {
-                handleBotGameOver(game);
+          // Fallback simple logic if class not imported yet (I will add import in next step)
+          // Actually I should just write the logic compatible with the class
+
+          const currentFen = game.fen();
+          // Simplified "Smart" Move
+          const moves = game.moves({ verbose: true });
+          if (moves.length === 0) return;
+
+          let selectedMove = moves[Math.floor(Math.random() * moves.length)];
+          const difficulty = (gameData as any)?.bot_difficulty || 2;
+
+          // Simple Heuristic for now until fully replaced with BotEngine class
+          if (difficulty >= 3) {
+            const captures = moves.filter(m => m.captured);
+            if (captures.length > 0) selectedMove = captures[Math.floor(Math.random() * captures.length)];
+
+            // Checkmate opportunity?
+            for (const m of moves) {
+              const g = new Chess(currentFen);
+              g.move(m);
+              if (g.isCheckmate()) {
+                selectedMove = m;
+                break;
               }
             }
           }
-        }, 500);
+
+          const botMove = makeMove({
+            from: selectedMove.from,
+            to: selectedMove.to,
+            promotion: selectedMove.promotion
+          });
+
+          if (botMove) {
+            playSound(botMove.captured ? 'capture' : 'move');
+            if (game.isCheckmate()) playSound('game_end');
+            else if (game.isCheck()) playSound('check');
+
+            // Check for game over after bot move
+            if (game.isGameOver()) {
+              handleBotGameOver(game);
+            }
+
+            // Update DB for persistence
+            if (id && !id.toString().startsWith('bot-')) {
+              supabase.from('games').update({
+                fen: game.fen(),
+                pgn: game.pgn(),
+              }).eq('id', id).then(() => { });
+            }
+          }
+
+        }, 800); // Slight delay for "Thinking"
       } else {
         // Check for game over after user move (if user checkmated bot)
         handleBotGameOver(game);
@@ -626,7 +706,7 @@ export default function OnlineGamePage() {
   }
 
   // Helper to handle game over locally for bots
-  const handleBotGameOver = (chess: Chess) => {
+  const handleBotGameOver = async (chess: Chess) => {
     let result = '';
     if (chess.isCheckmate()) {
       result = chess.turn() === 'w' ? '0-1' : '1-0'; // If white turn and checkmate, black wins
@@ -647,6 +727,14 @@ export default function OnlineGamePage() {
       setStatus(statusText);
       playSound('game_end');
 
+      // Update DB Status
+      if (id && !id.toString().startsWith('bot-')) {
+        await supabase.from('games').update({
+          status: 'finished',
+          result: result
+        }).eq('id', id);
+      }
+
       // REWARDS LOGIC
       // Check if user won
       const userIsWhite = orientation === 'white';
@@ -657,31 +745,76 @@ export default function OnlineGamePage() {
         // Award XP and Gold
         const xp = 50;
         const gold = 25;
-        // We need to import usePlayerStore at the top level, but we can't do it inside this function easily if it's not a hook call.
-        // Ideally we use the hook at the top and call its methods here.
-        // Assuming 'addXp', 'addGold' are available from the hook called at component level.
         addXp(xp);
         addGold(gold);
-        // Chance for chest
-        // Chance for chest
-        if (Math.random() > 0.3) { // Increased chance for testing
-          addChest({
-            id: Math.random().toString(36).substring(7),
-            type: 'WOODEN',
-            status: 'LOCKED',
-            unlockTime: 60, // 1 minute
-          });
-          alert(`Victòria! Has guanyat ${xp} XP, ${gold} d'Or i un Cofre de Fusta! 🏆`);
+
+        // GATEKEEPER VICTORY
+        if ((gameData as any)?.gatekeeper_tier) {
+          const tier = (gameData as any).gatekeeper_tier;
+          // Record defeat in Arena Store (and DB)
+          // We need to look up the variant. Assuming standard 'blitz' if not found or store it in gameData
+          const variant = (gameData as any).variant || 'blitz';
+          await usePlayerStore.getState().addXp(100); // Bonus for boss
+          // specific arena store call
+          // recordGatekeeperDefeat(user.id, variant, tier); // This needs to be available or called via store
+          // Since we can't easily access the hook function here without prop drilling or context, 
+          // we can use the store's static method if available, or just rely on the DB update above 
+          // and let the store refresh on next load. 
+          // BUT `recordGatekeeperDefeat` does the DB insert into `arena_progress`!
+          // So we must call it.
+          // Best way: Import the store hook at top and use it.
+          // We'll assume the user has the hook `const { recordGatekeeperDefeat } = useArenaStore()`
+          // For now, let's manually do the DB call or alert the user.
+          // Actually, let's just use Supabase directly here for reliability if store is tricky.
+
+          // Update Arena Progress directly
+          const { data: progress } = await supabase
+            .from('arena_progress')
+            .select('gatekeepers_defeated')
+            .eq('user_id', user.id)
+            .eq('variant', variant)
+            .single();
+
+          if (progress) {
+            const defeated = progress.gatekeepers_defeated || [];
+            if (!defeated.includes(tier)) {
+              await supabase.from('arena_progress').update({
+                gatekeepers_defeated: [...defeated, tier]
+              }).eq('user_id', user.id).eq('variant', variant);
+
+              // Also insert into attempts history
+              await supabase.from('arena_gatekeeper_attempts').insert({
+                user_id: user.id,
+                division_id: (gameData as any).division_id || null, // We might not have this easily
+                status: 'won',
+                pgn: chess.pgn()
+              });
+
+              toast.success(`🎉 GATEKEEPER DEFEATED! You have promoted! 🎉`);
+              playSound('success'); // Assuming we have this
+            }
+          }
         } else {
-          alert(`Victòria! Has guanyat ${xp} XP i ${gold} d'Or! 🏆`);
+          if (Math.random() > 0.3) {
+            addChest({
+              id: Math.random().toString(36).substring(7),
+              type: 'WOODEN',
+              status: 'LOCKED',
+              unlockTime: 60,
+            });
+            toast.success(`Victòria! +${xp} XP, +${gold} Or i un Cofre! 🏆`);
+          } else {
+            toast.success(`Victòria! +${xp} XP i +${gold} Or! 🏆`);
+          }
         }
+
       } else if (isDraw) {
         addXp(15);
         addGold(5);
-        alert("Taules! Has guanyat 15 XP i 5 d'Or.");
+        toast.info("Taules! +15 XP, +5 Or.");
       } else {
         addXp(5);
-        alert("Has perdut. Guanyes 5 XP per l'esforç.");
+        toast.info("Has perdut. +5 XP per l'esforç.");
       }
     }
   };

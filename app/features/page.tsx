@@ -56,14 +56,14 @@ export default function FeaturesPage() {
 
     if (authLoading || !user || (profile.id && profile.role !== 'SuperAdmin')) {
         return (
-            <div className="h-screen flex items-center justify-center bg-slate-950">
+            <div className="h-screen flex items-center justify-center bg-zinc-950">
                 <Loader2 className="animate-spin text-amber-500" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white p-6">
+        <div className="min-h-screen bg-zinc-950 text-white p-6">
             <div className="max-w-6xl mx-auto flex flex-col gap-8">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -123,7 +123,7 @@ export default function FeaturesPage() {
                                 <Archive size={20} className="text-amber-500" />
                                 <h2 className="text-lg font-black uppercase italic tracking-tight">Els teus Cofres</h2>
                             </div>
-                            <GameCard variant="gold" className="p-6 bg-slate-900/50 border-white/5">
+                            <GameCard variant="gold" className="p-6 bg-zinc-900/50 border-white/5">
                                 <ChestGrid
                                     chests={chests}
                                     slots={4}
@@ -135,7 +135,7 @@ export default function FeaturesPage() {
                             </GameCard>
                         </section>
 
-                        <section className="bg-slate-900/30 border border-white/5 p-6 rounded-2xl">
+                        <section className="bg-zinc-900/30 border border-white/5 p-6 rounded-2xl">
                             <h3 className="text-sm font-black uppercase text-zinc-400 mb-2">Estadístiques de Carrera</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
@@ -171,7 +171,7 @@ export default function FeaturesPage() {
                             </div>
                         </div>
 
-                        <GameCard variant="blue" className="p-0 bg-slate-900/50 border-white/5 overflow-hidden h-[600px]">
+                        <GameCard variant="blue" className="p-0 bg-zinc-900/50 border-white/5 overflow-hidden h-[600px]">
                             <div className="h-full overflow-y-auto p-8 scrollbar-hide">
                                 {progress[selectedArena] ? (
                                     <ArenaPath

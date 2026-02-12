@@ -6,10 +6,26 @@ export interface ArenaProgress {
     variant: ArenaVariant;
     current_cups: number;
     highest_cups: number;
-    chests_claimed: string[]; // IDs of chests claimed on the path
-    gatekeepers_defeated: number[]; // Tiers where the boss has been defeated (1, 2, 3)
+    chests_claimed: string[];
+    gatekeepers_defeated: number[];
+    is_gatekeeper_mode?: boolean;
+    current_division_id?: string;
+    weekly_cups_gained?: number;
+    weekly_games_played?: number;
     created_at?: string;
     updated_at?: string;
+}
+
+export interface ArenaDivision {
+    id: string;
+    slug: string;
+    name: string;
+    icon_url?: string;
+    min_cups: number;
+    max_cups: number;
+    gatekeeper_id?: string;
+    gatekeeper_name?: string;
+    gatekeeper_elo: number;
 }
 
 export interface ArenaTierInfo {
@@ -18,8 +34,8 @@ export interface ArenaTierInfo {
     minCups: number;
     maxCups: number;
     bossName: string;
-    bossAvatar: string; // Path to avatar image
-    bossRating: number; // Approximate Elo strength of the bot
+    bossAvatar: string;
+    bossRating: number;
 }
 
 export const ARENA_TIERS: ArenaTierInfo[] = [

@@ -1,0 +1,9 @@
+{
+    "Index": {
+        "title": "Bienvenido a ChessClans"
+    },
+    "Auth": {
+        "login": "Iniciar Sesión",
+        "register": "Registrarse"
+    }
+}

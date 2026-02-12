@@ -131,53 +131,56 @@ export default function ModulePage() {
     // LEGACY / SIMPLE MODE
     return (
         <div className="min-h-screen bg-slate-950 p-6 font-sans text-slate-200">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-6">
 
                 <Link
                     href="/academy"
-                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
+                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition"
                 >
                     <ArrowLeft size={20} />
                     Tornar a l'acadèmia
                 </Link>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6">
-                    <div className="flex items-start justify-between mb-3">
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 backdrop-blur-sm">
+                    <div className="flex items-start justify-between mb-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-white mb-1.5">{module.title}</h1>
-                            <p className="text-sm text-slate-400">{module.description}</p>
+                            <h1 className="text-3xl font-black text-white mb-2 tracking-tight font-display">{module.title}</h1>
+                            <p className="text-zinc-400 leading-relaxed max-w-2xl">{module.description}</p>
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${module.level === 'Principiant' ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30' :
-                            module.level === 'Intermedi' ? 'bg-amber-900/30 text-amber-400 border-amber-500/30' :
-                                module.level === 'Avançat' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-500/30' :
-                                    'bg-slate-800 text-slate-400 border-slate-700'
+                        <span className={`text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${module.level === 'Principiant' ? 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30' :
+                            module.level === 'Intermedi' ? 'bg-amber-950/50 text-amber-400 border-amber-500/30' :
+                                module.level === 'Avançat' ? 'bg-indigo-950/50 text-indigo-400 border-indigo-500/30' :
+                                    'bg-zinc-800 text-zinc-400 border-zinc-700'
                             }`}>
                             {module.level}
                         </span>
                     </div>
 
-                    <div className="mt-4">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs text-slate-400">
-                                Progrés: {completedCount} / {lessons.length} lliçons
+                    <div className="mt-8">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                                Progrés del Mòdul
                             </span>
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs font-mono font-bold text-indigo-400">
                                 {progressPercentage.toFixed(0)}%
                             </span>
                         </div>
-                        <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
                             <div
-                                className="bg-indigo-500 h-full transition-all duration-500"
+                                className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full transition-all duration-1000 ease-out"
                                 style={{ width: `${progressPercentage}%` }}
                             />
                         </div>
+                        <p className="text-right text-[10px] text-zinc-600 mt-2 font-medium">
+                            {completedCount} de {lessons.length} lliçons completades
+                        </p>
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <BookOpen size={20} className="text-indigo-400" />
-                        Lliçons
+                <div className="space-y-4">
+                    <h2 className="text-xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-wider">
+                        <BookOpen size={24} className="text-indigo-500" />
+                        Pla d'Estudis
                     </h2>
 
                     {lessons.map((lesson, idx) => {
@@ -188,33 +191,46 @@ export default function ModulePage() {
                             <Link
                                 key={lesson.id}
                                 href={isLocked ? '#' : `/academy/${moduleId}/${lesson.id}`}
-                                className={`block ${isLocked ? 'cursor-not-allowed opacity-50' : ''}`}
+                                className={`block group ${isLocked ? 'cursor-not-allowed' : ''}`}
                                 onClick={(e) => isLocked && e.preventDefault()}
                             >
-                                <div className={`bg-slate-900 border border-slate-800 rounded-xl p-4 transition ${isLocked ? '' : 'hover:border-indigo-500/50 cursor-pointer'
-                                    }`}>
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-1.5">
-                                                <span className="text-xs font-bold text-slate-500">
-                                                    Lliçó {lesson.order}
-                                                </span>
-                                                {isCompleted && (
-                                                    <CheckCircle className="text-emerald-400" size={16} />
-                                                )}
-                                            </div>
-                                            <h3 className="text-lg font-bold text-white mb-1.5">
+                                <div className={`
+                                    relative overflow-hidden rounded-xl border p-5 transition-all duration-300
+                                    ${isLocked
+                                        ? 'bg-zinc-950/50 border-zinc-900 opacity-60'
+                                        : 'bg-zinc-900/40 border-zinc-800 hover:border-indigo-500/50 hover:bg-zinc-900 hover:shadow-lg hover:shadow-indigo-900/10'
+                                    }
+                                `}>
+                                    <div className="flex items-start gap-4">
+                                        <div className={`
+                                            w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 font-display font-black text-lg
+                                            ${isCompleted
+                                                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                                : isLocked
+                                                    ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-800'
+                                                    : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500/20'
+                                            }
+                                        `}>
+                                            {isCompleted ? <CheckCircle size={20} /> : lesson.order}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className={`text-lg font-bold mb-1 truncate ${isLocked ? 'text-zinc-500' : 'text-zinc-200 group-hover:text-white'}`}>
                                                 {lesson.title}
                                             </h3>
-                                            <p className="text-slate-400 text-xs">
+                                            <p className="text-sm text-zinc-500 line-clamp-2 leading-relaxed">
                                                 {lesson.description}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-1.5">
-                                            {Array.from({ length: lesson.difficulty }).map((_, i) => (
+
+                                        <div className="flex items-center gap-1 self-center">
+                                            {Array.from({ length: 3 }).map((_, i) => (
                                                 <div
                                                     key={i}
-                                                    className="w-1.5 h-4 bg-indigo-500 rounded"
+                                                    className={`w-1.5 h-6 rounded-full transform skew-x-12 ${i < lesson.difficulty
+                                                            ? (isLocked ? 'bg-zinc-700' : 'bg-indigo-500')
+                                                            : 'bg-zinc-800'
+                                                        }`}
                                                 />
                                             ))}
                                         </div>

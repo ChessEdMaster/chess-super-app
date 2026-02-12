@@ -221,7 +221,7 @@ export default function ExercisesPage() {
 
     if (authLoading || loading || !user) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
                 <Loader2 className="animate-spin text-indigo-500" size={48} />
             </div>
         );
@@ -229,18 +229,18 @@ export default function ExercisesPage() {
 
     if (!currentExercise && !loading) {
         return (
-            <div className="min-h-screen bg-slate-950 p-6">
+            <div className="min-h-screen bg-zinc-950 p-6">
                 <div className="max-w-4xl mx-auto">
                     <Link
                         href="/academy"
-                        className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-6"
+                        className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition mb-6"
                     >
                         <ArrowLeft size={20} />
                         Tornar a l&apos;acadèmia
                     </Link>
                     <div className="text-center text-white">
                         <h1 className="text-2xl font-bold mb-4">No hi ha exercicis disponibles</h1>
-                        <p className="text-slate-400">Prova de canviar els filtres o torna més tard.</p>
+                        <p className="text-zinc-400">Prova de canviar els filtres o torna més tard.</p>
                         <button
                             onClick={fetchNextExercise}
                             className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white transition"
@@ -254,30 +254,30 @@ export default function ExercisesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 py-6 font-sans text-slate-200">
+        <div className="min-h-screen bg-zinc-950 py-6 font-sans text-zinc-200">
             <div className="max-w-5xl mx-auto px-4 mb-6">
                 <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
                     <Link
                         href="/academy"
-                        className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition"
+                        className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition"
                     >
                         <ArrowLeft size={20} />
                         Tornar a l&apos;acadèmia
                     </Link>
 
                     <div className="flex flex-wrap items-center gap-4 justify-center">
-                        <div className="flex items-center gap-2 text-sm bg-slate-900 p-2 rounded-lg border border-slate-800">
+                        <div className="flex items-center gap-2 text-sm bg-zinc-900 p-2 rounded-lg border border-zinc-800">
                             <Trophy className="text-amber-400" size={20} />
                             <span className="text-white font-bold">{solvedCount}</span>
-                            <span className="text-slate-400">resolts</span>
+                            <span className="text-zinc-400">resolts</span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Filter size={20} className="text-slate-400" />
+                            <Filter size={20} className="text-zinc-400" />
                             <select
                                 value={difficulty}
                                 onChange={(e) => setDifficulty(e.target.value as 'all' | 'easy' | 'medium' | 'hard')}
-                                className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                             >
                                 <option value="all">Tots</option>
                                 <option value="easy">Fàcil</option>
@@ -287,7 +287,7 @@ export default function ExercisesPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Tag size={20} className="text-slate-400" />
+                            <Tag size={20} className="text-zinc-400" />
                             <select
                                 onChange={(e) => {
                                     const tag = e.target.value;
@@ -295,7 +295,7 @@ export default function ExercisesPage() {
                                         setSelectedTags([...selectedTags, tag]);
                                     }
                                 }}
-                                className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                                 value=""
                             >
                                 <option value="">Afegir Tema...</option>
@@ -323,7 +323,7 @@ export default function ExercisesPage() {
                         ))}
                         <button
                             onClick={() => setSelectedTags([])}
-                            className="text-xs text-slate-500 hover:text-slate-300 underline"
+                            className="text-xs text-zinc-500 hover:text-zinc-300 underline"
                         >
                             Netejar
                         </button>
@@ -331,7 +331,7 @@ export default function ExercisesPage() {
                 )}
 
                 <div className="text-center mb-4">
-                    <span className="text-sm text-slate-400">
+                    <span className="text-sm text-zinc-400">
                         Exercici Aleatori {difficulty !== 'all' ? `(${difficulty})` : ''}
                     </span>
                 </div>
