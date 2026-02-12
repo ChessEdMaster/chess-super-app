@@ -7,87 +7,109 @@ import { Map, FileText, AlertTriangle, ExternalLink, ShieldAlert } from 'lucide-
 export const dynamic = 'force-dynamic';
 
 export default async function SitemapPage() {
-    const appDir = path.join(process.cwd(), 'app');
-    const routes = await getRoutes(appDir);
-    routes.sort();
+    try {
+        const appDir = path.join(process.cwd(), 'app');
+        const routes = await getRoutes(appDir);
+        routes.sort();
 
-    // Group routes by top-level section
-    const groupedRoutes: Record<string, string[]> = {};
-    routes.forEach(route => {
-        const root = route.split('/')[1] || 'root';
-        if (!groupedRoutes[root]) groupedRoutes[root] = [];
-        groupedRoutes[root].push(route);
-    });
+        // Group routes by top-level section
+        const groupedRoutes: Record<string, string[]> = {};
+        routes.forEach(route => {
+            const root = route.split('/')[1] || 'root';
+            if (!groupedRoutes[root]) groupedRoutes[root] = [];
+            groupedRoutes[root].push(route);
+        });
 
-    const sections = Object.keys(groupedRoutes).sort();
+        const sections = Object.keys(groupedRoutes).sort();
 
-    return (
-        <div className="min-h-screen bg-zinc-950 p-8 font-sans text-slate-200">
-            <div className="max-w-6xl mx-auto space-y-8">
-                <div className="flex items-center justify-between border-b border-zinc-800 pb-6">
-                    <div>
-                        <h1 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-                            <Map className="text-amber-500" size={32} />
-                            Admin Sitemap
-                        </h1>
-                        <p className="text-zinc-500 mt-2 font-medium">
-                            Automatic index of all <span className="text-white font-bold">{routes.length}</span> detected pages in the application.
-                            Use this to audit for obsolete or broken routes.
-                        </p>
+        return (
+            <div className="min-h-screen bg-zinc-950 p-8 font-sans text-slate-200">
+                <div className="max-w-6xl mx-auto space-y-8">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-6">
+                        <div>
+                            <h1 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                                <Map className="text-amber-500" size={32} />
+                                Admin Sitemap
+                            </h1>
+                            <p className="text-zinc-500 mt-2 font-medium">
+                                Automatic index of all <span className="text-white font-bold">{routes.length}</span> detected pages in the application.
+                                Use this to audit for obsolete or broken routes.
+                            </p>
+                            <p className="text-xs text-zinc-600 mt-1 font-mono">
+                                Scanned: {appDir}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {sections.map(section => (
+                            <Panel key={section} className="bg-zinc-900/50 border-zinc-800">
+                                <h2 className="text-xl font-black text-zinc-400 uppercase tracking-widest mb-6 border-b border-zinc-800 pb-2 flex items-center gap-2">
+                                    {section === 'root' ? 'Landing / Core' : section}
+                                </h2>
+                                <ul className="space-y-2">
+                                    {groupedRoutes[section].map((route) => {
+                                        const isDynamic = route.includes('[');
+                                        return (
+                                            <li key={route} className="group">
+                                                <Link
+                                                    href={isDynamic ? '#' : route}
+                                                    className={`
+                                                        flex items-center justify-between p-3 rounded-lg border transition-all
+                                                        ${isDynamic
+                                                            ? 'bg-zinc-950/30 border-dashed border-zinc-800 text-zinc-500 cursor-not-allowed'
+                                                            : 'bg-zinc-950 border-zinc-800 hover:border-indigo-500/50 hover:bg-zinc-900 text-zinc-300 hover:text-white'
+                                                        }
+                                                    `}
+                                                    onClick={e => isDynamic && e.preventDefault()}
+                                                >
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        {isDynamic ? (
+                                                            <AlertTriangle size={16} className="text-amber-500/50 flex-shrink-0" />
+                                                        ) : (
+                                                            <FileText size={16} className="text-indigo-500/50 group-hover:text-indigo-400 flex-shrink-0" />
+                                                        )}
+                                                        <span className="font-mono text-sm truncate" title={route}>
+                                                            {route}
+                                                        </span>
+                                                    </div>
+
+                                                    {isDynamic ? (
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-zinc-600 px-2 py-1 rounded">
+                                                            Dynamic
+                                                        </span>
+                                                    ) : (
+                                                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
+                                                    )}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </Panel>
+                        ))}
                     </div>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {sections.map(section => (
-                        <Panel key={section} className="bg-zinc-900/50 border-zinc-800">
-                            <h2 className="text-xl font-black text-zinc-400 uppercase tracking-widest mb-6 border-b border-zinc-800 pb-2 flex items-center gap-2">
-                                {section === 'root' ? 'Landing / Core' : section}
-                            </h2>
-                            <ul className="space-y-2">
-                                {groupedRoutes[section].map((route) => {
-                                    const isDynamic = route.includes('[');
-                                    return (
-                                        <li key={route} className="group">
-                                            <Link
-                                                href={isDynamic ? '#' : route}
-                                                className={`
-                                                    flex items-center justify-between p-3 rounded-lg border transition-all
-                                                    ${isDynamic
-                                                        ? 'bg-zinc-950/30 border-dashed border-zinc-800 text-zinc-500 cursor-not-allowed'
-                                                        : 'bg-zinc-950 border-zinc-800 hover:border-indigo-500/50 hover:bg-zinc-900 text-zinc-300 hover:text-white'
-                                                    }
-                                                `}
-                                                onClick={e => isDynamic && e.preventDefault()}
-                                            >
-                                                <div className="flex items-center gap-3 overflow-hidden">
-                                                    {isDynamic ? (
-                                                        <AlertTriangle size={16} className="text-amber-500/50 flex-shrink-0" />
-                                                    ) : (
-                                                        <FileText size={16} className="text-indigo-500/50 group-hover:text-indigo-400 flex-shrink-0" />
-                                                    )}
-                                                    <span className="font-mono text-sm truncate" title={route}>
-                                                        {route}
-                                                    </span>
-                                                </div>
-
-                                                {isDynamic ? (
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-zinc-600 px-2 py-1 rounded">
-                                                        Dynamic
-                                                    </span>
-                                                ) : (
-                                                    <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
-                                                )}
-                                            </Link>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </Panel>
-                    ))}
+            </div>
+        );
+    } catch (error: any) {
+        return (
+            <div className="p-12 text-center">
+                <div className="bg-red-500/10 border border-red-500/50 p-6 rounded-xl inline-block text-left max-w-2xl">
+                    <h2 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+                        <ShieldAlert /> Error Generating Sitemap
+                    </h2>
+                    <p className="text-zinc-300 mb-2">Could not scan directory structure.</p>
+                    <pre className="bg-black/50 p-4 rounded text-xs font-mono text-red-300 overflow-auto whitespace-pre-wrap">
+                        {error.message}
+                    </pre>
+                    <p className="text-zinc-500 mt-4 text-xs font-mono">
+                        CWD: {process.cwd()}
+                    </p>
                 </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
 
 async function getRoutes(dir: string, baseRoute: string = ''): Promise<string[]> {
